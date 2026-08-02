@@ -21,11 +21,15 @@ export function useNotifications(profileId: number) {
     const { data } = await supabase
       .from("notifications")
       .select("id, type, title, message, is_read, created_at")
+      // explicit filter (not just RLS): admins have a broader RLS grant
+      // on this table for future audit tooling, which would otherwise
+      // leak every user's notifications into the admin's own bell
+      .eq("profile_id", profileId)
       .order("created_at", { ascending: false })
       .limit(30);
     setNotifications(data ?? []);
     setLoading(false);
-  }, []);
+  }, [profileId]);
 
   useEffect(() => {
     refresh();
@@ -60,7 +64,11 @@ export function useNotifications(profileId: number) {
       prev.map((n) => (n.id === id ? { ...n, is_read: true } : n)),
     );
     const supabase = createClient();
-    await supabase.from("notifications").update({ is_read: true }).eq("id", id);
+    await supabase
+      .from("notifications")
+      .update({ is_read: true })
+      .eq("id", id)
+      .eq("profile_id", profileId);
   }
 
   async function markAllRead() {
@@ -69,6 +77,7 @@ export function useNotifications(profileId: number) {
     await supabase
       .from("notifications")
       .update({ is_read: true })
+      .eq("profile_id", profileId)
       .eq("is_read", false);
   }
 
