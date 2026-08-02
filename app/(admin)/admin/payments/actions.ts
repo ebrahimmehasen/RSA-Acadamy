@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireRole } from "@/lib/auth/guards";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { createNotification } from "@/lib/notifications/create";
+import { createNotification, getNotificationSettings } from "@/lib/notifications/create";
 import { sendEmail } from "@/lib/email/resend";
 import { paymentDecisionEmail } from "@/lib/email/templates";
 import { getAuthEmail } from "@/lib/users";
@@ -103,7 +103,10 @@ export async function reviewSubmission(formData: FormData) {
       relatedId: id,
     });
 
-    const payerEmail = await getAuthEmail(submission.payer_id);
+    const settings = await getNotificationSettings(submission.payer_id);
+    const payerEmail = settings.email_notifications
+      ? await getAuthEmail(submission.payer_id)
+      : null;
     if (payerEmail) {
       const studentName =
         (submission.students as unknown as { profiles: { full_name: string } })

@@ -11,6 +11,7 @@ const NAV = [
   { href: "/student/quizzes", label: "الاختبارات" },
   { href: "/student/profile", label: "الملف الشخصي" },
   { href: "/announcements", label: "الإعلانات" },
+  { href: "/settings/notifications", label: "الإشعارات" },
   { href: "/settings/security", label: "الأمان" },
 ];
 

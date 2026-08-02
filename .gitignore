@@ -52,3 +52,6 @@ UPDATES_AND_ADDITIONS.md
 logos.pdf
 subjects_database.json
 subjects_database_setup.sql
+
+.vercel
+.env*

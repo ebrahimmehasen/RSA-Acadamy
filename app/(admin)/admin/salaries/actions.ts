@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireRole } from "@/lib/auth/guards";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { createNotification } from "@/lib/notifications/create";
+import { createNotification, getNotificationSettings } from "@/lib/notifications/create";
 import { sendEmail } from "@/lib/email/resend";
 import { salaryPaidEmail } from "@/lib/email/templates";
 import { getAuthEmail } from "@/lib/users";
@@ -76,7 +76,10 @@ export async function markSalaryPaid(formData: FormData) {
     relatedId: month,
   });
 
-  const teacherEmail = await getAuthEmail(teacherId);
+  const salarySettings = await getNotificationSettings(teacherId);
+  const teacherEmail = salarySettings.email_notifications
+    ? await getAuthEmail(teacherId)
+    : null;
   if (teacherEmail) {
     const { data: profile } = await supabase
       .from("profiles")

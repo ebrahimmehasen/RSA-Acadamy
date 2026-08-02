@@ -8,7 +8,7 @@ import {
   uploadTeacherAttachment,
   validateUpload,
 } from "@/lib/googleDrive/upload";
-import { createNotification } from "@/lib/notifications/create";
+import { createNotification, getNotificationSettings } from "@/lib/notifications/create";
 import { sendEmail } from "@/lib/email/resend";
 import { assignmentGradedEmail } from "@/lib/email/templates";
 import { getAuthEmail } from "@/lib/users";
@@ -160,7 +160,10 @@ export async function gradeSubmission(formData: FormData) {
     relatedId: assignmentId,
   });
 
-  const studentEmail = await getAuthEmail(submission.student_id);
+  const gradeSettings = await getNotificationSettings(submission.student_id);
+  const studentEmail = gradeSettings.email_notifications
+    ? await getAuthEmail(submission.student_id)
+    : null;
   if (studentEmail) {
     const studentName =
       (submission.students as unknown as { profiles: { full_name: string } })

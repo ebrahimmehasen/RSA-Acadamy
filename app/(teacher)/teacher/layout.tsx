@@ -11,6 +11,7 @@ const NAV = [
   { href: "/teacher/preferences", label: "التفضيلات" },
   { href: "/teacher/salary", label: "الراتب" },
   { href: "/announcements", label: "الإعلانات" },
+  { href: "/settings/notifications", label: "الإشعارات" },
   { href: "/settings/security", label: "الأمان" },
 ];
 
