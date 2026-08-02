@@ -1,6 +1,20 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { Branch, Role } from "@/types/domain";
 
+/** Resolves a profile's auth email (used for outbound notification emails). */
+export async function getAuthEmail(profileId: number): Promise<string | null> {
+  const supabase = createAdminClient();
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("user_id")
+    .eq("id", profileId)
+    .maybeSingle();
+  if (!profile) return null;
+
+  const { data } = await supabase.auth.admin.getUserById(profile.user_id);
+  return data.user?.email ?? null;
+}
+
 /** Random 6-digit student code, unique in students (decision #1). */
 export async function generateStudentCode(): Promise<string> {
   const supabase = createAdminClient();

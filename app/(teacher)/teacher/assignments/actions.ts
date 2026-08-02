@@ -9,6 +9,9 @@ import {
   validateUpload,
 } from "@/lib/googleDrive/upload";
 import { createNotification } from "@/lib/notifications/create";
+import { sendEmail } from "@/lib/email/resend";
+import { assignmentGradedEmail } from "@/lib/email/templates";
+import { getAuthEmail } from "@/lib/users";
 
 const schema = z.object({
   class_id: z.coerce.number().int().positive(),
@@ -126,7 +129,7 @@ export async function gradeSubmission(formData: FormData) {
 
   const { data: assignment } = await supabase
     .from("assignments")
-    .select("teacher_id, max_grade")
+    .select("teacher_id, max_grade, title")
     .eq("id", assignmentId)
     .single();
   if (assignment?.teacher_id !== session.profile.id) {
@@ -145,7 +148,7 @@ export async function gradeSubmission(formData: FormData) {
       graded_at: new Date().toISOString(),
     })
     .eq("id", submissionId)
-    .select("student_id")
+    .select("student_id, students!assignment_submissions_student_id_fkey(profiles!students_user_id_fkey(full_name))")
     .single();
   if (error) throw new Error(error.message);
 
@@ -156,6 +159,23 @@ export async function gradeSubmission(formData: FormData) {
     message: `حصلت على ${grade}/${assignment.max_grade}`,
     relatedId: assignmentId,
   });
+
+  const studentEmail = await getAuthEmail(submission.student_id);
+  if (studentEmail) {
+    const studentName =
+      (submission.students as unknown as { profiles: { full_name: string } })
+        ?.profiles?.full_name ?? "الطالب";
+    await sendEmail({
+      to: studentEmail,
+      subject: "تم تصحيح واجبك",
+      html: assignmentGradedEmail({
+        studentName,
+        title: assignment.title,
+        grade,
+        maxGrade: assignment.max_grade,
+      }),
+    });
+  }
 
   revalidatePath(`/teacher/assignments/${assignmentId}`);
 }

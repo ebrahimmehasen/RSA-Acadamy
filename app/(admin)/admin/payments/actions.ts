@@ -5,6 +5,9 @@ import { z } from "zod";
 import { requireRole } from "@/lib/auth/guards";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createNotification } from "@/lib/notifications/create";
+import { sendEmail } from "@/lib/email/resend";
+import { paymentDecisionEmail } from "@/lib/email/templates";
+import { getAuthEmail } from "@/lib/users";
 
 const instructionSchema = z.object({
   class_id: z.coerce.number().int().positive(),
@@ -80,7 +83,9 @@ export async function reviewSubmission(formData: FormData) {
     })
     .eq("id", id)
     .eq("status", "pending")
-    .select("payer_id")
+    .select(
+      "payer_id, instruction_id, students!payment_submissions_student_id_fkey(profiles!students_user_id_fkey(full_name)), payment_instructions(amount)",
+    )
     .single();
   if (error) throw new Error(error.message);
 
@@ -97,6 +102,27 @@ export async function reviewSubmission(formData: FormData) {
             : "الإدارة رفضت إثبات الدفع — راجع البيانات وأعد الرفع.",
       relatedId: id,
     });
+
+    const payerEmail = await getAuthEmail(submission.payer_id);
+    if (payerEmail) {
+      const studentName =
+        (submission.students as unknown as { profiles: { full_name: string } })
+          ?.profiles?.full_name ?? "الطالب";
+      const amount =
+        (submission.payment_instructions as unknown as { amount: number })
+          ?.amount ?? 0;
+      await sendEmail({
+        to: payerEmail,
+        subject:
+          decision === "approved" ? "تم قبول إثبات الدفع" : "تم رفض إثبات الدفع",
+        html: paymentDecisionEmail({
+          approved: decision === "approved",
+          studentName,
+          amount,
+          notes,
+        }),
+      });
+    }
   }
 
   revalidatePath("/admin/payments");

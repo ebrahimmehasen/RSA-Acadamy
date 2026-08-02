@@ -5,6 +5,9 @@ import { z } from "zod";
 import { requireRole } from "@/lib/auth/guards";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createNotification } from "@/lib/notifications/create";
+import { sendEmail } from "@/lib/email/resend";
+import { salaryPaidEmail } from "@/lib/email/templates";
+import { getAuthEmail } from "@/lib/users";
 
 export async function setSalary(formData: FormData) {
   await requireRole("admin");
@@ -72,6 +75,25 @@ export async function markSalaryPaid(formData: FormData) {
     message: `تم تحويل راتب شهر ${month} (${salary.salary_amount} ${salary.currency})`,
     relatedId: month,
   });
+
+  const teacherEmail = await getAuthEmail(teacherId);
+  if (teacherEmail) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("full_name")
+      .eq("id", teacherId)
+      .single();
+    await sendEmail({
+      to: teacherEmail,
+      subject: "تم صرف راتبك",
+      html: salaryPaidEmail({
+        teacherName: profile?.full_name ?? "المدرس",
+        month,
+        amount: salary.salary_amount,
+        currency: salary.currency,
+      }),
+    });
+  }
 
   revalidatePath("/admin/salaries");
 }
