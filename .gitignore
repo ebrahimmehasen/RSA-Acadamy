@@ -16,6 +16,9 @@ vendor/
 # Env
 .env
 .env.local
+*-key.json
+rsa-drive-*.json
+google-drive-key.json
 
 # Build output
 dist/
