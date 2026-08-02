@@ -23,6 +23,16 @@ google-drive-key.json
 # Build output
 dist/
 build/
+.next/
+out/
+*.tsbuildinfo
+next-env.d.ts
+
+# Vercel
+.vercel
+
+# Testing
+coverage/
 
 # Planning docs (not for GitHub)
 COMPLETE_BLUEPRINT_FINAL.md
