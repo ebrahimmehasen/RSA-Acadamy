@@ -15,6 +15,40 @@ export async function getAuthEmail(profileId: number): Promise<string | null> {
   return data.user?.email ?? null;
 }
 
+/**
+ * Auto-derived student email (decision #3): firstname.lastname@school.edu.
+ * full_name here is Arabic-only (no separate English name field exists),
+ * so an ASCII slug of it is usually empty — falls back to the unique
+ * student code instead, which still satisfies "system-generated, no
+ * admin/student typing required" without inventing a transliteration
+ * scheme. On a same-slug collision, falls back to the code-based form
+ * too (studentCode is already guaranteed globally unique).
+ */
+export async function generateStudentEmail(
+  fullName: string,
+  studentCode: string,
+): Promise<string> {
+  const supabase = createAdminClient();
+  const slug = fullName
+    .toLowerCase()
+    .trim()
+    .split(/\s+/)
+    .map((part) => part.replace(/[^a-z0-9]/g, ""))
+    .filter(Boolean)
+    .join(".");
+  // studentCode is already globally unique (generateStudentCode), so the
+  // no-slug fallback never collides. Only same-ASCII-name collisions are
+  // possible — resolved by falling back to the same code-based scheme.
+  if (!slug) return `student${studentCode}@school.edu`;
+
+  const { data } = await supabase.auth.admin.listUsers();
+  const candidateEmail = `${slug}@school.edu`;
+  const taken = data.users.some(
+    (u) => u.email?.toLowerCase() === candidateEmail.toLowerCase(),
+  );
+  return taken ? `student${studentCode}@school.edu` : candidateEmail;
+}
+
 /** Random 6-digit student code, unique in students (decision #1). */
 export async function generateStudentCode(): Promise<string> {
   const supabase = createAdminClient();
@@ -78,14 +112,27 @@ async function createAuthUserWithProfile(
   return { userId: created.user.id, profileId: profile.id };
 }
 
-export async function createStudent(options: CreateUserBase & {
+export async function createStudent(options: {
+  fullName: string;
+  phone?: string | null;
   classId: number;
   branch: Branch;
   parentId?: number | null;
-}): Promise<{ profileId: number; studentCode: string; enrolled: number }> {
+}): Promise<{
+  profileId: number;
+  studentCode: string;
+  email: string;
+  password: string;
+  enrolled: number;
+}> {
   const supabase = createAdminClient();
   const studentCode = await generateStudentCode();
-  const { profileId } = await createAuthUserWithProfile(options, "student");
+  const email = await generateStudentEmail(options.fullName, studentCode);
+  const password = generatePassword();
+  const { profileId } = await createAuthUserWithProfile(
+    { email, password, fullName: options.fullName, phone: options.phone },
+    "student",
+  );
 
   const { error } = await supabase.from("students").insert({
     user_id: profileId,
@@ -103,7 +150,7 @@ export async function createStudent(options: CreateUserBase & {
   );
   if (enrollError) throw new Error(enrollError.message);
 
-  return { profileId, studentCode, enrolled: enrolled ?? 0 };
+  return { profileId, studentCode, email, password, enrolled: enrolled ?? 0 };
 }
 
 export async function createTeacher(options: CreateUserBase & {

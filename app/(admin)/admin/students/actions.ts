@@ -3,12 +3,11 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireRole } from "@/lib/auth/guards";
-import { createStudent, generatePassword } from "@/lib/users";
+import { createStudent } from "@/lib/users";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 const createStudentSchema = z.object({
   full_name: z.string().min(3),
-  email: z.email(),
   class_id: z.coerce.number().int().positive(),
   branch: z.enum(["Arabic", "Languages"]),
   phone: z.string().optional(),
@@ -28,16 +27,12 @@ export async function createStudentAction(
     await requireRole("admin");
     const parsed = createStudentSchema.parse({
       full_name: formData.get("full_name"),
-      email: formData.get("email"),
       class_id: formData.get("class_id"),
       branch: formData.get("branch"),
       phone: formData.get("phone") || undefined,
     });
 
-    const password = generatePassword();
-    const { studentCode, enrolled } = await createStudent({
-      email: parsed.email,
-      password,
+    const { studentCode, email, password, enrolled } = await createStudent({
       fullName: parsed.full_name,
       phone: parsed.phone ?? null,
       classId: parsed.class_id,
@@ -48,7 +43,7 @@ export async function createStudentAction(
     return {
       ok: true,
       message: `تم إنشاء الطالب وتسجيله في ${enrolled} مادة`,
-      credentials: { email: parsed.email, password, studentCode },
+      credentials: { email, password, studentCode },
     };
   } catch (error) {
     return {

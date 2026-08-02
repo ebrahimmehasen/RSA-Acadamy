@@ -32,13 +32,12 @@ export function CreateStudentForm({
       </CardHeader>
       <CardContent className="space-y-4">
         <form action={formAction} className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-2">
+          <div className="space-y-2 sm:col-span-2">
             <Label htmlFor="full_name">الاسم الكامل</Label>
             <Input id="full_name" name="full_name" required />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="email">البريد الإلكتروني</Label>
-            <Input id="email" name="email" type="email" dir="ltr" required />
+            <p className="text-xs text-muted-foreground">
+              الإيميل وكلمة السر بيتولّدوا تلقائيًا — مش محتاج تدخلهم
+            </p>
           </div>
           <div className="space-y-2">
             <Label htmlFor="class_id">الصف</Label>
