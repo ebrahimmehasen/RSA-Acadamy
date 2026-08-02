@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -67,7 +68,15 @@ export default function LoginPage() {
             )}
           </div>
           <div className="space-y-2">
-            <Label htmlFor="password">كلمة المرور</Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="password">كلمة المرور</Label>
+              <Link
+                href="/forgot-password"
+                className="text-xs text-muted-foreground underline underline-offset-4"
+              >
+                نسيت كلمة السر؟
+              </Link>
+            </div>
             <Input
               id="password"
               type="password"
