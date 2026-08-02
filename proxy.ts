@@ -6,7 +6,7 @@ type Role = (typeof ROLE_PREFIXES)[number];
 
 const PUBLIC_PATHS = ["/login", "/forgot-password", "/reset-password"];
 
-export async function middleware(request: NextRequest) {
+export default async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient(
