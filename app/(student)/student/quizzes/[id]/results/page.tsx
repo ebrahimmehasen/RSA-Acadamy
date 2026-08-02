@@ -37,6 +37,34 @@ export default async function QuizResultsPage({
     .maybeSingle();
   if (!submission) notFound();
 
+  // Class average/rank need every student's score for this quiz, which
+  // the RLS-scoped client can't see (quiz_submissions RLS is own-row
+  // only) — safe to aggregate via the admin client since we only ever
+  // expose a number and a rank position, never another student's
+  // identity or answers.
+  let classAverage: number | null = null;
+  let rank: number | null = null;
+  let totalRanked: number | null = null;
+  if (submission.status === "graded") {
+    const { data: allScores } = await createAdminClient()
+      .from("quiz_submissions")
+      .select("total_score")
+      .eq("quiz_id", quizId)
+      .eq("status", "graded")
+      .order("total_score", { ascending: false });
+    if (allScores && allScores.length > 0) {
+      classAverage =
+        Math.round(
+          (allScores.reduce((sum, s) => sum + (s.total_score ?? 0), 0) /
+            allScores.length) *
+            10,
+        ) / 10;
+      rank =
+        allScores.findIndex((s) => s.total_score === submission.total_score) + 1;
+      totalRanked = allScores.length;
+    }
+  }
+
   // correct_answer is column-locked from the RLS-scoped client (see
   // 0011_quiz_answer_lockdown.sql) — ownership of this submission was
   // already verified above and reveal is gated on the quiz's own
@@ -68,6 +96,21 @@ export default async function QuizResultsPage({
           </Badge>
         )}
       </div>
+
+      {classAverage !== null && (
+        <Card>
+          <CardContent className="flex flex-wrap gap-6 py-4 text-sm">
+            <p>
+              متوسط الفصل: <b>{classAverage}</b>/{quiz.total_points}
+            </p>
+            {rank && totalRanked && (
+              <p>
+                ترتيبك: <b>{rank}</b> من {totalRanked}
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {answers && (
         <div className="space-y-3">

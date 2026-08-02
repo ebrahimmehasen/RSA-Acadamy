@@ -16,6 +16,7 @@ const createQuizSchema = z.object({
   start_time: z.string().min(1),
   end_time: z.string().min(1),
   shuffle_questions: z.coerce.boolean(),
+  assignment_id: z.coerce.number().int().positive().optional(),
 });
 
 export async function createQuiz(formData: FormData) {
@@ -30,6 +31,7 @@ export async function createQuiz(formData: FormData) {
     start_time: formData.get("start_time"),
     end_time: formData.get("end_time"),
     shuffle_questions: formData.get("shuffle_questions") === "on",
+    assignment_id: formData.get("assignment_id") || undefined,
   });
 
   if (new Date(parsed.end_time) <= new Date(parsed.start_time)) {
@@ -50,6 +52,8 @@ export async function createQuiz(formData: FormData) {
       start_time: new Date(parsed.start_time).toISOString(),
       end_time: new Date(parsed.end_time).toISOString(),
       shuffle_questions: parsed.shuffle_questions,
+      assignment_id: parsed.assignment_id ?? null,
+      quiz_type: parsed.assignment_id ? "embedded" : "standalone",
     })
     .select("id")
     .single();

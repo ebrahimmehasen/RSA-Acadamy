@@ -15,6 +15,7 @@ import { createQuiz } from "./actions";
 
 export function CreateQuizForm({
   slots,
+  assignments,
 }: {
   slots: {
     classId: number;
@@ -22,8 +23,18 @@ export function CreateQuizForm({
     subjectId: string;
     subjectName: string;
   }[];
+  assignments: {
+    id: number;
+    title: string;
+    classId: number;
+    subjectId: string;
+  }[];
 }) {
   const [selection, setSelection] = useState("");
+  const [classId, subjectId] = selection.split("|");
+  const matchingAssignments = assignments.filter(
+    (a) => String(a.classId) === classId && a.subjectId === subjectId,
+  );
 
   return (
     <Card>
@@ -110,6 +121,23 @@ export function CreateQuizForm({
             <Label htmlFor="description">الوصف (اختياري)</Label>
             <Textarea id="description" name="description" rows={2} />
           </div>
+          {matchingAssignments.length > 0 && (
+            <div className="space-y-2 sm:col-span-2">
+              <Label htmlFor="assignment_id">مرتبط بواجب (اختياري)</Label>
+              <select
+                id="assignment_id"
+                name="assignment_id"
+                className="h-8 w-full rounded-lg border border-input bg-background px-2 text-sm"
+              >
+                <option value="">اختبار مستقل (غير مرتبط)</option>
+                {matchingAssignments.map((a) => (
+                  <option key={a.id} value={a.id}>
+                    {a.title}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
           <div className="flex items-center gap-2 text-sm">
             <input
               type="checkbox"

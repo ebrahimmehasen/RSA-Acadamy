@@ -14,18 +14,26 @@ export default async function TeacherQuizzesPage() {
   const session = await getSession();
   const supabase = await createClient();
 
-  const [{ data: slots }, { data: quizzes }] = await Promise.all([
-    supabase
-      .from("class_assignments")
-      .select("class_id, subject_id, classes(class_name), subjects(subject_name)")
-      .eq("teacher_id", session!.profile.id)
-      .eq("is_active", true),
-    supabase
-      .from("quizzes")
-      .select("id, title, is_published, start_time, classes(class_name), subjects(subject_name)")
-      .eq("teacher_id", session!.profile.id)
-      .order("start_time", { ascending: false }),
-  ]);
+  const [{ data: slots }, { data: quizzes }, { data: assignments }] =
+    await Promise.all([
+      supabase
+        .from("class_assignments")
+        .select("class_id, subject_id, classes(class_name), subjects(subject_name)")
+        .eq("teacher_id", session!.profile.id)
+        .eq("is_active", true),
+      supabase
+        .from("quizzes")
+        .select(
+          "id, title, is_published, start_time, quiz_type, classes(class_name), subjects(subject_name)",
+        )
+        .eq("teacher_id", session!.profile.id)
+        .order("start_time", { ascending: false }),
+      supabase
+        .from("assignments")
+        .select("id, title, class_id, subject_id")
+        .eq("teacher_id", session!.profile.id)
+        .order("due_date", { ascending: false }),
+    ]);
 
   const seen = new Set<string>();
   const uniqueSlots = (slots ?? [])
@@ -46,7 +54,15 @@ export default async function TeacherQuizzesPage() {
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">الاختبارات</h1>
 
-      <CreateQuizForm slots={uniqueSlots} />
+      <CreateQuizForm
+        slots={uniqueSlots}
+        assignments={(assignments ?? []).map((a) => ({
+          id: a.id,
+          title: a.title,
+          classId: a.class_id,
+          subjectId: a.subject_id,
+        }))}
+      />
 
       <div className="grid gap-3">
         {(quizzes ?? []).map((q) => (
@@ -55,11 +71,16 @@ export default async function TeacherQuizzesPage() {
               <CardHeader>
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <CardTitle className="text-base">{q.title}</CardTitle>
-                  {q.is_published ? (
-                    <Badge>منشور</Badge>
-                  ) : (
-                    <Badge variant="outline">مسودة</Badge>
-                  )}
+                  <div className="flex gap-1">
+                    {q.quiz_type === "embedded" && (
+                      <Badge variant="secondary">مرتبط بواجب</Badge>
+                    )}
+                    {q.is_published ? (
+                      <Badge>منشور</Badge>
+                    ) : (
+                      <Badge variant="outline">مسودة</Badge>
+                    )}
+                  </div>
                 </div>
               </CardHeader>
               <CardContent className="text-sm text-muted-foreground">

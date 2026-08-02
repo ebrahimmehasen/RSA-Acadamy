@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getSession } from "@/lib/auth/session";
@@ -89,10 +90,19 @@ export default async function TeacherQuizDetailPage({
           <CardHeader>
             <CardTitle className="text-lg">النتائج</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-3">
             <p className="text-sm text-muted-foreground">
               {(submissions ?? []).length} تسليم · {gradedCount} مصحح
             </p>
+            <Button
+              size="sm"
+              variant="outline"
+              render={
+                <Link href={`/teacher/quizzes/${quizId}/submissions`}>
+                  مراجعة وتصحيح التسليمات
+                </Link>
+              }
+            />
           </CardContent>
         </Card>
       )}

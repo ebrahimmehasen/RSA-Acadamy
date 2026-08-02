@@ -1,7 +1,9 @@
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getSession } from "@/lib/auth/session";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -22,19 +24,26 @@ export default async function AssignmentDetailPage({
   const session = await getSession();
   const supabase = await createClient();
 
-  const [{ data: assignment }, { data: submission }] = await Promise.all([
-    supabase
-      .from("assignments")
-      .select("*, subjects(subject_name)")
-      .eq("id", assignmentId)
-      .maybeSingle(),
-    supabase
-      .from("assignment_submissions")
-      .select("*")
-      .eq("assignment_id", assignmentId)
-      .eq("student_id", session!.profile.id)
-      .maybeSingle(),
-  ]);
+  const [{ data: assignment }, { data: submission }, { data: linkedQuiz }] =
+    await Promise.all([
+      supabase
+        .from("assignments")
+        .select("*, subjects(subject_name)")
+        .eq("id", assignmentId)
+        .maybeSingle(),
+      supabase
+        .from("assignment_submissions")
+        .select("*")
+        .eq("assignment_id", assignmentId)
+        .eq("student_id", session!.profile.id)
+        .maybeSingle(),
+      supabase
+        .from("quizzes")
+        .select("id, title, is_published")
+        .eq("assignment_id", assignmentId)
+        .eq("is_published", true)
+        .maybeSingle(),
+    ]);
 
   if (!assignment) notFound();
 
@@ -59,6 +68,24 @@ export default async function AssignmentDetailPage({
           الدرجة العظمى: {assignment.max_grade}
         </p>
       </div>
+
+      {linkedQuiz && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">اختبار مرتبط بالواجب ده</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Button
+              size="sm"
+              render={
+                <Link href={`/student/quizzes/${linkedQuiz.id}`}>
+                  ابدأ الاختبار: {linkedQuiz.title}
+                </Link>
+              }
+            />
+          </CardContent>
+        </Card>
+      )}
 
       {assignment.description && (
         <Card>
