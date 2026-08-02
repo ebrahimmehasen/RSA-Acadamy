@@ -7,6 +7,7 @@ const NAV = [
   { href: "/parent/children", label: "الأبناء" },
   { href: "/parent/payments", label: "الرسوم" },
   { href: "/parent/reports", label: "التقارير" },
+  { href: "/announcements", label: "الإعلانات" },
 ];
 
 export default async function ParentLayout({
@@ -22,6 +23,7 @@ export default async function ParentLayout({
     <RoleShell
       title="بوابة ولي الأمر"
       fullName={session.profile.full_name}
+      profileId={session.profile.id}
       nav={NAV}
     >
       {children}

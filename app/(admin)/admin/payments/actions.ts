@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireRole } from "@/lib/auth/guards";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { createNotification } from "@/lib/notifications/create";
 
 const instructionSchema = z.object({
   class_id: z.coerce.number().int().positive(),
@@ -69,7 +70,7 @@ export async function reviewSubmission(formData: FormData) {
   const notes = String(formData.get("review_notes") ?? "").trim();
 
   const supabase = createAdminClient();
-  const { error } = await supabase
+  const { data: submission, error } = await supabase
     .from("payment_submissions")
     .update({
       status: decision,
@@ -78,8 +79,25 @@ export async function reviewSubmission(formData: FormData) {
       reviewed_at: new Date().toISOString(),
     })
     .eq("id", id)
-    .eq("status", "pending");
+    .eq("status", "pending")
+    .select("payer_id")
+    .single();
   if (error) throw new Error(error.message);
+
+  if (submission) {
+    await createNotification({
+      profileId: submission.payer_id,
+      type: "payment",
+      title: decision === "approved" ? "تم قبول إثبات الدفع ✅" : "تم رفض إثبات الدفع",
+      message:
+        decision === "approved"
+          ? "الإدارة راجعت إثبات الدفع ووافقت عليه."
+          : notes
+            ? `سبب الرفض: ${notes}`
+            : "الإدارة رفضت إثبات الدفع — راجع البيانات وأعد الرفع.",
+      relatedId: id,
+    });
+  }
 
   revalidatePath("/admin/payments");
 }

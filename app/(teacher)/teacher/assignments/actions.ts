@@ -8,6 +8,7 @@ import {
   uploadTeacherAttachment,
   validateUpload,
 } from "@/lib/googleDrive/upload";
+import { createNotification } from "@/lib/notifications/create";
 
 const schema = z.object({
   class_id: z.coerce.number().int().positive(),
@@ -135,7 +136,7 @@ export async function gradeSubmission(formData: FormData) {
     throw new Error(`الدرجة العظمى ${assignment.max_grade}`);
   }
 
-  const { error } = await supabase
+  const { data: submission, error } = await supabase
     .from("assignment_submissions")
     .update({
       grade,
@@ -143,8 +144,18 @@ export async function gradeSubmission(formData: FormData) {
       status: "graded",
       graded_at: new Date().toISOString(),
     })
-    .eq("id", submissionId);
+    .eq("id", submissionId)
+    .select("student_id")
+    .single();
   if (error) throw new Error(error.message);
+
+  await createNotification({
+    profileId: submission.student_id,
+    type: "grade",
+    title: "تم تصحيح واجبك",
+    message: `حصلت على ${grade}/${assignment.max_grade}`,
+    relatedId: assignmentId,
+  });
 
   revalidatePath(`/teacher/assignments/${assignmentId}`);
 }

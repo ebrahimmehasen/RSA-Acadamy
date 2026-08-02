@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { NotificationBell } from "@/components/shared/NotificationBell";
 
 export interface NavItem {
   href: string;
@@ -14,11 +15,13 @@ export interface NavItem {
 export function RoleShell({
   title,
   fullName,
+  profileId,
   nav,
   children,
 }: {
   title: string;
   fullName: string;
+  profileId: number;
   nav: NavItem[];
   children: React.ReactNode;
 }) {
@@ -62,11 +65,20 @@ export function RoleShell({
         </div>
       </aside>
       <div className="flex flex-1 flex-col">
-        <header className="flex h-14 items-center justify-between border-b px-4 md:hidden">
-          <span className="font-bold">RSA Academy</span>
-          <Button variant="ghost" size="sm" onClick={signOut}>
-            خروج
-          </Button>
+        <header className="flex h-14 items-center justify-between border-b px-4">
+          <span className="font-bold md:hidden">RSA Academy</span>
+          <div className="hidden flex-1 md:block" />
+          <div className="flex items-center gap-2">
+            <NotificationBell profileId={profileId} />
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={signOut}
+              className="md:hidden"
+            >
+              خروج
+            </Button>
+          </div>
         </header>
         <main className="flex-1 p-4 md:p-6">{children}</main>
         <nav className="sticky bottom-0 flex justify-around border-t bg-background p-1 md:hidden">

@@ -10,6 +10,7 @@ const NAV = [
   { href: "/teacher/sessions", label: "الحصص المسجلة" },
   { href: "/teacher/preferences", label: "التفضيلات" },
   { href: "/teacher/salary", label: "الراتب" },
+  { href: "/announcements", label: "الإعلانات" },
 ];
 
 export default async function TeacherLayout({
@@ -25,6 +26,7 @@ export default async function TeacherLayout({
     <RoleShell
       title="بوابة المدرس"
       fullName={session.profile.full_name}
+      profileId={session.profile.id}
       nav={NAV}
     >
       {children}

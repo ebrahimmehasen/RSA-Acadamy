@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireRole } from "@/lib/auth/guards";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { createNotification } from "@/lib/notifications/create";
 
 export async function setSalary(formData: FormData) {
   await requireRole("admin");
@@ -63,6 +64,14 @@ export async function markSalaryPaid(formData: FormData) {
     { onConflict: "teacher_id,month" },
   );
   if (error) throw new Error(error.message);
+
+  await createNotification({
+    profileId: teacherId,
+    type: "salary",
+    title: "تم صرف راتبك",
+    message: `تم تحويل راتب شهر ${month} (${salary.salary_amount} ${salary.currency})`,
+    relatedId: month,
+  });
 
   revalidatePath("/admin/salaries");
 }

@@ -10,6 +10,7 @@ const NAV = [
   { href: "/student/sessions", label: "الحصص المسجلة" },
   { href: "/student/quizzes", label: "الاختبارات" },
   { href: "/student/profile", label: "الملف الشخصي" },
+  { href: "/announcements", label: "الإعلانات" },
 ];
 
 export default async function StudentLayout({
@@ -22,7 +23,12 @@ export default async function StudentLayout({
   if (session.profile.role !== "student") redirect("/");
 
   return (
-    <RoleShell title="بوابة الطالب" fullName={session.profile.full_name} nav={NAV}>
+    <RoleShell
+      title="بوابة الطالب"
+      fullName={session.profile.full_name}
+      profileId={session.profile.id}
+      nav={NAV}
+    >
       {children}
     </RoleShell>
   );

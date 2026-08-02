@@ -28,6 +28,7 @@ export default async function AdminLayout({
     <RoleShell
       title="لوحة الإدارة"
       fullName={session.profile.full_name}
+      profileId={session.profile.id}
       nav={NAV}
     >
       {children}
