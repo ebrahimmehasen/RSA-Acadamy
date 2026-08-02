@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { getSession } from "@/lib/auth/session";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -39,8 +40,13 @@ export default async function TeacherQuizDetailPage({
     .maybeSingle();
   if (!quiz) notFound();
 
+  // correct_answer/explanation are column-locked from the RLS-scoped
+  // client (see 0011_quiz_answer_lockdown.sql) — ownership of this
+  // quiz was already verified above, so reading through the
+  // service-role client here is safe.
+  const admin = createAdminClient();
   const [{ data: questions }, { data: submissions }] = await Promise.all([
-    supabase
+    admin
       .from("quiz_questions")
       .select("*")
       .eq("quiz_id", quizId)

@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { getSession } from "@/lib/auth/session";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -36,8 +37,12 @@ export default async function QuizResultsPage({
     .maybeSingle();
   if (!submission) notFound();
 
+  // correct_answer is column-locked from the RLS-scoped client (see
+  // 0011_quiz_answer_lockdown.sql) — ownership of this submission was
+  // already verified above and reveal is gated on the quiz's own
+  // show_answers_on_completion flag, so the admin client is safe here.
   const { data: answers } = quiz.show_answers_on_completion
-    ? await supabase
+    ? await createAdminClient()
         .from("quiz_question_answers")
         .select("*, quiz_questions(question_text, points, correct_answer)")
         .eq("submission_id", submission.id)

@@ -11,6 +11,7 @@ const NAV = [
   { href: "/student/quizzes", label: "الاختبارات" },
   { href: "/student/profile", label: "الملف الشخصي" },
   { href: "/announcements", label: "الإعلانات" },
+  { href: "/settings/security", label: "الأمان" },
 ];
 
 export default async function StudentLayout({

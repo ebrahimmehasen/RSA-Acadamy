@@ -8,6 +8,7 @@ const NAV = [
   { href: "/parent/payments", label: "الرسوم" },
   { href: "/parent/reports", label: "التقارير" },
   { href: "/announcements", label: "الإعلانات" },
+  { href: "/settings/security", label: "الأمان" },
 ];
 
 export default async function ParentLayout({

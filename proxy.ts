@@ -1,10 +1,11 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { verifyMfaCookie, MFA_COOKIE_NAME } from "@/lib/auth/mfaSession";
 
 const ROLE_PREFIXES = ["student", "parent", "teacher", "admin"] as const;
 type Role = (typeof ROLE_PREFIXES)[number];
 
-const PUBLIC_PATHS = ["/login", "/forgot-password", "/reset-password"];
+const PUBLIC_PATHS = ["/login", "/forgot-password", "/reset-password", "/verify-2fa"];
 
 export default async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
@@ -46,7 +47,7 @@ export default async function proxy(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  if (user && isPublicPath) {
+  if (user && pathname.startsWith("/login")) {
     const { data: profile } = await supabase
       .from("profiles")
       .select("role")
@@ -62,12 +63,31 @@ export default async function proxy(request: NextRequest) {
   if (user && roleInPath) {
     const { data: profile } = await supabase
       .from("profiles")
-      .select("role")
+      .select("id, role")
       .eq("user_id", user.id)
       .single();
 
     if (profile?.role !== roleInPath) {
       return NextResponse.redirect(new URL("/", request.url));
+    }
+
+    // 2FA challenge gate — verified separately from the Supabase session
+    // itself (see lib/auth/mfaSession.ts) since the confirmed decision
+    // was to run a custom TOTP layer on top of Supabase Auth rather
+    // than a parallel session-token scheme.
+    const mfaCookie = request.cookies.get(MFA_COOKIE_NAME)?.value;
+    if (!verifyMfaCookie(mfaCookie, user.id)) {
+      const { data: twoFa } = await supabase
+        .from("user_2fa")
+        .select("is_enabled")
+        .eq("profile_id", profile.id)
+        .maybeSingle();
+
+      if (twoFa?.is_enabled) {
+        const verifyUrl = new URL("/verify-2fa", request.url);
+        verifyUrl.searchParams.set("next", pathname);
+        return NextResponse.redirect(verifyUrl);
+      }
     }
   }
 
