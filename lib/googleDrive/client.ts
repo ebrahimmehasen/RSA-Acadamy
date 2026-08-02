@@ -35,7 +35,7 @@ function buildAuth() {
 
   return new google.auth.GoogleAuth({
     keyFile: path.join(
-      process.cwd(),
+      /* turbopackIgnore: true */ process.cwd(),
       process.env.GOOGLE_DRIVE_KEY_FILE_PATH ?? "google-drive-key.json",
     ),
     scopes: ["https://www.googleapis.com/auth/drive"],
