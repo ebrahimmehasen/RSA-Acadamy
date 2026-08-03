@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,12 +14,30 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-export default function ResetPasswordPage() {
+function ResetPasswordForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    const code = searchParams.get("code");
+    if (!code) {
+      setError("انتهت صلاحية الرابط — اطلب رابط جديد من صفحة نسيت كلمة السر");
+      return;
+    }
+    const supabase = createClient();
+    supabase.auth.exchangeCodeForSession(code).then(({ error }) => {
+      if (error) {
+        setError("انتهت صلاحية الرابط — اطلب رابط جديد من صفحة نسيت كلمة السر");
+        return;
+      }
+      setReady(true);
+    });
+  }, [searchParams]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -58,6 +76,7 @@ export default function ResetPasswordPage() {
               type="password"
               dir="ltr"
               required
+              disabled={!ready}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
@@ -69,16 +88,25 @@ export default function ResetPasswordPage() {
               type="password"
               dir="ltr"
               required
+              disabled={!ready}
               value={confirm}
               onChange={(e) => setConfirm(e.target.value)}
             />
           </div>
           {error && <p className="text-sm text-destructive">{error}</p>}
-          <Button type="submit" className="w-full" disabled={loading}>
+          <Button type="submit" className="w-full" disabled={loading || !ready}>
             {loading ? "جاري الحفظ..." : "حفظ كلمة السر"}
           </Button>
         </form>
       </CardContent>
     </Card>
+  );
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={null}>
+      <ResetPasswordForm />
+    </Suspense>
   );
 }
