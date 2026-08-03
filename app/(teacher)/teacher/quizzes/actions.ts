@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireRole } from "@/lib/auth/guards";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { uploadQuizAttachment, validateUpload } from "@/lib/googleDrive/upload";
 
 const createQuizSchema = z.object({
   class_id: z.coerce.number().int().positive(),
@@ -112,16 +113,38 @@ export async function addQuestion(formData: FormData) {
     .select("id", { count: "exact", head: true })
     .eq("quiz_id", quizId);
 
-  const { error } = await supabase.from("quiz_questions").insert({
-    quiz_id: quizId,
-    question_order: (count ?? 0) + 1,
-    question_text: parsed.question_text,
-    question_type: parsed.question_type,
-    points: parsed.points,
-    options,
-    correct_answer: parsed.correct_answer || null,
-  });
+  const { data: created, error } = await supabase
+    .from("quiz_questions")
+    .insert({
+      quiz_id: quizId,
+      question_order: (count ?? 0) + 1,
+      question_text: parsed.question_text,
+      question_type: parsed.question_type,
+      points: parsed.points,
+      options,
+      correct_answer: parsed.correct_answer || null,
+    })
+    .select("id")
+    .single();
   if (error) throw new Error(error.message);
+
+  const attachment = formData.get("attachment") as File | null;
+  if (attachment && attachment.size > 0) {
+    const validationError = validateUpload("quiz", attachment.type, attachment.size);
+    if (validationError) throw new Error(validationError);
+    const buffer = Buffer.from(await attachment.arrayBuffer());
+    const uploaded = await uploadQuizAttachment({
+      buffer,
+      fileName: attachment.name,
+      mimeType: attachment.type,
+      uploadedBy: session.profile.id,
+      quizId,
+    });
+    await supabase
+      .from("quiz_questions")
+      .update({ attachment_drive_id: uploaded.fileId })
+      .eq("id", created.id);
+  }
 
   revalidatePath(`/teacher/quizzes/${quizId}`);
 }

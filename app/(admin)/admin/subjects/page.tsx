@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -31,12 +32,19 @@ export default async function AdminSubjectsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">إدارة المواد الدراسية</h1>
-        <p className="text-muted-foreground">
-          {(subjects ?? []).length} مادة في الكتالوج — طلاب الفصل الجدد بيتسجلوا
-          تلقائيًا في مواد فصلهم وشعبتهم
-        </p>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <h1 className="text-2xl font-bold">إدارة المواد الدراسية</h1>
+          <p className="text-muted-foreground">
+            {(subjects ?? []).length} مادة في الكتالوج — طلاب الفصل الجدد
+            بيتسجلوا تلقائيًا في مواد فصلهم وشعبتهم
+          </p>
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          render={<Link href="/admin/subjects/log">سجل التسجيل 📋</Link>}
+        />
       </div>
 
       <Card>

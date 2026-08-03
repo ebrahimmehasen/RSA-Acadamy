@@ -3,7 +3,23 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireRole } from "@/lib/auth/guards";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createTeacher, generatePassword } from "@/lib/users";
+
+export async function updateTeacherSubjects(formData: FormData) {
+  await requireRole("admin");
+  const teacherId = z.coerce.number().int().positive().parse(formData.get("teacher_id"));
+  const subjectCodes = formData.getAll("subjects") as string[];
+
+  const supabase = createAdminClient();
+  const { error } = await supabase.from("teacher_preferences").upsert(
+    { teacher_id: teacherId, subjects: subjectCodes },
+    { onConflict: "teacher_id" },
+  );
+  if (error) throw new Error(error.message);
+
+  revalidatePath(`/admin/teachers/${teacherId}`);
+}
 
 const schema = z.object({
   full_name: z.string().min(3),

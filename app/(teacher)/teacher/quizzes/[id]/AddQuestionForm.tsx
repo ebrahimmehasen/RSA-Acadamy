@@ -109,6 +109,16 @@ export function AddQuestionForm({ quizId }: { quizId: number }) {
             </p>
           )}
 
+          <div className="space-y-2">
+            <Label htmlFor="attachment">مرفق (اختياري — صورة أو PDF)</Label>
+            <Input
+              id="attachment"
+              name="attachment"
+              type="file"
+              accept="image/*,application/pdf"
+            />
+          </div>
+
           <Button type="submit" size="sm">
             إضافة السؤال
           </Button>

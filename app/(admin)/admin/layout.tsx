@@ -14,6 +14,7 @@ const NAV = [
   { href: "/admin/announcements", label: "الإعلانات" },
   { href: "/admin/sessions", label: "الحصص المسجلة" },
   { href: "/admin/reports", label: "التقارير" },
+  { href: "/admin/security-logs", label: "سجل الأمان" },
   { href: "/settings/notifications", label: "الإشعارات" },
   { href: "/settings/security", label: "الأمان" },
 ];
