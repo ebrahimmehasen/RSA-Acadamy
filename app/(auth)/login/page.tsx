@@ -96,6 +96,23 @@ export default function LoginPage() {
           <Button type="submit" className="w-full" disabled={isSubmitting}>
             {isSubmitting ? "جاري الدخول..." : "تسجيل الدخول"}
           </Button>
+          <div className="space-y-2 text-center text-sm">
+            <p className="text-muted-foreground">
+              ليس لديك حساب؟{" "}
+              <Link
+                href="/signup"
+                className="text-primary underline underline-offset-4"
+              >
+                إنشاء حساب جديد
+              </Link>
+            </p>
+            <Link
+              href="/"
+              className="block text-muted-foreground underline underline-offset-4"
+            >
+              → الرئيسية
+            </Link>
+          </div>
         </form>
       </CardContent>
     </Card>

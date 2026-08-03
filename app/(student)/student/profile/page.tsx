@@ -9,6 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { PaymentProofForm } from "@/components/shared/PaymentProofForm";
+import { ProfileForm } from "@/app/settings/profile/ProfileForm";
 
 const STATUS_LABEL: Record<
   string,
@@ -23,7 +24,7 @@ export default async function StudentProfilePage() {
   const session = await getSession();
   const supabase = await createClient();
 
-  const [{ data: student }, { data: subjects }] = await Promise.all([
+  const [{ data: student }, { data: subjects }, { data: authData }] = await Promise.all([
     supabase
       .from("students")
       .select("*, classes(class_name)")
@@ -34,6 +35,7 @@ export default async function StudentProfilePage() {
       .select("subject_id, subjects(subject_name, branch)")
       .eq("student_id", session!.profile.id)
       .eq("is_active", true),
+    supabase.auth.getUser(),
   ]);
 
   const isPaymentActive = student && student.parent_id === null;
@@ -57,12 +59,18 @@ export default async function StudentProfilePage() {
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">الملف الشخصي</h1>
 
+      <ProfileForm
+        fullName={session!.profile.full_name}
+        phone={session!.profile.phone}
+        email={authData.user?.email ?? ""}
+        pictureDriveId={session!.profile.profile_picture_drive_id}
+      />
+
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">البيانات الشخصية</CardTitle>
+          <CardTitle className="text-lg">بيانات الطالب</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-2 text-sm sm:grid-cols-2">
-          <p>الاسم: {session!.profile.full_name}</p>
           <p>
             كود الطالب:{" "}
             <span className="font-mono font-bold" dir="ltr">

@@ -10,8 +10,9 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ConfirmDeleteButton } from "@/components/shared/ConfirmDeleteButton";
 import { CreateTeacherForm } from "./CreateTeacherForm";
-import { toggleTeacherActive } from "./actions";
+import { deleteTeacher, toggleTeacherActive } from "./actions";
 
 export default async function AdminTeachersPage() {
   const supabase = createAdminClient();
@@ -67,17 +68,24 @@ export default async function AdminTeachersPage() {
                   )}
                 </TableCell>
                 <TableCell>
-                  <form action={toggleTeacherActive}>
-                    <input type="hidden" name="teacher_id" value={t.user_id} />
-                    <input
-                      type="hidden"
-                      name="is_active"
-                      value={String(t.is_active)}
+                  <div className="flex gap-2">
+                    <form action={toggleTeacherActive}>
+                      <input type="hidden" name="teacher_id" value={t.user_id} />
+                      <input
+                        type="hidden"
+                        name="is_active"
+                        value={String(t.is_active)}
+                      />
+                      <Button variant="outline" size="xs" type="submit">
+                        {t.is_active ? "إيقاف" : "تفعيل"}
+                      </Button>
+                    </form>
+                    <ConfirmDeleteButton
+                      action={deleteTeacher}
+                      hiddenFields={{ teacher_id: t.user_id }}
+                      confirmMessage={`متأكد إنك عايز تحذف المدرس "${profile?.full_name}"؟ الإجراء ده نهائي ومش هيتراجع.`}
                     />
-                    <Button variant="outline" size="xs" type="submit">
-                      {t.is_active ? "إيقاف" : "تفعيل"}
-                    </Button>
-                  </form>
+                  </div>
                 </TableCell>
               </TableRow>
             );

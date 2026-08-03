@@ -9,8 +9,9 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ConfirmDeleteButton } from "@/components/shared/ConfirmDeleteButton";
 import { CreateParentForm } from "./CreateParentForm";
-import { toggleParentActive } from "./actions";
+import { deleteParent, toggleParentActive } from "./actions";
 
 export default async function AdminParentsPage() {
   const supabase = createAdminClient();
@@ -67,17 +68,24 @@ export default async function AdminParentsPage() {
                   )}
                 </TableCell>
                 <TableCell>
-                  <form action={toggleParentActive}>
-                    <input type="hidden" name="parent_id" value={p.user_id} />
-                    <input
-                      type="hidden"
-                      name="is_active"
-                      value={String(p.is_active)}
+                  <div className="flex gap-2">
+                    <form action={toggleParentActive}>
+                      <input type="hidden" name="parent_id" value={p.user_id} />
+                      <input
+                        type="hidden"
+                        name="is_active"
+                        value={String(p.is_active)}
+                      />
+                      <Button variant="outline" size="xs" type="submit">
+                        {p.is_active ? "إيقاف" : "تفعيل"}
+                      </Button>
+                    </form>
+                    <ConfirmDeleteButton
+                      action={deleteParent}
+                      hiddenFields={{ parent_id: p.user_id }}
+                      confirmMessage={`متأكد إنك عايز تحذف ولي الأمر "${profile?.full_name}"؟ الإجراء ده نهائي ومش هيتراجع.`}
                     />
-                    <Button variant="outline" size="xs" type="submit">
-                      {p.is_active ? "إيقاف" : "تفعيل"}
-                    </Button>
-                  </form>
+                  </div>
                 </TableCell>
               </TableRow>
             );

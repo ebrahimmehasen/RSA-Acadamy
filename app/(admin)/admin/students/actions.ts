@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireRole } from "@/lib/auth/guards";
-import { createStudent } from "@/lib/users";
+import { createStudent, deleteAccount } from "@/lib/users";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 const createStudentSchema = z.object({
@@ -65,5 +65,12 @@ export async function toggleStudentActive(formData: FormData) {
     .eq("user_id", id);
   if (error) throw new Error(error.message);
 
+  revalidatePath("/admin/students");
+}
+
+export async function deleteStudent(formData: FormData) {
+  await requireRole("admin");
+  const id = z.coerce.number().int().parse(formData.get("student_id"));
+  await deleteAccount(id);
   revalidatePath("/admin/students");
 }

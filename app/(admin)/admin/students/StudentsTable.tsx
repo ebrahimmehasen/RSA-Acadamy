@@ -12,7 +12,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { toggleStudentActive } from "./actions";
+import { ConfirmDeleteButton } from "@/components/shared/ConfirmDeleteButton";
+import { deleteStudent, toggleStudentActive } from "./actions";
 
 export interface StudentRow {
   user_id: number;
@@ -83,17 +84,24 @@ export function StudentsTable({ students }: { students: StudentRow[] }) {
                 )}
               </TableCell>
               <TableCell>
-                <form action={toggleStudentActive}>
-                  <input type="hidden" name="student_id" value={s.user_id} />
-                  <input
-                    type="hidden"
-                    name="is_active"
-                    value={String(s.is_active)}
+                <div className="flex gap-2">
+                  <form action={toggleStudentActive}>
+                    <input type="hidden" name="student_id" value={s.user_id} />
+                    <input
+                      type="hidden"
+                      name="is_active"
+                      value={String(s.is_active)}
+                    />
+                    <Button variant="outline" size="xs" type="submit">
+                      {s.is_active ? "إيقاف" : "تفعيل"}
+                    </Button>
+                  </form>
+                  <ConfirmDeleteButton
+                    action={deleteStudent}
+                    hiddenFields={{ student_id: s.user_id }}
+                    confirmMessage={`متأكد إنك عايز تحذف الطالب "${s.full_name}"؟ الإجراء ده نهائي ومش هيتراجع — هيتحذف كل بياناته (تسليمات، درجات، مدفوعات).`}
                   />
-                  <Button variant="outline" size="xs" type="submit">
-                    {s.is_active ? "إيقاف" : "تفعيل"}
-                  </Button>
-                </form>
+                </div>
               </TableCell>
             </TableRow>
           ))}

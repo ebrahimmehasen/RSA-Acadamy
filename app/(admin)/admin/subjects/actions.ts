@@ -44,6 +44,21 @@ export async function addSubject(formData: FormData) {
   revalidatePath("/admin/subjects");
 }
 
+export async function editSubjectName(formData: FormData) {
+  await requireRole("admin");
+  const subjectId = z.string().min(1).parse(formData.get("subject_id"));
+  const subjectName = z.string().min(2).parse(formData.get("subject_name"));
+
+  const supabase = createAdminClient();
+  const { error } = await supabase
+    .from("subjects")
+    .update({ subject_name: subjectName })
+    .eq("subject_id", subjectId);
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/admin/subjects");
+}
+
 export async function toggleSubject(formData: FormData) {
   await requireRole("admin");
   const subjectId = z.string().min(1).parse(formData.get("subject_id"));

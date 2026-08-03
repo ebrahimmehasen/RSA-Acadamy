@@ -1,5 +1,5 @@
 import { createAdminClient } from "@/lib/supabase/admin";
-import { uploadTeacherCv } from "@/lib/googleDrive/upload";
+import { uploadTeacherCv, uploadProfilePicture } from "@/lib/googleDrive/upload";
 import type { Branch, Role } from "@/types/domain";
 
 /** Resolves a profile's auth email (used for outbound notification emails). */
@@ -63,6 +63,26 @@ export async function generateStudentCode(): Promise<string> {
     if (!data) return code;
   }
   throw new Error("failed to generate a unique student code");
+}
+
+/**
+ * Deletes an account entirely (auth user + profile + role row + every
+ * dependent row) by deleting the Supabase Auth user. Every FK in the
+ * chain (profiles → students/teachers/parents → their child tables) is
+ * ON DELETE CASCADE, so a single admin.deleteUser call is sufficient —
+ * no manual per-table cleanup needed.
+ */
+export async function deleteAccount(profileId: number): Promise<void> {
+  const supabase = createAdminClient();
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("user_id")
+    .eq("id", profileId)
+    .maybeSingle();
+  if (!profile) throw new Error("الحساب مش موجود");
+
+  const { error } = await supabase.auth.admin.deleteUser(profile.user_id);
+  if (error) throw new Error(error.message);
 }
 
 /** Random readable password like "A7k9LmP2" (decision #2). */
@@ -201,7 +221,10 @@ export async function selfSignUp(options: CreateUserBase & {
   branch?: Branch | null;
   address?: string | null;
   specialization?: string | null;
+  qualification?: string | null;
+  subjectCodes?: string[];
   cv?: { buffer: Buffer; fileName: string; mimeType: string } | null;
+  profilePicture?: { buffer: Buffer; fileName: string; mimeType: string } | null;
 }): Promise<{ profileId: number }> {
   const supabase = createAdminClient();
   const { profileId } = await createAuthUserWithProfile(options, options.role);
@@ -221,6 +244,7 @@ export async function selfSignUp(options: CreateUserBase & {
     const { error } = await supabase.from("teachers").insert({
       user_id: profileId,
       specialization: options.specialization ?? null,
+      qualification: options.qualification ?? null,
       hiring_date: new Date().toISOString(),
       is_active: false,
     });
@@ -239,6 +263,13 @@ export async function selfSignUp(options: CreateUserBase & {
         .update({ cv_drive_id: uploaded.fileId })
         .eq("user_id", profileId);
     }
+
+    if (options.subjectCodes && options.subjectCodes.length > 0) {
+      await supabase.from("teacher_preferences").upsert(
+        { teacher_id: profileId, subjects: options.subjectCodes },
+        { onConflict: "teacher_id" },
+      );
+    }
   } else {
     const { error } = await supabase.from("parents").insert({
       user_id: profileId,
@@ -246,6 +277,24 @@ export async function selfSignUp(options: CreateUserBase & {
       is_active: false,
     });
     if (error) throw new Error(error.message);
+  }
+
+  if (options.profilePicture) {
+    const uploaded = await uploadProfilePicture({
+      buffer: options.profilePicture.buffer,
+      fileName: options.profilePicture.fileName,
+      mimeType: options.profilePicture.mimeType,
+      uploadedBy: profileId,
+      profileId,
+      userType: options.role,
+    });
+    await supabase
+      .from("profiles")
+      .update({
+        profile_picture_url: uploaded.fileUrl,
+        profile_picture_drive_id: uploaded.fileId,
+      })
+      .eq("id", profileId);
   }
 
   return { profileId };

@@ -17,6 +17,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { AddSubjectForm } from "./AddSubjectForm";
+import { EditSubjectName } from "./EditSubjectName";
 import { toggleSubject } from "./actions";
 
 export default async function AdminSubjectsPage() {
@@ -75,7 +76,12 @@ export default async function AdminSubjectsPage() {
             <TableBody>
               {(subjects ?? []).map((s) => (
                 <TableRow key={s.subject_id}>
-                  <TableCell>{s.subject_name}</TableCell>
+                  <TableCell>
+                    <EditSubjectName
+                      subjectId={s.subject_id}
+                      subjectName={s.subject_name}
+                    />
+                  </TableCell>
                   <TableCell>
                     {(s.classes as unknown as { class_name: string })?.class_name}
                   </TableCell>

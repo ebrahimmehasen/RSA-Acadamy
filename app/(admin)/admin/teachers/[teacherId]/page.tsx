@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { DAY_LABELS, formatTime } from "@/lib/schedule";
+import { DAYS, DAY_LABELS, formatTime } from "@/lib/schedule";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -32,12 +32,12 @@ export default async function AdminTeacherDetailPage({
 
   const supabase = createAdminClient();
 
-  const [{ data: teacher }, { data: prefs }, { data: subjects }, { data: schedule }] =
+  const [{ data: teacher }, { data: prefs }, { data: subjects }, { data: schedule }, { data: availability }] =
     await Promise.all([
       supabase
         .from("teachers")
         .select(
-          "user_id, specialization, is_active, cv_drive_id, profiles!teachers_user_id_fkey(full_name, phone)",
+          "user_id, specialization, qualification, is_active, cv_drive_id, profiles!teachers_user_id_fkey(full_name, phone)",
         )
         .eq("user_id", teacherId)
         .maybeSingle(),
@@ -53,6 +53,12 @@ export default async function AdminTeacherDetailPage({
       supabase
         .from("class_assignments")
         .select("id, day_of_week, start_time, end_time, is_active, classes(class_name), subjects(subject_name)")
+        .eq("teacher_id", teacherId)
+        .order("day_of_week")
+        .order("start_time"),
+      supabase
+        .from("teacher_availability")
+        .select("id, day_of_week, start_time, end_time")
         .eq("teacher_id", teacherId)
         .order("day_of_week")
         .order("start_time"),
@@ -85,7 +91,8 @@ export default async function AdminTeacherDetailPage({
       <div>
         <h1 className="text-2xl font-bold">{profile?.full_name}</h1>
         <p className="text-muted-foreground">
-          {teacher.specialization ?? "بدون تخصص"} ·{" "}
+          {teacher.specialization ?? "بدون تخصص"}
+          {teacher.qualification ? ` · ${teacher.qualification}` : ""} ·{" "}
           <span dir="ltr">{profile?.phone ?? "—"}</span> ·{" "}
           {teacher.is_active ? <Badge>نشط</Badge> : <Badge variant="destructive">موقوف</Badge>}
         </p>
@@ -144,6 +151,36 @@ export default async function AdminTeacherDetailPage({
               )}
             </TableBody>
           </Table>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">أوقات التفرغ</CardTitle>
+          <CardDescription>الأوقات اللي المدرس حدّدها إنه متاح فيها أسبوعيًا</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          {(availability ?? []).length === 0 && (
+            <p className="text-sm text-muted-foreground">مفيش أوقات تفرغ محددة لسه</p>
+          )}
+          {DAYS.map((day) => {
+            const daySlots = (availability ?? []).filter((a) => a.day_of_week === day);
+            if (daySlots.length === 0) return null;
+            return (
+              <div key={day} className="flex flex-wrap items-center gap-2">
+                <span className="w-20 font-medium">{DAY_LABELS[day]}</span>
+                {daySlots.map((slot) => (
+                  <span
+                    key={slot.id}
+                    className="rounded-full border px-3 py-1 text-xs"
+                    dir="ltr"
+                  >
+                    {formatTime(slot.start_time)}–{formatTime(slot.end_time)}
+                  </span>
+                ))}
+              </div>
+            );
+          })}
         </CardContent>
       </Card>
 

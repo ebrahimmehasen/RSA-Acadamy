@@ -4,7 +4,14 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireRole } from "@/lib/auth/guards";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { createParent, generatePassword } from "@/lib/users";
+import { createParent, deleteAccount, generatePassword } from "@/lib/users";
+
+export async function deleteParent(formData: FormData) {
+  await requireRole("admin");
+  const id = z.coerce.number().int().parse(formData.get("parent_id"));
+  await deleteAccount(id);
+  revalidatePath("/admin/parents");
+}
 
 export async function toggleParentActive(formData: FormData) {
   await requireRole("admin");

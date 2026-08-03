@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireRole } from "@/lib/auth/guards";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { createTeacher, generatePassword } from "@/lib/users";
+import { createTeacher, deleteAccount, generatePassword } from "@/lib/users";
 
 export async function toggleTeacherActive(formData: FormData) {
   await requireRole("admin");
@@ -18,6 +18,13 @@ export async function toggleTeacherActive(formData: FormData) {
     .eq("user_id", id);
   if (error) throw new Error(error.message);
 
+  revalidatePath("/admin/teachers");
+}
+
+export async function deleteTeacher(formData: FormData) {
+  await requireRole("admin");
+  const id = z.coerce.number().int().parse(formData.get("teacher_id"));
+  await deleteAccount(id);
   revalidatePath("/admin/teachers");
 }
 

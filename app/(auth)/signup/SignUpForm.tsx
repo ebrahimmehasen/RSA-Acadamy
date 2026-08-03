@@ -1,10 +1,11 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useMemo, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Card,
   CardContent,
@@ -20,10 +21,21 @@ const ROLE_LABELS: Record<string, string> = {
   parent: "ولي أمر",
 };
 
+const QUALIFICATIONS = ["بكالوريوس", "ماجستير", "دكتوراه", "أخرى"];
+
+interface SubjectRow {
+  subject_id: string;
+  subject_name: string;
+  branch: string;
+  class_name: string;
+}
+
 export function SignUpForm({
   classes,
+  subjects,
 }: {
   classes: { id: number; class_name: string }[];
+  subjects: SubjectRow[];
 }) {
   const [result, formAction, isPending] = useActionState<
     SignUpResult | null,
@@ -31,6 +43,15 @@ export function SignUpForm({
   >(signUpAction, null);
   const [role, setRole] = useState("student");
   const phoneRequired = role === "parent" || role === "teacher";
+
+  const subjectsByClass = useMemo(() => {
+    const map = new Map<string, SubjectRow[]>();
+    for (const s of subjects) {
+      if (!map.has(s.class_name)) map.set(s.class_name, []);
+      map.get(s.class_name)!.push(s);
+    }
+    return [...map.entries()];
+  }, [subjects]);
 
   return (
     <Card className="w-full max-w-sm" dir="rtl">
@@ -100,6 +121,15 @@ export function SignUpForm({
                 minLength={8}
               />
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="profile_picture">الصورة الشخصية (اختياري)</Label>
+              <Input
+                id="profile_picture"
+                name="profile_picture"
+                type="file"
+                accept="image/jpeg,image/png,image/gif,image/webp"
+              />
+            </div>
 
             {role === "student" && (
               <>
@@ -154,6 +184,22 @@ export function SignUpForm({
             {role === "teacher" && (
               <>
                 <div className="space-y-2">
+                  <Label htmlFor="qualification">المؤهل العلمي (اختياري)</Label>
+                  <select
+                    id="qualification"
+                    name="qualification"
+                    defaultValue=""
+                    className="h-8 w-full rounded-lg border border-input bg-background px-2 text-sm"
+                  >
+                    <option value="">اختر المؤهل</option>
+                    {QUALIFICATIONS.map((q) => (
+                      <option key={q} value={q}>
+                        {q}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="space-y-2">
                   <Label htmlFor="specialization">التخصص</Label>
                   <Input id="specialization" name="specialization" required />
                 </div>
@@ -166,6 +212,30 @@ export function SignUpForm({
                     accept="application/pdf,.doc,.docx"
                     required
                   />
+                </div>
+                <div className="space-y-2">
+                  <Label>المواد اللي تقدر تدرّسها (اختياري)</Label>
+                  <div className="max-h-48 space-y-3 overflow-y-auto rounded-lg border p-3">
+                    {subjectsByClass.map(([className, subs]) => (
+                      <div key={className} className="space-y-1">
+                        <p className="text-xs font-medium text-muted-foreground">
+                          {className}
+                        </p>
+                        <div className="grid grid-cols-2 gap-1">
+                          {subs.map((s) => (
+                            <label
+                              key={s.subject_id}
+                              className="flex items-center gap-1 text-xs"
+                            >
+                              <Checkbox name="subjects" value={s.subject_id} />
+                              {s.subject_name}{" "}
+                              {s.branch === "Arabic" ? "(عربي)" : "(لغات)"}
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </>
             )}
