@@ -62,6 +62,14 @@ export const UPLOAD_RULES = {
       "application/zip", "application/x-zip-compressed",
     ],
   },
+  teacher_cv: {
+    maxBytes: 10 * 1024 * 1024,
+    mimes: [
+      "application/pdf",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ],
+  },
 } as const;
 
 export type UploadKind = keyof typeof UPLOAD_RULES;
@@ -286,6 +294,27 @@ export async function uploadQuizAttachment(
     sizeBytes: options.buffer.length,
     entityType: "quiz",
     entityId: String(options.quizId),
+    uploadedBy: options.uploadedBy,
+  });
+  return result;
+}
+
+export async function uploadTeacherCv(
+  options: CommonUploadOptions & { teacherId: number },
+): Promise<UploadResult> {
+  const result = await uploadFileFromBuffer(
+    options.buffer,
+    `CV_${options.teacherId}_${options.fileName}`,
+    options.mimeType,
+    "Teacher_CVs",
+  );
+  await registerFile({
+    driveFileId: result.fileId,
+    fileName: options.fileName,
+    mimeType: options.mimeType,
+    sizeBytes: options.buffer.length,
+    entityType: "teacher_cv",
+    entityId: String(options.teacherId),
     uploadedBy: options.uploadedBy,
   });
   return result;

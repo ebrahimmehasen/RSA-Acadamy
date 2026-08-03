@@ -24,7 +24,7 @@ export async function toggleParentActive(formData: FormData) {
 const schema = z.object({
   full_name: z.string().min(3),
   email: z.email(),
-  phone: z.string().optional(),
+  phone: z.string().min(8, "رقم الهاتف مطلوب"),
 });
 
 export interface CreateParentResult {

@@ -40,7 +40,7 @@ const schema = z.object({
   full_name: z.string().min(3),
   email: z.email(),
   specialization: z.string().optional(),
-  phone: z.string().optional(),
+  phone: z.string().min(8, "رقم الهاتف مطلوب"),
 });
 
 export interface CreateTeacherResult {

@@ -14,6 +14,7 @@ export const FOLDER_TREE = [
   "Recorded_Sessions",
   "Quiz_Files/Quiz_Attachments",
   "Announcements",
+  "Teacher_CVs",
   "System_Backups/Database_Backups",
 ] as const;
 

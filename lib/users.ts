@@ -1,4 +1,5 @@
 import { createAdminClient } from "@/lib/supabase/admin";
+import { uploadTeacherCv } from "@/lib/googleDrive/upload";
 import type { Branch, Role } from "@/types/domain";
 
 /** Resolves a profile's auth email (used for outbound notification emails). */
@@ -195,6 +196,12 @@ export async function createParent(
  */
 export async function selfSignUp(options: CreateUserBase & {
   role: "student" | "teacher" | "parent";
+  dateOfBirth?: string | null;
+  classId?: number | null;
+  branch?: Branch | null;
+  address?: string | null;
+  specialization?: string | null;
+  cv?: { buffer: Buffer; fileName: string; mimeType: string } | null;
 }): Promise<{ profileId: number }> {
   const supabase = createAdminClient();
   const { profileId } = await createAuthUserWithProfile(options, options.role);
@@ -204,19 +211,38 @@ export async function selfSignUp(options: CreateUserBase & {
     const { error } = await supabase.from("students").insert({
       user_id: profileId,
       student_code: studentCode,
+      class_id: options.classId ?? null,
+      branch: options.branch ?? null,
+      date_of_birth: options.dateOfBirth ?? null,
       is_active: false,
     });
     if (error) throw new Error(error.message);
   } else if (options.role === "teacher") {
     const { error } = await supabase.from("teachers").insert({
       user_id: profileId,
+      specialization: options.specialization ?? null,
       hiring_date: new Date().toISOString(),
       is_active: false,
     });
     if (error) throw new Error(error.message);
+
+    if (options.cv) {
+      const uploaded = await uploadTeacherCv({
+        buffer: options.cv.buffer,
+        fileName: options.cv.fileName,
+        mimeType: options.cv.mimeType,
+        uploadedBy: profileId,
+        teacherId: profileId,
+      });
+      await supabase
+        .from("teachers")
+        .update({ cv_drive_id: uploaded.fileId })
+        .eq("user_id", profileId);
+    }
   } else {
     const { error } = await supabase.from("parents").insert({
       user_id: profileId,
+      address: options.address ?? null,
       is_active: false,
     });
     if (error) throw new Error(error.message);

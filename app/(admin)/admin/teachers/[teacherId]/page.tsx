@@ -36,7 +36,9 @@ export default async function AdminTeacherDetailPage({
     await Promise.all([
       supabase
         .from("teachers")
-        .select("user_id, specialization, is_active, profiles!teachers_user_id_fkey(full_name, phone)")
+        .select(
+          "user_id, specialization, is_active, cv_drive_id, profiles!teachers_user_id_fkey(full_name, phone)",
+        )
         .eq("user_id", teacherId)
         .maybeSingle(),
       supabase
@@ -87,6 +89,16 @@ export default async function AdminTeacherDetailPage({
           <span dir="ltr">{profile?.phone ?? "—"}</span> ·{" "}
           {teacher.is_active ? <Badge>نشط</Badge> : <Badge variant="destructive">موقوف</Badge>}
         </p>
+        {teacher.cv_drive_id && (
+          <a
+            href={`/api/files/${teacher.cv_drive_id}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-2 inline-block text-sm text-primary underline underline-offset-4"
+          >
+            تحميل السيرة الذاتية (CV) 📄
+          </a>
+        )}
       </div>
 
       <Card>

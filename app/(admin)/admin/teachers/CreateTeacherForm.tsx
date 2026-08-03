@@ -41,8 +41,8 @@ export function CreateTeacherForm() {
             <Input id="specialization" name="specialization" />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="phone">الهاتف (اختياري)</Label>
-            <Input id="phone" name="phone" dir="ltr" />
+            <Label htmlFor="phone">الهاتف</Label>
+            <Input id="phone" name="phone" dir="ltr" required />
           </div>
           <div className="flex items-end">
             <Button type="submit" disabled={isPending}>
