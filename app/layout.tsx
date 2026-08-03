@@ -8,8 +8,12 @@ const cairo = Cairo({
 });
 
 export const metadata: Metadata = {
-  title: "RSA Academy",
-  description: "المنصة التعليمية لأكاديمية RSA",
+  title: "رياض الصالحين | RSA Academy",
+  description: "منصة رياض الصالحين التعليمية لمتابعة الطلاب والمعلمين وأولياء الأمور",
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/apple-icon.png",
+  },
 };
 
 export default function RootLayout({

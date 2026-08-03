@@ -97,7 +97,7 @@ export function RoleShell({
     <div className="flex min-h-screen bg-muted/20" dir="rtl">
       <aside className="hidden w-64 shrink-0 flex-col border-l bg-sidebar p-4 md:flex">
         <div className="mb-6 flex items-center justify-between px-1">
-          <Logo markClassName="h-8 w-8" wordmark="RSA Academy" className="gap-1.5" />
+          <Logo markClassName="h-8 w-8" className="gap-1.5" />
         </div>
         <p className="mb-4 px-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           {title}
