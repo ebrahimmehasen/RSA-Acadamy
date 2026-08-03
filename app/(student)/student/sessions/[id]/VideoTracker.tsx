@@ -22,7 +22,6 @@ export function VideoTracker({
   }
 
   return (
-    // eslint-disable-next-line jsx-a11y/media-has-caption
     <video
       src={`/api/files/${driveId}`}
       controls

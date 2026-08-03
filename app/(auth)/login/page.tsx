@@ -49,8 +49,8 @@ export default function LoginPage() {
   return (
     <Card className="w-full max-w-sm" dir="rtl">
       <CardHeader>
-        <CardTitle>RSA Academy</CardTitle>
-        <CardDescription>سجّل الدخول للمتابعة</CardDescription>
+        <CardTitle>تسجيل الدخول</CardTitle>
+        <CardDescription>سجّل الدخول للمتابعة إلى حسابك</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">

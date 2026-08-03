@@ -12,6 +12,23 @@ import {
 } from "@/components/ui/card";
 import { submitQuiz } from "./actions";
 
+// Deterministic per (quiz, student) shuffle: keeps the render pure (no
+// Math.random() during render) and keeps the question order stable across
+// reloads for the same student, instead of re-shuffling every render.
+function seededShuffle<T>(items: T[], seed: number): T[] {
+  let state = seed >>> 0;
+  const next = () => {
+    state = (state * 1664525 + 1013904223) >>> 0;
+    return state / 4294967296;
+  };
+  const result = [...items];
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(next() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+}
+
 export default async function TakeQuizPage({
   params,
 }: {
@@ -61,7 +78,7 @@ export default async function TakeQuizPage({
     .order("question_order");
   questions = questions ?? [];
   if (quiz.shuffle_questions) {
-    questions = [...questions].sort(() => Math.random() - 0.5);
+    questions = seededShuffle(questions, quizId * 1000003 + session!.profile.id);
   }
 
   return (

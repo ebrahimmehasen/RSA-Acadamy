@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
 export interface NotificationRow {
@@ -16,25 +16,25 @@ export function useNotifications(profileId: number) {
   const [notifications, setNotifications] = useState<NotificationRow[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const refresh = useCallback(async () => {
-    const supabase = createClient();
-    const { data } = await supabase
-      .from("notifications")
-      .select("id, type, title, message, is_read, created_at")
-      // explicit filter (not just RLS): admins have a broader RLS grant
-      // on this table for future audit tooling, which would otherwise
-      // leak every user's notifications into the admin's own bell
-      .eq("profile_id", profileId)
-      .order("created_at", { ascending: false })
-      .limit(30);
-    setNotifications(data ?? []);
-    setLoading(false);
-  }, [profileId]);
-
   useEffect(() => {
-    refresh();
-
+    let cancelled = false;
     const supabase = createClient();
+
+    (async () => {
+      const { data } = await supabase
+        .from("notifications")
+        .select("id, type, title, message, is_read, created_at")
+        // explicit filter (not just RLS): admins have a broader RLS grant
+        // on this table for future audit tooling, which would otherwise
+        // leak every user's notifications into the admin's own bell
+        .eq("profile_id", profileId)
+        .order("created_at", { ascending: false })
+        .limit(30);
+      if (cancelled) return;
+      setNotifications(data ?? []);
+      setLoading(false);
+    })();
+
     const channel = supabase
       .channel(`notifications:${profileId}`)
       .on(
@@ -55,9 +55,10 @@ export function useNotifications(profileId: number) {
       .subscribe();
 
     return () => {
+      cancelled = true;
       supabase.removeChannel(channel);
     };
-  }, [profileId, refresh]);
+  }, [profileId]);
 
   async function markRead(id: number) {
     setNotifications((prev) =>

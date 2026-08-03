@@ -14,18 +14,24 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
+const EXPIRED_LINK_ERROR =
+  "انتهت صلاحية الرابط — اطلب رابط جديد من صفحة نسيت كلمة السر";
+
 function ResetPasswordForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const tokenHash = searchParams.get("token_hash");
+  const code = searchParams.get("code");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(
+    !tokenHash && !code ? EXPIRED_LINK_ERROR : null,
+  );
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    const tokenHash = searchParams.get("token_hash");
-    const code = searchParams.get("code");
+    if (!tokenHash && !code) return;
     const supabase = createClient();
 
     if (tokenHash) {
@@ -36,7 +42,7 @@ function ResetPasswordForm() {
         .verifyOtp({ token_hash: tokenHash, type: "recovery" })
         .then(({ error }) => {
           if (error) {
-            setError("انتهت صلاحية الرابط — اطلب رابط جديد من صفحة نسيت كلمة السر");
+            setError(EXPIRED_LINK_ERROR);
             return;
           }
           setReady(true);
@@ -44,22 +50,17 @@ function ResetPasswordForm() {
       return;
     }
 
-    if (code) {
-      // Only works if opened in the same browser that requested the
-      // reset (needs the local code_verifier). Kept as a fallback for
-      // the default Supabase ConfirmationURL format.
-      supabase.auth.exchangeCodeForSession(code).then(({ error }) => {
-        if (error) {
-          setError("انتهت صلاحية الرابط — اطلب رابط جديد من صفحة نسيت كلمة السر");
-          return;
-        }
-        setReady(true);
-      });
-      return;
-    }
-
-    setError("انتهت صلاحية الرابط — اطلب رابط جديد من صفحة نسيت كلمة السر");
-  }, [searchParams]);
+    // Only works if opened in the same browser that requested the
+    // reset (needs the local code_verifier). Kept as a fallback for
+    // the default Supabase ConfirmationURL format.
+    supabase.auth.exchangeCodeForSession(code!).then(({ error }) => {
+      if (error) {
+        setError(EXPIRED_LINK_ERROR);
+        return;
+      }
+      setReady(true);
+    });
+  }, [tokenHash, code]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -80,7 +81,7 @@ function ResetPasswordForm() {
       if (error.code === "same_password") {
         setError("كلمة السر الجديدة لازم تكون مختلفة عن كلمة السر الحالية");
       } else {
-        setError("انتهت صلاحية الرابط — اطلب رابط جديد من صفحة نسيت كلمة السر");
+        setError(EXPIRED_LINK_ERROR);
       }
       return;
     }
