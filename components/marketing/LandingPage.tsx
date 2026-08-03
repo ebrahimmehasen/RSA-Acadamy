@@ -246,7 +246,7 @@ export function LandingPage() {
           variants={staggerContainer}
         >
           <motion.div
-            className={cn("rounded-3xl px-8 py-6", GLASS)}
+            className={cn("rounded-3xl px-12 py-14", GLASS)}
             variants={{
               hidden: { opacity: 0, scale: 0.9, y: 10 },
               visible: { opacity: 1, scale: 1, y: 0 },
@@ -255,7 +255,7 @@ export function LandingPage() {
           >
             <div
               className="relative h-20 sm:h-24"
-              style={{ aspectRatio: "2990 / 1371" }}
+              style={{ aspectRatio: "5266 / 1931" }}
             >
               <Image
                 src="/brand/logo-wide.png"
@@ -269,16 +269,17 @@ export function LandingPage() {
                 aria-hidden
                 className="absolute animate-cap-float"
                 style={{
-                  left: "0.47%",
-                  top: "1.02%",
-                  width: "31.67%",
-                  height: "43.18%",
+                  left: "-12.5%",
+                  top: "-39.15%",
+                  width: "35.78%",
+                  height: "60.54%",
                 }}
               >
                 <Image
                   src="/brand/cap.png"
                   alt=""
                   fill
+                  priority
                   sizes="8rem"
                   className="object-contain drop-shadow-md"
                 />
