@@ -24,19 +24,41 @@ function ResetPasswordForm() {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
+    const tokenHash = searchParams.get("token_hash");
     const code = searchParams.get("code");
-    if (!code) {
-      setError("انتهت صلاحية الرابط — اطلب رابط جديد من صفحة نسيت كلمة السر");
+    const supabase = createClient();
+
+    if (tokenHash) {
+      // Doesn't need a code_verifier from the requesting browser, so it
+      // works when the link is opened on a different device/browser —
+      // the normal case for an email link.
+      supabase.auth
+        .verifyOtp({ token_hash: tokenHash, type: "recovery" })
+        .then(({ error }) => {
+          if (error) {
+            setError("انتهت صلاحية الرابط — اطلب رابط جديد من صفحة نسيت كلمة السر");
+            return;
+          }
+          setReady(true);
+        });
       return;
     }
-    const supabase = createClient();
-    supabase.auth.exchangeCodeForSession(code).then(({ error }) => {
-      if (error) {
-        setError("انتهت صلاحية الرابط — اطلب رابط جديد من صفحة نسيت كلمة السر");
-        return;
-      }
-      setReady(true);
-    });
+
+    if (code) {
+      // Only works if opened in the same browser that requested the
+      // reset (needs the local code_verifier). Kept as a fallback for
+      // the default Supabase ConfirmationURL format.
+      supabase.auth.exchangeCodeForSession(code).then(({ error }) => {
+        if (error) {
+          setError("انتهت صلاحية الرابط — اطلب رابط جديد من صفحة نسيت كلمة السر");
+          return;
+        }
+        setReady(true);
+      });
+      return;
+    }
+
+    setError("انتهت صلاحية الرابط — اطلب رابط جديد من صفحة نسيت كلمة السر");
   }, [searchParams]);
 
   async function onSubmit(e: React.FormEvent) {
