@@ -22,6 +22,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import Link from "next/link";
 import { createSlot, deleteSlot } from "./actions";
 import { AddSlotForm } from "./AddSlotForm";
 
@@ -75,9 +76,16 @@ export default async function AdminClassSchedulePage({
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">{cls.class_name}</h1>
-        <p className="text-muted-foreground">الجدول الأسبوعي وروابط Zoom</p>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <h1 className="text-2xl font-bold">{cls.class_name}</h1>
+          <p className="text-muted-foreground">الجدول الأسبوعي وروابط Zoom</p>
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          render={<Link href={`/admin/classes/${id}/suggest`}>اقتراح توزيع 🪄</Link>}
+        />
       </div>
 
       {DAYS.map((day) => {
