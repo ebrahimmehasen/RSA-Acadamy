@@ -7,6 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { VideoTracker } from "./VideoTracker";
 import { RatingForm } from "./RatingForm";
 
@@ -53,6 +54,19 @@ export default async function StudentSessionDetailPage({
       </div>
 
       <VideoTracker sessionId={sessionId} driveId={recordedSession.video_drive_id} />
+
+      <Button
+        variant="outline"
+        size="sm"
+        render={
+          <a
+            href={`/api/files/${recordedSession.video_drive_id}`}
+            download={`${recordedSession.title}.mp4`}
+          >
+            تحميل الفيديو 📥
+          </a>
+        }
+      />
 
       {recordedSession.description && (
         <p className="whitespace-pre-wrap text-sm">{recordedSession.description}</p>

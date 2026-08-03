@@ -28,6 +28,11 @@ export async function uploadSession(
     const subjectId = z.string().min(1).parse(formData.get("subject_id"));
     const title = z.string().min(2).parse(formData.get("title"));
     const description = String(formData.get("description") ?? "").trim();
+    const isPublic = formData.get("is_public") !== "false";
+    const accessibleStudents = formData
+      .getAll("accessible_students")
+      .map(Number)
+      .filter((n) => Number.isInteger(n) && n > 0);
     const video = formData.get("video") as File | null;
 
     if (!video || video.size === 0) {
@@ -64,6 +69,8 @@ export async function uploadSession(
         title,
         description: description || null,
         video_drive_id: "pending",
+        is_public: isPublic,
+        accessible_to_students: isPublic ? [] : accessibleStudents,
       })
       .select("id")
       .single();

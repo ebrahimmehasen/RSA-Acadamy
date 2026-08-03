@@ -12,6 +12,7 @@ const NAV = [
   { href: "/admin/payments", label: "المدفوعات" },
   { href: "/admin/salaries", label: "الرواتب" },
   { href: "/admin/announcements", label: "الإعلانات" },
+  { href: "/admin/sessions", label: "الحصص المسجلة" },
   { href: "/admin/reports", label: "التقارير" },
   { href: "/settings/notifications", label: "الإشعارات" },
   { href: "/settings/security", label: "الأمان" },

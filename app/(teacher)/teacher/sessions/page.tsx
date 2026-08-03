@@ -26,6 +26,27 @@ export default async function TeacherSessionsPage() {
       .order("created_at", { ascending: false }),
   ]);
 
+  const classIds = [...new Set((slots ?? []).map((s) => s.class_id))];
+  const { data: classStudents } = classIds.length
+    ? await supabase
+        .from("students")
+        .select("user_id, class_id, profiles!students_user_id_fkey(full_name)")
+        .in("class_id", classIds)
+        .eq("is_active", true)
+    : { data: [] };
+
+  const studentsByClass: Record<number, { id: number; name: string }[]> = {};
+  for (const student of classStudents ?? []) {
+    const list = studentsByClass[student.class_id] ?? [];
+    list.push({
+      id: student.user_id,
+      name:
+        (student.profiles as unknown as { full_name: string })?.full_name ??
+        "",
+    });
+    studentsByClass[student.class_id] = list;
+  }
+
   const seen = new Set<string>();
   const uniqueSlots = (slots ?? [])
     .filter((s) => {
@@ -45,7 +66,7 @@ export default async function TeacherSessionsPage() {
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">الحصص المسجلة</h1>
 
-      <UploadSessionForm slots={uniqueSlots} />
+      <UploadSessionForm slots={uniqueSlots} studentsByClass={studentsByClass} />
 
       <div className="grid gap-3">
         {(sessions ?? []).map((s) => (
