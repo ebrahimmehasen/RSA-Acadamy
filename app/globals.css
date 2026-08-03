@@ -143,3 +143,30 @@
     @apply font-sans;
   }
 }
+
+@keyframes cap-float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  30% {
+    transform: translateY(-10px) rotate(-4deg);
+  }
+  60% {
+    transform: translateY(-2px) rotate(2deg);
+  }
+  80% {
+    transform: translateY(-7px) rotate(-1deg);
+  }
+}
+
+.animate-cap-float {
+  transform-origin: 50% 90%;
+  animation: cap-float 3.2s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-cap-float {
+    animation: none;
+  }
+}

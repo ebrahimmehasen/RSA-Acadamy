@@ -253,14 +253,37 @@ export function LandingPage() {
             }}
             transition={{ duration: 0.6, ease: "easeOut" }}
           >
-            <Image
-              src="/brand/logo-wide.png"
-              alt="رياض الصالحين"
-              width={2990}
-              height={1371}
-              priority
-              className="h-20 w-auto object-contain sm:h-24"
-            />
+            <div
+              className="relative h-20 sm:h-24"
+              style={{ aspectRatio: "2990 / 1371" }}
+            >
+              <Image
+                src="/brand/logo-wide.png"
+                alt="رياض الصالحين"
+                fill
+                priority
+                sizes="(min-width: 640px) 20rem, 16rem"
+                className="object-contain"
+              />
+              <div
+                aria-hidden
+                className="absolute animate-cap-float"
+                style={{
+                  left: "0.47%",
+                  top: "1.02%",
+                  width: "31.67%",
+                  height: "43.18%",
+                }}
+              >
+                <Image
+                  src="/brand/cap.png"
+                  alt=""
+                  fill
+                  sizes="8rem"
+                  className="object-contain drop-shadow-md"
+                />
+              </div>
+            </div>
           </motion.div>
           <motion.div className="space-y-4" variants={fadeUp} transition={{ duration: 0.55, ease: "easeOut" }}>
             <h1 className="text-3xl font-extrabold tracking-tight text-balance sm:text-5xl">
