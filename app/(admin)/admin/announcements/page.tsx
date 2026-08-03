@@ -53,10 +53,25 @@ export default async function AdminAnnouncementsPage() {
                 </Badge>
               </div>
             </CardHeader>
-            <CardContent className="space-y-1 text-sm">
+            <CardContent className="space-y-2 text-sm">
               <p className="whitespace-pre-wrap">{a.content_ar}</p>
-              <p className="text-xs text-muted-foreground" dir="ltr">
-                {new Date(a.published_at).toLocaleString("ar-EG")}
+              {(a.attachment_drive_ids as string[])?.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {(a.attachment_drive_ids as string[]).map((id, i) => (
+                    <a
+                      key={id}
+                      href={`/api/files/${id}`}
+                      target="_blank"
+                      className="text-primary underline underline-offset-4"
+                    >
+                      مرفق {i + 1} 📎
+                    </a>
+                  ))}
+                </div>
+              )}
+              <p className="text-xs text-muted-foreground">
+                <span dir="ltr">{new Date(a.published_at).toLocaleString("ar-EG")}</span>
+                {" · "}👁️ اتقرا من {(a.read_by as number[])?.length ?? 0} شخص
               </p>
             </CardContent>
           </Card>

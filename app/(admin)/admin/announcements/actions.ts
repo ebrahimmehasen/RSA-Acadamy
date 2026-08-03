@@ -5,6 +5,10 @@ import { z } from "zod";
 import { requireRole } from "@/lib/auth/guards";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createNotifications } from "@/lib/notifications/create";
+import {
+  uploadAnnouncementAttachment,
+  validateUpload,
+} from "@/lib/googleDrive/upload";
 import type { Role } from "@/types/domain";
 
 const schema = z.object({
@@ -64,6 +68,33 @@ export async function createAnnouncement(formData: FormData) {
     .select("id")
     .single();
   if (error) throw new Error(error.message);
+
+  const files = formData
+    .getAll("attachments")
+    .filter((f): f is File => f instanceof File && f.size > 0)
+    .slice(0, 5);
+  if (files.length > 0) {
+    const driveIds: string[] = [];
+    for (const file of files) {
+      const validationError = validateUpload("announcement", file.type, file.size);
+      if (validationError) continue; // skip invalid files rather than fail the whole announcement
+      const buffer = Buffer.from(await file.arrayBuffer());
+      const uploaded = await uploadAnnouncementAttachment({
+        buffer,
+        fileName: file.name,
+        mimeType: file.type,
+        uploadedBy: session.profile.id,
+        announcementId: announcement.id,
+      });
+      driveIds.push(uploaded.fileId);
+    }
+    if (driveIds.length > 0) {
+      await supabase
+        .from("announcements")
+        .update({ attachment_drive_ids: driveIds })
+        .eq("id", announcement.id);
+    }
+  }
 
   // fan-out notifications to matching profiles
   let query = supabase.from("profiles").select("id, role");

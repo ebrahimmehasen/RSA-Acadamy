@@ -2,12 +2,7 @@ import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { AnnouncementCard } from "./AnnouncementCard";
 
 export default async function AnnouncementsPage() {
   const session = await getSession();
@@ -59,17 +54,14 @@ export default async function AnnouncementsPage() {
       <h1 className="text-2xl font-bold">الإعلانات</h1>
       <div className="grid gap-3">
         {relevant.map((a) => (
-          <Card key={a.id}>
-            <CardHeader>
-              <CardTitle className="text-base">{a.title_ar}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-1 text-sm">
-              <p className="whitespace-pre-wrap">{a.content_ar}</p>
-              <p className="text-xs text-muted-foreground" dir="ltr">
-                {new Date(a.published_at).toLocaleString("ar-EG")}
-              </p>
-            </CardContent>
-          </Card>
+          <AnnouncementCard
+            key={a.id}
+            id={a.id}
+            title={a.title_ar}
+            content={a.content_ar}
+            publishedAt={a.published_at}
+            attachmentIds={(a.attachment_drive_ids as string[]) ?? []}
+          />
         ))}
         {relevant.length === 0 && (
           <p className="text-muted-foreground">مفيش إعلانات لسه</p>

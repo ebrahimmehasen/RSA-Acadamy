@@ -13,6 +13,7 @@ export const FOLDER_TREE = [
   "Payment_Proofs/Teacher_Salary_Proofs",
   "Recorded_Sessions",
   "Quiz_Files/Quiz_Attachments",
+  "Announcements",
   "System_Backups/Database_Backups",
 ] as const;
 

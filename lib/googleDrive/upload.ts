@@ -51,6 +51,17 @@ export const UPLOAD_RULES = {
       "application/pdf", "application/zip", "application/x-zip-compressed",
     ],
   },
+  announcement: {
+    maxBytes: 100 * 1024 * 1024,
+    mimes: [
+      "image/jpeg", "image/png", "image/gif",
+      "application/pdf",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "video/mp4",
+      "application/zip", "application/x-zip-compressed",
+    ],
+  },
 } as const;
 
 export type UploadKind = keyof typeof UPLOAD_RULES;
@@ -233,6 +244,27 @@ export async function uploadRecordedSession(
     sizeBytes: options.buffer.length,
     entityType: "session",
     entityId: String(options.sessionId),
+    uploadedBy: options.uploadedBy,
+  });
+  return result;
+}
+
+export async function uploadAnnouncementAttachment(
+  options: CommonUploadOptions & { announcementId: number },
+): Promise<UploadResult> {
+  const result = await uploadFileFromBuffer(
+    options.buffer,
+    `Announcement_${options.announcementId}_${options.fileName}`,
+    options.mimeType,
+    "Announcements",
+  );
+  await registerFile({
+    driveFileId: result.fileId,
+    fileName: options.fileName,
+    mimeType: options.mimeType,
+    sizeBytes: options.buffer.length,
+    entityType: "announcement",
+    entityId: String(options.announcementId),
     uploadedBy: options.uploadedBy,
   });
   return result;

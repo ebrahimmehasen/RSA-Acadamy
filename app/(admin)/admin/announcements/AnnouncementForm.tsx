@@ -39,6 +39,17 @@ export function AnnouncementForm({
       </div>
 
       <div className="space-y-2">
+        <Label htmlFor="attachments">مرفقات (اختياري، حد أقصى 5 ملفات، 100MB لكل ملف)</Label>
+        <Input
+          id="attachments"
+          name="attachments"
+          type="file"
+          multiple
+          accept=".jpg,.jpeg,.png,.gif,.pdf,.docx,.xlsx,.mp4,.zip"
+        />
+      </div>
+
+      <div className="space-y-2">
         <Label htmlFor="target_type">الفئة المستهدفة</Label>
         <select
           id="target_type"
