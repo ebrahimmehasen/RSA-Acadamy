@@ -20,6 +20,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { updateTeacherSubjects } from "../actions";
+import { EditTeacherForm } from "./EditTeacherForm";
 
 export default async function AdminTeacherDetailPage({
   params,
@@ -37,7 +38,7 @@ export default async function AdminTeacherDetailPage({
       supabase
         .from("teachers")
         .select(
-          "user_id, specialization, qualification, is_active, cv_drive_id, profiles!teachers_user_id_fkey(full_name, phone)",
+          "user_id, specialization, qualification, is_active, cv_drive_id, profiles!teachers_user_id_fkey(full_name, phone, user_id)",
         )
         .eq("user_id", teacherId)
         .maybeSingle(),
@@ -69,7 +70,9 @@ export default async function AdminTeacherDetailPage({
   const profile = teacher.profiles as unknown as {
     full_name: string;
     phone: string | null;
+    user_id: string;
   };
+  const { data: authUser } = await supabase.auth.admin.getUserById(profile.user_id);
   const preferredSubjects = new Set<string>((prefs?.subjects as string[]) ?? []);
 
   const subjectsByClass = new Map<
@@ -107,6 +110,15 @@ export default async function AdminTeacherDetailPage({
           </a>
         )}
       </div>
+
+      <EditTeacherForm
+        teacherId={teacherId}
+        fullName={profile?.full_name}
+        email={authUser?.user?.email ?? ""}
+        phone={profile?.phone ?? null}
+        specialization={teacher.specialization}
+        qualification={teacher.qualification}
+      />
 
       <Card>
         <CardHeader>

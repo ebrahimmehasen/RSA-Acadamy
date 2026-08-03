@@ -4,7 +4,13 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireRole } from "@/lib/auth/guards";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { createTeacher, deleteAccount, generatePassword } from "@/lib/users";
+import {
+  createTeacher,
+  deleteAccount,
+  generatePassword,
+  resetAccountPassword,
+  updateAccountProfile,
+} from "@/lib/users";
 
 export async function toggleTeacherActive(formData: FormData) {
   await requireRole("admin");
@@ -26,6 +32,92 @@ export async function deleteTeacher(formData: FormData) {
   const id = z.coerce.number().int().parse(formData.get("teacher_id"));
   await deleteAccount(id);
   revalidatePath("/admin/teachers");
+}
+
+const editSchema = z.object({
+  full_name: z.string().min(3),
+  email: z.email(),
+  phone: z.string().min(8, "رقم الهاتف مطلوب"),
+  specialization: z.string().min(1, "التخصص مطلوب"),
+  qualification: z.string().optional(),
+});
+
+export interface EditTeacherResult {
+  ok: boolean;
+  message: string;
+}
+
+export async function editTeacherAction(
+  _prev: EditTeacherResult | null,
+  formData: FormData,
+): Promise<EditTeacherResult> {
+  try {
+    await requireRole("admin");
+    const teacherId = z.coerce
+      .number()
+      .int()
+      .positive()
+      .parse(formData.get("teacher_id"));
+    const parsed = editSchema.parse({
+      full_name: formData.get("full_name"),
+      email: formData.get("email"),
+      phone: formData.get("phone"),
+      specialization: formData.get("specialization"),
+      qualification: formData.get("qualification") || undefined,
+    });
+
+    await updateAccountProfile(teacherId, {
+      fullName: parsed.full_name,
+      phone: parsed.phone,
+      email: parsed.email,
+    });
+
+    const supabase = createAdminClient();
+    const { error } = await supabase
+      .from("teachers")
+      .update({
+        specialization: parsed.specialization,
+        qualification: parsed.qualification ?? null,
+      })
+      .eq("user_id", teacherId);
+    if (error) throw new Error(error.message);
+
+    revalidatePath(`/admin/teachers/${teacherId}`);
+    revalidatePath("/admin/teachers");
+    return { ok: true, message: "تم حفظ التعديلات" };
+  } catch (error) {
+    return {
+      ok: false,
+      message: error instanceof Error ? error.message : "حصل خطأ",
+    };
+  }
+}
+
+export interface ResetPasswordResult {
+  ok: boolean;
+  message: string;
+  password?: string;
+}
+
+export async function resetTeacherPasswordAction(
+  _prev: ResetPasswordResult | null,
+  formData: FormData,
+): Promise<ResetPasswordResult> {
+  try {
+    await requireRole("admin");
+    const teacherId = z.coerce
+      .number()
+      .int()
+      .positive()
+      .parse(formData.get("teacher_id"));
+    const password = await resetAccountPassword(teacherId);
+    return { ok: true, message: "تم إعادة تعيين كلمة السر", password };
+  } catch (error) {
+    return {
+      ok: false,
+      message: error instanceof Error ? error.message : "حصل خطأ",
+    };
+  }
 }
 
 export async function updateTeacherSubjects(formData: FormData) {

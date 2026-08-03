@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { createAdminClient } from "@/lib/supabase/admin";
 import {
   Table,
@@ -55,7 +56,14 @@ export default async function AdminParentsPage() {
             };
             return (
               <TableRow key={p.user_id}>
-                <TableCell>{profile?.full_name}</TableCell>
+                <TableCell>
+                  <Link
+                    href={`/admin/parents/${p.user_id}`}
+                    className="hover:underline"
+                  >
+                    {profile?.full_name}
+                  </Link>
+                </TableCell>
                 <TableCell dir="ltr" className="text-right">
                   {profile?.phone ?? "—"}
                 </TableCell>

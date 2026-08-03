@@ -85,6 +85,64 @@ export async function deleteAccount(profileId: number): Promise<void> {
   if (error) throw new Error(error.message);
 }
 
+/**
+ * Admin-side account edit — updates the shared profile fields
+ * (full_name, phone) and, if provided, the Supabase Auth email.
+ * Role-specific fields (class/branch, specialization, address, ...)
+ * are updated separately by each admin actions.ts against its own
+ * table, same as the create flows already do.
+ */
+export async function updateAccountProfile(
+  profileId: number,
+  updates: { fullName?: string; phone?: string | null; email?: string },
+): Promise<void> {
+  const supabase = createAdminClient();
+
+  const profileUpdate: Record<string, string | null> = {};
+  if (updates.fullName !== undefined) profileUpdate.full_name = updates.fullName;
+  if (updates.phone !== undefined) profileUpdate.phone = updates.phone;
+  if (Object.keys(profileUpdate).length > 0) {
+    const { error } = await supabase
+      .from("profiles")
+      .update(profileUpdate)
+      .eq("id", profileId);
+    if (error) throw new Error(error.message);
+  }
+
+  if (updates.email) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("user_id")
+      .eq("id", profileId)
+      .maybeSingle();
+    if (!profile) throw new Error("الحساب مش موجود");
+
+    const { error } = await supabase.auth.admin.updateUserById(profile.user_id, {
+      email: updates.email,
+    });
+    if (error) throw new Error(error.message);
+  }
+}
+
+/** Admin-side forced password reset — returns the new password once. */
+export async function resetAccountPassword(profileId: number): Promise<string> {
+  const supabase = createAdminClient();
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("user_id")
+    .eq("id", profileId)
+    .maybeSingle();
+  if (!profile) throw new Error("الحساب مش موجود");
+
+  const password = generatePassword();
+  const { error } = await supabase.auth.admin.updateUserById(profile.user_id, {
+    password,
+  });
+  if (error) throw new Error(error.message);
+
+  return password;
+}
+
 /** Random readable password like "A7k9LmP2" (decision #2). */
 export function generatePassword(): string {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";

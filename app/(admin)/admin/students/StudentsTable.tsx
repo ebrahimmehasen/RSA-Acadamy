@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import {
   Table,
   TableBody,
@@ -63,7 +64,14 @@ export function StudentsTable({ students }: { students: StudentRow[] }) {
         <TableBody>
           {filtered.map((s) => (
             <TableRow key={s.user_id}>
-              <TableCell>{s.full_name}</TableCell>
+              <TableCell>
+                <Link
+                  href={`/admin/students/${s.user_id}`}
+                  className="hover:underline"
+                >
+                  {s.full_name}
+                </Link>
+              </TableCell>
               <TableCell dir="ltr" className="text-right font-mono">
                 {s.student_code}
               </TableCell>
