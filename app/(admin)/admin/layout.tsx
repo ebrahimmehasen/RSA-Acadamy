@@ -11,6 +11,7 @@ const NAV = [
   { href: "/admin/subjects", label: "المواد" },
   { href: "/admin/payments", label: "المدفوعات" },
   { href: "/admin/salaries", label: "الرواتب" },
+  { href: "/admin/finances", label: "المصروفات" },
   { href: "/admin/announcements", label: "الإعلانات" },
   { href: "/admin/sessions", label: "الحصص المسجلة" },
   { href: "/admin/reports", label: "التقارير" },
