@@ -16,7 +16,13 @@ export default async function Home() {
     >
       <h1 className="text-4xl font-bold">RSA Academy</h1>
       <p className="text-muted-foreground">المنصة التعليمية لأكاديمية RSA</p>
-      <Button render={<Link href="/login">تسجيل الدخول</Link>} />
+      <div className="flex gap-3">
+        <Button render={<Link href="/login">تسجيل الدخول</Link>} />
+        <Button
+          variant="outline"
+          render={<Link href="/signup">إنشاء حساب جديد</Link>}
+        />
+      </div>
     </main>
   );
 }

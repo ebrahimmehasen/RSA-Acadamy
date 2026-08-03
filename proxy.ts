@@ -5,7 +5,7 @@ import { verifyMfaCookie, MFA_COOKIE_NAME } from "@/lib/auth/mfaSession";
 const ROLE_PREFIXES = ["student", "parent", "teacher", "admin"] as const;
 type Role = (typeof ROLE_PREFIXES)[number];
 
-const PUBLIC_PATHS = ["/login", "/forgot-password", "/reset-password", "/verify-2fa"];
+const PUBLIC_PATHS = ["/login", "/signup", "/forgot-password", "/reset-password", "/verify-2fa"];
 
 export default async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
@@ -47,7 +47,7 @@ export default async function proxy(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  if (user && pathname.startsWith("/login")) {
+  if (user && (pathname.startsWith("/login") || pathname.startsWith("/signup"))) {
     const { data: profile } = await supabase
       .from("profiles")
       .select("role")

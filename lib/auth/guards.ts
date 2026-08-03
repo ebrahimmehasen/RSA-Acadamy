@@ -12,6 +12,9 @@ export class AuthError extends Error {
 export async function requireAuth(): Promise<SessionInfo> {
   const session = await getSession();
   if (!session) throw new AuthError(401);
+  // A self-signed-up account with no admin activation yet — blocks
+  // every server action/route, not just what the UI happens to render.
+  if (!session.isActive) throw new AuthError(403);
   return session;
 }
 

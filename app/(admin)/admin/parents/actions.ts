@@ -3,7 +3,23 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireRole } from "@/lib/auth/guards";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createParent, generatePassword } from "@/lib/users";
+
+export async function toggleParentActive(formData: FormData) {
+  await requireRole("admin");
+  const id = z.coerce.number().int().parse(formData.get("parent_id"));
+  const active = formData.get("is_active") === "true";
+
+  const supabase = createAdminClient();
+  const { error } = await supabase
+    .from("parents")
+    .update({ is_active: !active })
+    .eq("user_id", id);
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/admin/parents");
+}
 
 const schema = z.object({
   full_name: z.string().min(3),

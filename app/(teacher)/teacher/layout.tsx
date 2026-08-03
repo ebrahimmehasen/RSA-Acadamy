@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth/session";
 import { RoleShell } from "@/components/shared/RoleShell";
+import { PendingActivation } from "@/components/shared/PendingActivation";
 
 const NAV = [
   { href: "/teacher/dashboard", label: "الرئيسية" },
@@ -23,6 +24,15 @@ export default async function TeacherLayout({
   const session = await getSession();
   if (!session) redirect("/login");
   if (session.profile.role !== "teacher") redirect("/");
+  if (!session.isActive) {
+    return (
+      <PendingActivation
+        profileId={session.profile.id}
+        role="teacher"
+        fullName={session.profile.full_name}
+      />
+    );
+  }
 
   return (
     <RoleShell

@@ -184,3 +184,43 @@ export async function createParent(
 
   return { profileId };
 }
+
+/**
+ * Public self-signup — unlike createStudent/createTeacher/createParent
+ * (admin-only, generates credentials), this takes the email/password the
+ * person chose themselves and always creates the role row with
+ * is_active: false. The account can log in immediately but every
+ * protected layout blocks on session.isActive until an admin flips it
+ * (see components/shared/PendingActivation.tsx).
+ */
+export async function selfSignUp(options: CreateUserBase & {
+  role: "student" | "teacher" | "parent";
+}): Promise<{ profileId: number }> {
+  const supabase = createAdminClient();
+  const { profileId } = await createAuthUserWithProfile(options, options.role);
+
+  if (options.role === "student") {
+    const studentCode = await generateStudentCode();
+    const { error } = await supabase.from("students").insert({
+      user_id: profileId,
+      student_code: studentCode,
+      is_active: false,
+    });
+    if (error) throw new Error(error.message);
+  } else if (options.role === "teacher") {
+    const { error } = await supabase.from("teachers").insert({
+      user_id: profileId,
+      hiring_date: new Date().toISOString(),
+      is_active: false,
+    });
+    if (error) throw new Error(error.message);
+  } else {
+    const { error } = await supabase.from("parents").insert({
+      user_id: profileId,
+      is_active: false,
+    });
+    if (error) throw new Error(error.message);
+  }
+
+  return { profileId };
+}

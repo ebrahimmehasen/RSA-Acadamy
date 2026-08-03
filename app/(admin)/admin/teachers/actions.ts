@@ -6,6 +6,21 @@ import { requireRole } from "@/lib/auth/guards";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createTeacher, generatePassword } from "@/lib/users";
 
+export async function toggleTeacherActive(formData: FormData) {
+  await requireRole("admin");
+  const id = z.coerce.number().int().parse(formData.get("teacher_id"));
+  const active = formData.get("is_active") === "true";
+
+  const supabase = createAdminClient();
+  const { error } = await supabase
+    .from("teachers")
+    .update({ is_active: !active })
+    .eq("user_id", id);
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/admin/teachers");
+}
+
 export async function updateTeacherSubjects(formData: FormData) {
   await requireRole("admin");
   const teacherId = z.coerce.number().int().positive().parse(formData.get("teacher_id"));

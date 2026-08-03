@@ -9,7 +9,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { CreateTeacherForm } from "./CreateTeacherForm";
+import { toggleTeacherActive } from "./actions";
 
 export default async function AdminTeachersPage() {
   const supabase = createAdminClient();
@@ -34,6 +36,7 @@ export default async function AdminTeachersPage() {
             <TableHead className="text-right">التخصص</TableHead>
             <TableHead className="text-right">الهاتف</TableHead>
             <TableHead className="text-right">الحالة</TableHead>
+            <TableHead />
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -63,12 +66,25 @@ export default async function AdminTeachersPage() {
                     <Badge variant="destructive">موقوف</Badge>
                   )}
                 </TableCell>
+                <TableCell>
+                  <form action={toggleTeacherActive}>
+                    <input type="hidden" name="teacher_id" value={t.user_id} />
+                    <input
+                      type="hidden"
+                      name="is_active"
+                      value={String(t.is_active)}
+                    />
+                    <Button variant="outline" size="xs" type="submit">
+                      {t.is_active ? "إيقاف" : "تفعيل"}
+                    </Button>
+                  </form>
+                </TableCell>
               </TableRow>
             );
           })}
           {(teachers ?? []).length === 0 && (
             <TableRow>
-              <TableCell colSpan={4} className="text-center text-muted-foreground">
+              <TableCell colSpan={5} className="text-center text-muted-foreground">
                 مفيش مدرسين لسه
               </TableCell>
             </TableRow>

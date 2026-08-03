@@ -7,7 +7,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { CreateParentForm } from "./CreateParentForm";
+import { toggleParentActive } from "./actions";
 
 export default async function AdminParentsPage() {
   const supabase = createAdminClient();
@@ -15,7 +18,7 @@ export default async function AdminParentsPage() {
   const [{ data: parents }, { data: children }] = await Promise.all([
     supabase
       .from("parents")
-      .select("user_id, profiles!parents_user_id_fkey(full_name, phone)")
+      .select("user_id, is_active, profiles!parents_user_id_fkey(full_name, phone)")
       .order("user_id", { ascending: false }),
     supabase.from("students").select("parent_id"),
   ]);
@@ -39,6 +42,8 @@ export default async function AdminParentsPage() {
             <TableHead className="text-right">الاسم</TableHead>
             <TableHead className="text-right">الهاتف</TableHead>
             <TableHead className="text-right">عدد الأبناء المربوطين</TableHead>
+            <TableHead className="text-right">الحالة</TableHead>
+            <TableHead />
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -54,12 +59,32 @@ export default async function AdminParentsPage() {
                   {profile?.phone ?? "—"}
                 </TableCell>
                 <TableCell>{childCount.get(p.user_id) ?? 0}</TableCell>
+                <TableCell>
+                  {p.is_active ? (
+                    <Badge>نشط</Badge>
+                  ) : (
+                    <Badge variant="destructive">موقوف</Badge>
+                  )}
+                </TableCell>
+                <TableCell>
+                  <form action={toggleParentActive}>
+                    <input type="hidden" name="parent_id" value={p.user_id} />
+                    <input
+                      type="hidden"
+                      name="is_active"
+                      value={String(p.is_active)}
+                    />
+                    <Button variant="outline" size="xs" type="submit">
+                      {p.is_active ? "إيقاف" : "تفعيل"}
+                    </Button>
+                  </form>
+                </TableCell>
               </TableRow>
             );
           })}
           {(parents ?? []).length === 0 && (
             <TableRow>
-              <TableCell colSpan={3} className="text-center text-muted-foreground">
+              <TableCell colSpan={5} className="text-center text-muted-foreground">
                 مفيش أولياء أمور لسه
               </TableCell>
             </TableRow>
