@@ -77,7 +77,11 @@ function ResetPasswordForm() {
     const { error } = await supabase.auth.updateUser({ password });
     setLoading(false);
     if (error) {
-      setError("انتهت صلاحية الرابط — اطلب رابط جديد من صفحة نسيت كلمة السر");
+      if (error.code === "same_password") {
+        setError("كلمة السر الجديدة لازم تكون مختلفة عن كلمة السر الحالية");
+      } else {
+        setError("انتهت صلاحية الرابط — اطلب رابط جديد من صفحة نسيت كلمة السر");
+      }
       return;
     }
     router.replace("/login");
