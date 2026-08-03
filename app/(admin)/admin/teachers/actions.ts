@@ -39,7 +39,7 @@ export async function updateTeacherSubjects(formData: FormData) {
 const schema = z.object({
   full_name: z.string().min(3),
   email: z.email(),
-  specialization: z.string().optional(),
+  specialization: z.string().min(1, "التخصص مطلوب"),
   phone: z.string().min(8, "رقم الهاتف مطلوب"),
 });
 

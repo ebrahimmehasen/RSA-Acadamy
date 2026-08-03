@@ -154,8 +154,8 @@ export function SignUpForm({
             {role === "teacher" && (
               <>
                 <div className="space-y-2">
-                  <Label htmlFor="specialization">التخصص (اختياري)</Label>
-                  <Input id="specialization" name="specialization" />
+                  <Label htmlFor="specialization">التخصص</Label>
+                  <Input id="specialization" name="specialization" required />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="cv">السيرة الذاتية (CV) — PDF أو Word</Label>

@@ -62,6 +62,9 @@ export async function signUpAction(
       });
     } else {
       const specialization = (formData.get("specialization") as string | null)?.trim();
+      if (!specialization) {
+        return { ok: false, message: "التخصص مطلوب" };
+      }
       const cvFile = formData.get("cv") as File | null;
 
       if (!cvFile || cvFile.size === 0) {
@@ -77,7 +80,7 @@ export async function signUpAction(
         fullName: parsed.full_name,
         phone: phoneRaw,
         role: "teacher",
-        specialization: specialization || null,
+        specialization,
         cv: { buffer, fileName: cvFile.name, mimeType: cvFile.type },
       });
     }

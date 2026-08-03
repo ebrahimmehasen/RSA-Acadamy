@@ -37,8 +37,8 @@ export function CreateTeacherForm() {
             <Input id="email" name="email" type="email" dir="ltr" required />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="specialization">التخصص (اختياري)</Label>
-            <Input id="specialization" name="specialization" />
+            <Label htmlFor="specialization">التخصص</Label>
+            <Input id="specialization" name="specialization" required />
           </div>
           <div className="space-y-2">
             <Label htmlFor="phone">الهاتف</Label>
