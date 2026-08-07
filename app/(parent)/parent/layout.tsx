@@ -6,7 +6,6 @@ import { PendingActivation } from "@/components/shared/PendingActivation";
 const NAV = [
   { href: "/parent/dashboard", label: "الرئيسية" },
   { href: "/parent/children", label: "الأبناء" },
-  { href: "/parent/payments", label: "الرسوم" },
   { href: "/parent/reports", label: "التقارير" },
   { href: "/announcements", label: "الإعلانات" },
   { href: "/settings/profile", label: "الملف الشخصي" },

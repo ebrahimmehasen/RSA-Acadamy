@@ -3,18 +3,15 @@ import { createAdminClient } from "@/lib/supabase/admin";
 export type NotificationType =
   | "assignment"
   | "grade"
-  | "payment"
   | "schedule"
   | "quiz"
   | "session"
-  | "announcement"
-  | "salary";
+  | "announcement";
 
 export interface NotificationSettings {
   class_reminder_enabled: boolean;
   class_reminder_minutes: number;
   assignment_notification: boolean;
-  payment_notification: boolean;
   parent_secondary_notifications: boolean;
   email_notifications: boolean;
 }
@@ -23,7 +20,6 @@ const DEFAULT_SETTINGS: NotificationSettings = {
   class_reminder_enabled: true,
   class_reminder_minutes: 15,
   assignment_notification: true,
-  payment_notification: true,
   parent_secondary_notifications: false,
   email_notifications: true,
 };
@@ -36,7 +32,7 @@ export async function getNotificationSettings(
   const { data } = await supabase
     .from("notification_settings")
     .select(
-      "class_reminder_enabled, class_reminder_minutes, assignment_notification, payment_notification, parent_secondary_notifications, email_notifications",
+      "class_reminder_enabled, class_reminder_minutes, assignment_notification, parent_secondary_notifications, email_notifications",
     )
     .eq("profile_id", profileId)
     .maybeSingle();
@@ -58,7 +54,6 @@ async function isAllowed(
   ]);
 
   if (type === "assignment" && !settings.assignment_notification) return false;
-  if (type === "payment" && !settings.payment_notification) return false;
   if (
     profile?.role === "parent" &&
     SECONDARY_FOR_PARENTS.includes(type) &&

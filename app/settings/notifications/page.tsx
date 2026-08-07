@@ -59,13 +59,6 @@ export default async function NotificationSettingsPage() {
                 defaultChecked={settings.assignment_notification}
               />
             </label>
-            <label className="flex items-center justify-between gap-4 text-sm">
-              <span>إشعارات المدفوعات</span>
-              <Checkbox
-                name="payment_notification"
-                defaultChecked={settings.payment_notification}
-              />
-            </label>
             {isParent && (
               <label className="flex items-center justify-between gap-4 text-sm">
                 <span>إشعارات ثانوية (إعلانات عامة، حصص مسجلة، اختبارات)</span>

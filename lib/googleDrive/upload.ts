@@ -36,10 +36,6 @@ export const UPLOAD_RULES = {
       "video/mp4",
     ],
   },
-  payment: {
-    maxBytes: 5 * 1024 * 1024,
-    mimes: ["image/jpeg", "image/png", "application/pdf"],
-  },
   session: {
     maxBytes: 1024 * 1024 * 1024, // 1GB
     mimes: ["video/mp4", "video/webm"],
@@ -203,34 +199,6 @@ export async function uploadTeacherAttachment(
     sizeBytes: options.buffer.length,
     entityType: "teacher_attachment",
     entityId: String(options.assignmentId),
-    uploadedBy: options.uploadedBy,
-  });
-  return result;
-}
-
-export async function uploadPaymentProof(
-  options: CommonUploadOptions & {
-    paymentId: number;
-    payerType: "student" | "teacher";
-  },
-): Promise<UploadResult> {
-  const subfolder =
-    options.payerType === "teacher"
-      ? "Teacher_Salary_Proofs"
-      : "Student_Payment_Proofs";
-  const result = await uploadFileFromBuffer(
-    options.buffer,
-    `Payment_${options.paymentId}_${options.fileName}`,
-    options.mimeType,
-    `Payment_Proofs/${subfolder}`,
-  );
-  await registerFile({
-    driveFileId: result.fileId,
-    fileName: options.fileName,
-    mimeType: options.mimeType,
-    sizeBytes: options.buffer.length,
-    entityType: "payment",
-    entityId: String(options.paymentId),
     uploadedBy: options.uploadedBy,
   });
   return result;

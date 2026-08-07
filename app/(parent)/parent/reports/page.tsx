@@ -8,7 +8,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 
 export default async function ParentReportsPage() {
   const session = await getSession();
@@ -23,18 +22,12 @@ export default async function ParentReportsPage() {
 
   const reports = await Promise.all(
     (children ?? []).map(async (child) => {
-      const [{ data: submissions }, { data: paymentSubs }] = await Promise.all([
-        supabase
-          .from("assignment_submissions")
-          .select(
-            "grade, is_late, status, assignments(title, max_grade, subjects(subject_name))",
-          )
-          .eq("student_id", child.user_id),
-        supabase
-          .from("payment_submissions")
-          .select("status")
-          .eq("student_id", child.user_id),
-      ]);
+      const { data: submissions } = await supabase
+        .from("assignment_submissions")
+        .select(
+          "grade, is_late, status, assignments(title, max_grade, subjects(subject_name))",
+        )
+        .eq("student_id", child.user_id);
 
       const gradedRows: GradedRow[] = (submissions ?? [])
         .filter((s) => s.status === "graded" && s.grade !== null)
@@ -57,9 +50,6 @@ export default async function ParentReportsPage() {
         (s) => s.status !== "not_submitted",
       ).length;
       const lateCount = (submissions ?? []).filter((s) => s.is_late).length;
-      const paymentApproved = (paymentSubs ?? []).some(
-        (p) => p.status === "approved",
-      );
 
       return {
         childId: child.user_id,
@@ -70,7 +60,6 @@ export default async function ParentReportsPage() {
         totalAssignments: submissions?.length ?? 0,
         submittedCount,
         lateCount,
-        paymentApproved,
       };
     }),
   );
@@ -92,7 +81,7 @@ export default async function ParentReportsPage() {
             <CardDescription>{r.className}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid gap-3 sm:grid-cols-4">
+            <div className="grid gap-3 sm:grid-cols-3">
               <div>
                 <p className="text-sm text-muted-foreground">متوسط الدرجات</p>
                 <p className="text-xl font-bold">
@@ -108,14 +97,6 @@ export default async function ParentReportsPage() {
               <div>
                 <p className="text-sm text-muted-foreground">تسليمات متأخرة</p>
                 <p className="text-xl font-bold">{r.lateCount}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">حالة الرسوم</p>
-                {r.paymentApproved ? (
-                  <Badge>مدفوعة</Badge>
-                ) : (
-                  <Badge variant="outline">غير مدفوعة</Badge>
-                )}
               </div>
             </div>
 

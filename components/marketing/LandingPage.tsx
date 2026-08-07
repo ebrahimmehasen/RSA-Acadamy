@@ -18,14 +18,11 @@ import {
   User,
   Users,
   ClipboardList,
-  Wallet,
   Settings,
   UsersRound,
-  CreditCard,
   ShieldCheck,
   BellRing,
   Megaphone,
-  Landmark,
   Sparkles,
   type LucideIcon,
 } from "lucide-react";
@@ -84,13 +81,12 @@ const ROLE_SERVICES: {
     key: "teacher",
     label: "المعلم",
     color: "brand-teal",
-    intro: "أدوات تنظّم عمل المعلم اليومي من التحضير للتقييم إلى استلام الراتب.",
+    intro: "أدوات تنظّم عمل المعلم اليومي من التحضير للتقييم.",
     services: [
       { icon: Users, title: "إدارة الفصول", description: "متابعة الطلاب المسجلين في كل فصل." },
       { icon: ClipboardList, title: "التكليفات والواجبات", description: "إنشاء الواجبات وتصحيحها بسهولة." },
       { icon: FileQuestion, title: "الاختبارات", description: "تصميم اختبارات إلكترونية ورصد النتائج." },
       { icon: Video, title: "الحصص المسجلة", description: "رفع تسجيلات الحصص لمراجعة الطلاب." },
-      { icon: Wallet, title: "الرواتب", description: "متابعة المستحقات والمدفوعات الشهرية." },
       { icon: Settings, title: "التفضيلات", description: "إعدادات الحساب والتنبيهات الخاصة." },
     ],
   },
@@ -102,7 +98,6 @@ const ROLE_SERVICES: {
     services: [
       { icon: UsersRound, title: "متابعة الأبناء", description: "عرض جدول وأداء كل ابن مسجّل." },
       { icon: BarChart3, title: "التقارير الدورية", description: "تقارير أداء واضحة عن التقدّم الدراسي." },
-      { icon: CreditCard, title: "المدفوعات", description: "متابعة وسداد المستحقات إلكترونياً." },
       { icon: BellRing, title: "الإشعارات", description: "تنبيهات فورية بأي جديد يخص أبنائك." },
       { icon: Megaphone, title: "الإعلانات", description: "إعلانات الأكاديمية وأخبارها المهمة." },
       { icon: GraduationCap, title: "الدرجات والواجبات", description: "متابعة تفصيلية لكل مادة دراسية." },
@@ -128,12 +123,6 @@ const TRUST_POINTS = [
     title: "متابعة لحظية",
     description: "تقارير وإشعارات فورية بدل انتظار نهاية الفصل الدراسي.",
     color: "brand-terracotta",
-  },
-  {
-    icon: Landmark,
-    title: "إدارة مالية متكاملة",
-    description: "مدفوعات أولياء الأمور ورواتب المعلمين في نظام واحد شفاف.",
-    color: "brand-gold",
   },
 ];
 

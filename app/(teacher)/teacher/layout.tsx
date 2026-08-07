@@ -10,7 +10,6 @@ const NAV = [
   { href: "/teacher/quizzes", label: "الاختبارات" },
   { href: "/teacher/sessions", label: "الحصص المسجلة" },
   { href: "/teacher/preferences", label: "التفضيلات" },
-  { href: "/teacher/salary", label: "الراتب" },
   { href: "/announcements", label: "الإعلانات" },
   { href: "/settings/profile", label: "الملف الشخصي" },
   { href: "/settings/notifications", label: "الإشعارات" },

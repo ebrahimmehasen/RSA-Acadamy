@@ -9,8 +9,6 @@ export const FOLDER_TREE = [
   "Profile_Pictures/Admin",
   "Assignment_Files/Student_Submissions",
   "Assignment_Files/Teacher_Attachments",
-  "Payment_Proofs/Student_Payment_Proofs",
-  "Payment_Proofs/Teacher_Salary_Proofs",
   "Recorded_Sessions",
   "Quiz_Files/Quiz_Attachments",
   "Announcements",

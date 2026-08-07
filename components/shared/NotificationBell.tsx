@@ -8,12 +8,10 @@ import { useNotifications } from "@/hooks/useNotifications";
 const TYPE_ICON: Record<string, string> = {
   assignment: "📝",
   grade: "📊",
-  payment: "💳",
   schedule: "📅",
   quiz: "🧪",
   session: "🎬",
   announcement: "📢",
-  salary: "💰",
 };
 
 export function NotificationBell({ profileId }: { profileId: number }) {
