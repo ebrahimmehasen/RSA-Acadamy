@@ -24,6 +24,7 @@ export function CreateAssignmentForm({
     FormData
   >(createAssignment, null);
   const [selection, setSelection] = useState("");
+  const [dueLocal, setDueLocal] = useState("");
 
   return (
     <Card>
@@ -73,10 +74,20 @@ export function CreateAssignmentForm({
               <Label htmlFor="due_date">آخر موعد للتسليم</Label>
               <Input
                 id="due_date"
-                name="due_date"
                 type="datetime-local"
                 dir="ltr"
                 required
+                value={dueLocal}
+                onChange={(e) => setDueLocal(e.target.value)}
+              />
+              {/* datetime-local has no timezone info — convert to a real
+                  ISO instant here (in the browser, where the local
+                  timezone is actually known) instead of sending the raw
+                  string for the server to misparse as UTC. */}
+              <input
+                type="hidden"
+                name="due_date"
+                value={dueLocal ? new Date(dueLocal).toISOString() : ""}
               />
             </div>
             <div className="space-y-2">

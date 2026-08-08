@@ -31,6 +31,8 @@ export function CreateQuizForm({
   }[];
 }) {
   const [selection, setSelection] = useState("");
+  const [startLocal, setStartLocal] = useState("");
+  const [endLocal, setEndLocal] = useState("");
   const [classId, subjectId] = selection.split("|");
   const matchingAssignments = assignments.filter(
     (a) => String(a.classId) === classId && a.subjectId === subjectId,
@@ -101,20 +103,36 @@ export function CreateQuizForm({
             <Label htmlFor="start_time">وقت البداية</Label>
             <Input
               id="start_time"
-              name="start_time"
               type="datetime-local"
               required
               dir="ltr"
+              value={startLocal}
+              onChange={(e) => setStartLocal(e.target.value)}
+            />
+            {/* datetime-local has no timezone info — convert to a real
+                ISO instant here (in the browser, where the local
+                timezone is actually known) instead of sending the raw
+                string for the server to misparse as UTC. */}
+            <input
+              type="hidden"
+              name="start_time"
+              value={startLocal ? new Date(startLocal).toISOString() : ""}
             />
           </div>
           <div className="space-y-2">
             <Label htmlFor="end_time">وقت النهاية</Label>
             <Input
               id="end_time"
-              name="end_time"
               type="datetime-local"
               required
               dir="ltr"
+              value={endLocal}
+              onChange={(e) => setEndLocal(e.target.value)}
+            />
+            <input
+              type="hidden"
+              name="end_time"
+              value={endLocal ? new Date(endLocal).toISOString() : ""}
             />
           </div>
           <div className="space-y-2 sm:col-span-2">
