@@ -191,12 +191,17 @@ function ColorIcon({
 
 /** Full-page animated aurora backdrop the glass panels float over. */
 function AuroraBackground() {
+  // Sizes use clamp(min, vw-scaled, max) instead of a fixed rem value so the
+  // blobs stay proportional to the viewport: on a ~375px phone they were
+  // nearly full-bleed and read as bold moving color, but at fixed rem sizes
+  // the same blob was a small, mostly off-screen sliver on a 1440px+
+  // desktop — reads as "missing" even though it's rendering correctly.
   const blobs = [
-    { color: "brand-gold", top: "-8%", right: "-8%", size: "22rem", dur: 9, delay: 0 },
-    { color: "brand-teal", top: "18%", left: "-10%", size: "20rem", dur: 11, delay: 1 },
-    { color: "brand-blue", top: "48%", right: "5%", size: "24rem", dur: 12, delay: 0.5 },
-    { color: "brand-terracotta", top: "72%", left: "0%", size: "18rem", dur: 10, delay: 1.5 },
-    { color: "brand-blue", top: "95%", right: "20%", size: "20rem", dur: 13, delay: 2 },
+    { color: "brand-gold", top: "-8%", right: "-8%", size: "clamp(22rem, 30vw, 42rem)", dur: 9, delay: 0 },
+    { color: "brand-teal", top: "18%", left: "-10%", size: "clamp(20rem, 27vw, 38rem)", dur: 11, delay: 1 },
+    { color: "brand-blue", top: "48%", right: "5%", size: "clamp(24rem, 32vw, 46rem)", dur: 12, delay: 0.5 },
+    { color: "brand-terracotta", top: "72%", left: "0%", size: "clamp(18rem, 24vw, 34rem)", dur: 10, delay: 1.5 },
+    { color: "brand-blue", top: "95%", right: "20%", size: "clamp(20rem, 27vw, 38rem)", dur: 13, delay: 2 },
   ];
   return (
     <div aria-hidden className="fixed inset-0 -z-10 overflow-hidden bg-background">
@@ -210,13 +215,13 @@ function AuroraBackground() {
             right: b.right,
             width: b.size,
             height: b.size,
-            backgroundColor: `color-mix(in oklch, var(--${b.color}) 22%, transparent)`,
+            backgroundColor: `color-mix(in oklch, var(--${b.color}) 26%, transparent)`,
           }}
           animate={{ scale: [1, 1.15, 1], opacity: [0.7, 1, 0.7] }}
           transition={{ duration: b.dur, repeat: Infinity, ease: "easeInOut", delay: b.delay }}
         />
       ))}
-      <div className="absolute inset-0 bg-background/40" />
+      <div className="absolute inset-0 bg-background/30" />
     </div>
   );
 }
