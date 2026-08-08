@@ -6,6 +6,7 @@ import { z } from "zod";
 import { requireRole } from "@/lib/auth/guards";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { uploadQuizAttachment, validateUpload } from "@/lib/googleDrive/upload";
+import { createNotifications } from "@/lib/notifications/create";
 
 const createQuizSchema = z.object({
   class_id: z.coerce.number().int().positive(),
@@ -178,10 +179,11 @@ export async function publishQuiz(formData: FormData) {
   const supabase = createAdminClient();
   const { data: quiz } = await supabase
     .from("quizzes")
-    .select("teacher_id")
+    .select("teacher_id, is_published, class_id, title, start_time, subjects(subject_name)")
     .eq("id", quizId)
     .single();
   if (quiz?.teacher_id !== session.profile.id) throw new Error("مش الكويز بتاعك");
+  if (quiz.is_published) return; // already published — avoid re-notifying
 
   const { count } = await supabase
     .from("quiz_questions")
@@ -194,6 +196,29 @@ export async function publishQuiz(formData: FormData) {
     .update({ is_published: true })
     .eq("id", quizId);
   if (error) throw new Error(error.message);
+
+  // notify the whole class the quiz is (or will be) live — real-time via
+  // the notifications bell, no separate "أعلن للطلاب" step needed
+  const { data: students } = await supabase
+    .from("students")
+    .select("user_id")
+    .eq("class_id", quiz.class_id)
+    .eq("is_active", true);
+
+  const subjectName = (quiz.subjects as unknown as { subject_name: string } | null)
+    ?.subject_name ?? "";
+  const hasStarted = new Date(quiz.start_time) <= new Date();
+  const title = hasStarted ? "بدأ الاختبار الآن 🔴" : "اختبار جديد مجدول";
+  const message = hasStarted
+    ? `اختبار "${quiz.title}" في مادة ${subjectName} بقى متاح دلوقتي.`
+    : `اختبار "${quiz.title}" في مادة ${subjectName} هيبدأ يوم ${new Date(
+        quiz.start_time,
+      ).toLocaleString("ar-EG")}.`;
+
+  await createNotifications(
+    (students ?? []).map((s) => s.user_id),
+    { type: "quiz", title, message, relatedId: quizId },
+  );
 
   revalidatePath(`/teacher/quizzes/${quizId}`);
   revalidatePath("/teacher/quizzes");
