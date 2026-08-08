@@ -21,6 +21,7 @@ import {
   ShieldAlert,
   UserCog,
   UsersRound,
+  ShieldPlus,
   LogOut,
   type LucideIcon,
 } from "lucide-react";
@@ -56,6 +57,7 @@ const ICON_BY_SEGMENT: Record<string, LucideIcon> = {
   students: Users,
   teachers: UserCog,
   parents: UsersRound,
+  admins: ShieldPlus,
 };
 
 function iconForHref(href: string): LucideIcon {

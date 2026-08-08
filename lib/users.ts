@@ -265,6 +265,19 @@ export async function createParent(
 }
 
 /**
+ * Admin-created admin account. Unlike the other create* helpers, the
+ * password is chosen by the creating admin (not auto-generated) since
+ * they hand it to the new admin directly — there's no separate role
+ * table for "admin" (it's just a profiles row), so no child-table
+ * insert is needed here.
+ */
+export async function createAdmin(
+  options: CreateUserBase,
+): Promise<{ profileId: number }> {
+  return createAuthUserWithProfile(options, "admin");
+}
+
+/**
  * Public self-signup — unlike createStudent/createTeacher/createParent
  * (admin-only, generates credentials), this takes the email/password the
  * person chose themselves and always creates the role row with
