@@ -136,6 +136,11 @@ export default async function QuizResultsPage({
                       {a.points_awarded}/{question.points}
                     </p>
                   )}
+                  {a.is_correct === false && question.correct_answer && (
+                    <p className="text-green-600">
+                      الإجابة الصحيحة: {question.correct_answer}
+                    </p>
+                  )}
                 </CardContent>
               </Card>
             );

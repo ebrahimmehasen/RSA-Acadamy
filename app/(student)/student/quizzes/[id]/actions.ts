@@ -6,7 +6,7 @@ import { requireRole } from "@/lib/auth/guards";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 /** Objective types are auto-graded; short_answer/essay wait for the teacher. */
-const AUTO_GRADED = new Set(["multiple_choice", "true_false"]);
+const AUTO_GRADED = new Set(["multiple_choice", "true_false", "dropdown"]);
 
 export async function submitQuiz(formData: FormData) {
   const session = await requireRole("student");
@@ -54,6 +54,28 @@ export async function submitQuiz(formData: FormData) {
   }[] = [];
 
   for (const question of questions) {
+    if (question.question_type === "checkboxes") {
+      const selected = formData
+        .getAll(`answer_${question.id}`)
+        .map((v) => String(v).trim().toUpperCase())
+        .filter(Boolean)
+        .sort();
+      const answer = selected.length > 0 ? selected.join(",") : null;
+      const correct =
+        !!answer &&
+        !!question.correct_answer &&
+        answer === question.correct_answer.toUpperCase();
+      const awarded = correct ? question.points : 0;
+      totalAwarded += awarded;
+      answerRows.push({
+        question_id: question.id,
+        student_answer: answer,
+        is_correct: correct,
+        points_awarded: awarded,
+      });
+      continue;
+    }
+
     const raw = formData.get(`answer_${question.id}`);
     const answer = typeof raw === "string" ? raw.trim() : null;
 

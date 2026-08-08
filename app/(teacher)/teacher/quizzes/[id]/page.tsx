@@ -16,6 +16,8 @@ import { AddQuestionForm } from "./AddQuestionForm";
 
 const TYPE_LABELS: Record<string, string> = {
   multiple_choice: "اختيار من متعدد",
+  checkboxes: "مربعات اختيار",
+  dropdown: "قائمة منسدلة",
   true_false: "صح / خطأ",
   short_answer: "إجابة قصيرة",
   essay: "مقالي",

@@ -1,16 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getSession } from "@/lib/auth/session";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { submitQuiz } from "./actions";
+import { QuizTakingForm } from "./QuizTakingForm";
 
 // Deterministic per (quiz, student) shuffle: keeps the render pure (no
 // Math.random() during render) and keeps the question order stable across
@@ -93,66 +84,17 @@ export default async function TakeQuizPage({
         </p>
       </div>
 
-      <form action={submitQuiz} className="space-y-4">
-        <input type="hidden" name="quiz_id" value={quizId} />
-
-        {questions.map((q, i) => (
-          <Card key={q.id}>
-            <CardHeader>
-              <CardTitle className="text-base">
-                {i + 1}. {q.question_text}{" "}
-                <span className="text-sm font-normal text-muted-foreground">
-                  ({q.points} درجة)
-                </span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {q.question_type === "multiple_choice" && (
-                <div className="space-y-2">
-                  {Object.entries((q.options as Record<string, string>) ?? {}).map(
-                    ([key, label]) => (
-                      <label
-                        key={key}
-                        className="flex items-center gap-2 text-sm"
-                      >
-                        <input
-                          type="radio"
-                          name={`answer_${q.id}`}
-                          value={key}
-                          required
-                        />
-                        {key}. {label}
-                      </label>
-                    ),
-                  )}
-                </div>
-              )}
-              {q.question_type === "true_false" && (
-                <div className="flex gap-4 text-sm">
-                  <label className="flex items-center gap-2">
-                    <input type="radio" name={`answer_${q.id}`} value="true" required />
-                    صح
-                  </label>
-                  <label className="flex items-center gap-2">
-                    <input type="radio" name={`answer_${q.id}`} value="false" required />
-                    خطأ
-                  </label>
-                </div>
-              )}
-              {q.question_type === "short_answer" && (
-                <Input name={`answer_${q.id}`} required dir="rtl" />
-              )}
-              {q.question_type === "essay" && (
-                <Textarea name={`answer_${q.id}`} rows={4} required />
-              )}
-            </CardContent>
-          </Card>
-        ))}
-
-        <Button type="submit" size="lg">
-          تسليم الاختبار
-        </Button>
-      </form>
+      <QuizTakingForm
+        quizId={quizId}
+        questions={questions as {
+          id: number;
+          question_order: number;
+          question_text: string;
+          question_type: string;
+          points: number;
+          options: Record<string, string> | null;
+        }[]}
+      />
     </div>
   );
 }

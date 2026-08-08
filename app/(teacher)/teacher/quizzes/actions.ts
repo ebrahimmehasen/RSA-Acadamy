@@ -66,7 +66,14 @@ export async function createQuiz(formData: FormData) {
 
 const questionSchema = z.object({
   question_text: z.string().min(1),
-  question_type: z.enum(["multiple_choice", "short_answer", "true_false", "essay"]),
+  question_type: z.enum([
+    "multiple_choice",
+    "checkboxes",
+    "dropdown",
+    "short_answer",
+    "true_false",
+    "essay",
+  ]),
   points: z.coerce.number().int().positive().default(1),
   option_a: z.string().optional(),
   option_b: z.string().optional(),
@@ -99,7 +106,11 @@ export async function addQuestion(formData: FormData) {
   });
 
   let options: Record<string, string> | null = null;
-  if (parsed.question_type === "multiple_choice") {
+  if (
+    parsed.question_type === "multiple_choice" ||
+    parsed.question_type === "checkboxes" ||
+    parsed.question_type === "dropdown"
+  ) {
     options = {};
     if (parsed.option_a) options.A = parsed.option_a;
     if (parsed.option_b) options.B = parsed.option_b;
@@ -114,6 +125,18 @@ export async function addQuestion(formData: FormData) {
     .select("id", { count: "exact", head: true })
     .eq("quiz_id", quizId);
 
+  // canonicalize checkboxes' correct_answer to a sorted, comma-joined
+  // set so grading can do a plain string comparison later
+  const correctAnswer =
+    parsed.question_type === "checkboxes" && parsed.correct_answer
+      ? parsed.correct_answer
+          .split(",")
+          .map((s) => s.trim().toUpperCase())
+          .filter(Boolean)
+          .sort()
+          .join(",")
+      : parsed.correct_answer || null;
+
   const { data: created, error } = await supabase
     .from("quiz_questions")
     .insert({
@@ -123,7 +146,7 @@ export async function addQuestion(formData: FormData) {
       question_type: parsed.question_type,
       points: parsed.points,
       options,
-      correct_answer: parsed.correct_answer || null,
+      correct_answer: correctAnswer,
     })
     .select("id")
     .single();

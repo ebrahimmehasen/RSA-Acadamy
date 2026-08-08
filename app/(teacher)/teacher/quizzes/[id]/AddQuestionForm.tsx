@@ -15,6 +15,8 @@ import { addQuestion } from "../actions";
 
 const TYPE_LABELS: Record<string, string> = {
   multiple_choice: "اختيار من متعدد",
+  checkboxes: "مربعات اختيار (أكتر من إجابة)",
+  dropdown: "قائمة منسدلة",
   true_false: "صح / خطأ",
   short_answer: "إجابة قصيرة",
   essay: "مقالي",
@@ -78,6 +80,34 @@ export function AddQuestionForm({ quizId }: { quizId: number }) {
               <div className="space-y-2 sm:col-span-2">
                 <Label htmlFor="correct_answer_mc">الإجابة الصحيحة (A/B/C/D)</Label>
                 <Input id="correct_answer_mc" name="correct_answer" maxLength={1} dir="ltr" />
+              </div>
+            </div>
+          )}
+
+          {type === "dropdown" && (
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Input name="option_a" placeholder="اختيار A" />
+              <Input name="option_b" placeholder="اختيار B" />
+              <Input name="option_c" placeholder="اختيار C" />
+              <Input name="option_d" placeholder="اختيار D" />
+              <div className="space-y-2 sm:col-span-2">
+                <Label htmlFor="correct_answer_dd">الإجابة الصحيحة (A/B/C/D)</Label>
+                <Input id="correct_answer_dd" name="correct_answer" maxLength={1} dir="ltr" />
+              </div>
+            </div>
+          )}
+
+          {type === "checkboxes" && (
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Input name="option_a" placeholder="اختيار A" />
+              <Input name="option_b" placeholder="اختيار B" />
+              <Input name="option_c" placeholder="اختيار C" />
+              <Input name="option_d" placeholder="اختيار D" />
+              <div className="space-y-2 sm:col-span-2">
+                <Label htmlFor="correct_answer_cb">
+                  الإجابات الصحيحة (افصل بفاصلة، مثال: A,C)
+                </Label>
+                <Input id="correct_answer_cb" name="correct_answer" dir="ltr" />
               </div>
             </div>
           )}
