@@ -158,7 +158,10 @@ export function RoleShell({
           </div>
         </header>
         <main className="flex-1 p-4 pb-20 md:p-6 md:pb-6">{children}</main>
-        <nav className="sticky bottom-0 z-10 flex justify-around border-t bg-background/95 py-1 backdrop-blur supports-backdrop-filter:bg-background/70 md:hidden">
+        <nav
+          className="fixed inset-x-0 bottom-0 z-20 flex justify-around border-t bg-background/95 py-1 backdrop-blur supports-backdrop-filter:bg-background/70 md:hidden"
+          style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+        >
           {nav.slice(0, 5).map((item) => {
             const Icon = iconForHref(item.href);
             const active = pathname.startsWith(item.href);

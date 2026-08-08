@@ -134,23 +134,27 @@ export function SignUpForm({
             {role === "student" && (
               <>
                 <div className="space-y-2">
-                  <Label htmlFor="date_of_birth">تاريخ الميلاد (اختياري)</Label>
+                  <Label htmlFor="date_of_birth">تاريخ الميلاد</Label>
                   <Input
                     id="date_of_birth"
                     name="date_of_birth"
                     type="date"
                     dir="ltr"
+                    required
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="class_id">الصف الدراسي (اختياري)</Label>
+                  <Label htmlFor="class_id">الصف الدراسي</Label>
                   <select
                     id="class_id"
                     name="class_id"
                     defaultValue=""
+                    required
                     className="h-8 w-full rounded-lg border border-input bg-background px-2 text-sm"
                   >
-                    <option value="">اختر لاحقًا مع الإدارة</option>
+                    <option value="" disabled>
+                      اختر الصف الدراسي
+                    </option>
                     {classes.map((c) => (
                       <option key={c.id} value={c.id}>
                         {c.class_name}

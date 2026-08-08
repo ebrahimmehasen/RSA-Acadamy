@@ -55,16 +55,22 @@ export async function signUpAction(
     if (parsed.role === "student") {
       const classId = formData.get("class_id");
       const branch = formData.get("branch");
-      const dateOfBirth = formData.get("date_of_birth");
+      const dateOfBirth = formData.get("date_of_birth") as string | null;
+      if (!classId) {
+        return { ok: false, message: "الصف الدراسي مطلوب" };
+      }
+      if (!dateOfBirth) {
+        return { ok: false, message: "تاريخ الميلاد مطلوب" };
+      }
       await selfSignUp({
         email: parsed.email,
         password: parsed.password,
         fullName: parsed.full_name,
         phone: phoneRaw || null,
         role: "student",
-        classId: classId ? Number(classId) : null,
+        classId: Number(classId),
         branch: (branch as "Arabic" | "Languages" | null) || null,
-        dateOfBirth: (dateOfBirth as string | null) || null,
+        dateOfBirth,
         profilePicture,
       });
     } else if (parsed.role === "parent") {
