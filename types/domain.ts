@@ -6,6 +6,7 @@ export interface Profile {
   role: Role;
   full_name: string;
   phone: string | null;
+  is_super_admin: boolean;
   profile_picture_url: string | null;
   profile_picture_drive_id: string | null;
   created_at: string;

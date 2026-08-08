@@ -19,9 +19,11 @@ export default async function AdminAdminsPage() {
 
   const { data: admins } = await supabase
     .from("profiles")
-    .select("id, user_id, full_name, created_at")
+    .select("id, user_id, full_name, is_super_admin, created_at")
     .eq("role", "admin")
     .order("created_at", { ascending: true });
+
+  const canDelete = session?.profile.is_super_admin ?? false;
 
   const { data: authUsers } = await supabase.auth.admin.listUsers();
   const emailByUserId = new Map(
@@ -52,12 +54,15 @@ export default async function AdminAdminsPage() {
                     أنت
                   </Badge>
                 )}
+                {a.is_super_admin && (
+                  <Badge className="mr-2">الأدمن الرئيسي</Badge>
+                )}
               </TableCell>
               <TableCell dir="ltr" className="text-right">
                 {emailByUserId.get(a.user_id) ?? "—"}
               </TableCell>
               <TableCell>
-                {a.id !== session?.profile.id && (
+                {canDelete && a.id !== session?.profile.id && (
                   <ConfirmDeleteButton
                     action={deleteAdminAction}
                     hiddenFields={{ admin_id: a.id }}

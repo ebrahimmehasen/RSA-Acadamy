@@ -54,6 +54,9 @@ export async function createAdminAction(
 
 export async function deleteAdminAction(formData: FormData) {
   const session = await requireRole("admin");
+  if (!session.profile.is_super_admin) {
+    throw new Error("مسموح بس للأدمن الرئيسي إنه يحذف مسؤولين");
+  }
   const id = z.coerce.number().int().positive().parse(formData.get("admin_id"));
   if (id === session.profile.id) {
     throw new Error("مينفعش تحذف حسابك الشخصي");
