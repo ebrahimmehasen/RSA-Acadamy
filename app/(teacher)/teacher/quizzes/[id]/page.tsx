@@ -11,8 +11,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { deleteQuestion, publishQuiz } from "../actions";
+import { publishQuiz } from "../actions";
 import { AddQuestionForm } from "./AddQuestionForm";
+import { EditQuizForm } from "./EditQuizForm";
+import { EditQuestionForm } from "./EditQuestionForm";
 
 const TYPE_LABELS: Record<string, string> = {
   multiple_choice: "اختيار من متعدد",
@@ -64,6 +66,11 @@ export default async function TeacherQuizDetailPage({
     (s) => s.status === "graded",
   ).length;
 
+  // Editing (questions, points, duration, timing) is allowed until the
+  // quiz's own start_time — checked against the server clock here, same
+  // rule the mutating actions enforce.
+  const canEdit = new Date(quiz.start_time) > new Date();
+
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-2">
@@ -86,6 +93,24 @@ export default async function TeacherQuizDetailPage({
           </form>
         )}
       </div>
+
+      {!canEdit && (
+        <p className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
+          الاختبار بدأ بالفعل — التعديل مقفول.
+        </p>
+      )}
+
+      {canEdit && (
+        <EditQuizForm
+          quizId={quizId}
+          title={quiz.title}
+          description={quiz.description}
+          totalPoints={quiz.total_points}
+          durationMinutes={quiz.duration_minutes}
+          startTime={quiz.start_time}
+          endTime={quiz.end_time}
+        />
+      )}
 
       {(submissions ?? []).length > 0 && (
         <Card>
@@ -119,7 +144,7 @@ export default async function TeacherQuizDetailPage({
           {(questions ?? []).map((q, i) => (
             <div
               key={q.id}
-              className="flex items-start justify-between gap-3 rounded-lg border p-3"
+              className="flex flex-wrap items-start justify-between gap-3 rounded-lg border p-3"
             >
               <div className="space-y-1 text-sm">
                 <p className="font-medium">
@@ -132,14 +157,18 @@ export default async function TeacherQuizDetailPage({
                   )}
                 </p>
               </div>
-              {!quiz.is_published && (
-                <form action={deleteQuestion}>
-                  <input type="hidden" name="question_id" value={q.id} />
-                  <input type="hidden" name="quiz_id" value={quizId} />
-                  <Button variant="destructive" size="xs" type="submit">
-                    حذف
-                  </Button>
-                </form>
+              {canEdit && (
+                <EditQuestionForm
+                  question={{
+                    id: q.id,
+                    quiz_id: quizId,
+                    question_text: q.question_text,
+                    question_type: q.question_type,
+                    points: q.points,
+                    options: q.options as Record<string, string> | null,
+                    correct_answer: q.correct_answer,
+                  }}
+                />
               )}
             </div>
           ))}
@@ -149,7 +178,7 @@ export default async function TeacherQuizDetailPage({
         </CardContent>
       </Card>
 
-      {!quiz.is_published && <AddQuestionForm quizId={quizId} />}
+      {canEdit && <AddQuestionForm quizId={quizId} />}
     </div>
   );
 }

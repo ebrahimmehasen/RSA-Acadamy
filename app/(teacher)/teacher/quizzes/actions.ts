@@ -82,17 +82,40 @@ const questionSchema = z.object({
   correct_answer: z.string().optional(),
 });
 
+/**
+ * Editing (questions, points, duration, timing) is only allowed until
+ * the quiz's own start_time — checked here against the server clock,
+ * not anything the client sends, so it can't be spoofed. Returns null
+ * (a no-op for the caller, not a thrown error) if the quiz already
+ * started — the client's "still editable" render can be stale by the
+ * time the request lands, and the page re-render already shows the
+ * lock banner, so there's no need to crash to an error boundary over
+ * a natural race with the clock.
+ */
+async function assertEditable(
+  supabase: ReturnType<typeof createAdminClient>,
+  quizId: number,
+  teacherId: number,
+): Promise<{ teacher_id: number; start_time: string } | null> {
+  const { data: quiz } = await supabase
+    .from("quizzes")
+    .select("teacher_id, start_time")
+    .eq("id", quizId)
+    .single();
+  if (quiz?.teacher_id !== teacherId) throw new Error("مش الكويز بتاعك");
+  if (new Date(quiz.start_time) <= new Date()) return null;
+  return quiz;
+}
+
 export async function addQuestion(formData: FormData) {
   const session = await requireRole("teacher");
   const quizId = z.coerce.number().int().positive().parse(formData.get("quiz_id"));
 
   const supabase = createAdminClient();
-  const { data: quiz } = await supabase
-    .from("quizzes")
-    .select("teacher_id")
-    .eq("id", quizId)
-    .single();
-  if (quiz?.teacher_id !== session.profile.id) throw new Error("مش الكويز بتاعك");
+  if (!(await assertEditable(supabase, quizId, session.profile.id))) {
+    revalidatePath(`/teacher/quizzes/${quizId}`);
+    return;
+  }
 
   const parsed = questionSchema.parse({
     question_text: formData.get("question_text"),
@@ -179,12 +202,10 @@ export async function deleteQuestion(formData: FormData) {
   const quizId = z.coerce.number().int().parse(formData.get("quiz_id"));
 
   const supabase = createAdminClient();
-  const { data: quiz } = await supabase
-    .from("quizzes")
-    .select("teacher_id")
-    .eq("id", quizId)
-    .single();
-  if (quiz?.teacher_id !== session.profile.id) throw new Error("مش الكويز بتاعك");
+  if (!(await assertEditable(supabase, quizId, session.profile.id))) {
+    revalidatePath(`/teacher/quizzes/${quizId}`);
+    return;
+  }
 
   const { error } = await supabase
     .from("quiz_questions")
@@ -193,6 +214,153 @@ export async function deleteQuestion(formData: FormData) {
   if (error) throw new Error(error.message);
 
   revalidatePath(`/teacher/quizzes/${quizId}`);
+}
+
+const updateQuestionSchema = z.object({
+  question_id: z.coerce.number().int().positive(),
+  question_text: z.string().min(1),
+  points: z.coerce.number().int().positive(),
+  option_a: z.string().optional(),
+  option_b: z.string().optional(),
+  option_c: z.string().optional(),
+  option_d: z.string().optional(),
+  correct_answer: z.string().optional(),
+});
+
+export async function updateQuestion(formData: FormData) {
+  const session = await requireRole("teacher");
+  const quizId = z.coerce.number().int().positive().parse(formData.get("quiz_id"));
+
+  const supabase = createAdminClient();
+  if (!(await assertEditable(supabase, quizId, session.profile.id))) {
+    revalidatePath(`/teacher/quizzes/${quizId}`);
+    return;
+  }
+
+  const parsed = updateQuestionSchema.parse({
+    question_id: formData.get("question_id"),
+    question_text: formData.get("question_text"),
+    points: formData.get("points"),
+    option_a: formData.get("option_a") || undefined,
+    option_b: formData.get("option_b") || undefined,
+    option_c: formData.get("option_c") || undefined,
+    option_d: formData.get("option_d") || undefined,
+    correct_answer: formData.get("correct_answer") || undefined,
+  });
+
+  const { data: existing } = await supabase
+    .from("quiz_questions")
+    .select("question_type")
+    .eq("id", parsed.question_id)
+    .eq("quiz_id", quizId)
+    .single();
+  if (!existing) throw new Error("السؤال مش موجود");
+
+  let options: Record<string, string> | null = null;
+  if (
+    existing.question_type === "multiple_choice" ||
+    existing.question_type === "checkboxes" ||
+    existing.question_type === "dropdown"
+  ) {
+    options = {};
+    if (parsed.option_a) options.A = parsed.option_a;
+    if (parsed.option_b) options.B = parsed.option_b;
+    if (parsed.option_c) options.C = parsed.option_c;
+    if (parsed.option_d) options.D = parsed.option_d;
+  } else if (existing.question_type === "true_false") {
+    options = { true: "صح", false: "خطأ" };
+  }
+
+  const correctAnswer =
+    existing.question_type === "checkboxes" && parsed.correct_answer
+      ? parsed.correct_answer
+          .split(",")
+          .map((s) => s.trim().toUpperCase())
+          .filter(Boolean)
+          .sort()
+          .join(",")
+      : parsed.correct_answer || null;
+
+  const { error } = await supabase
+    .from("quiz_questions")
+    .update({
+      question_text: parsed.question_text,
+      points: parsed.points,
+      options,
+      correct_answer: correctAnswer,
+    })
+    .eq("id", parsed.question_id);
+  if (error) throw new Error(error.message);
+
+  revalidatePath(`/teacher/quizzes/${quizId}`);
+}
+
+const updateQuizSchema = z.object({
+  title: z.string().min(2),
+  description: z.string().optional(),
+  total_points: z.coerce.number().int().positive(),
+  duration_minutes: z.coerce.number().int().positive(),
+  start_time: z.string().min(1),
+  end_time: z.string().min(1),
+});
+
+export interface UpdateQuizResult {
+  ok: boolean;
+  message: string;
+}
+
+export async function updateQuiz(
+  _prev: UpdateQuizResult | null,
+  formData: FormData,
+): Promise<UpdateQuizResult> {
+  try {
+    const session = await requireRole("teacher");
+    const quizId = z.coerce.number().int().positive().parse(formData.get("quiz_id"));
+
+    const supabase = createAdminClient();
+    if (!(await assertEditable(supabase, quizId, session.profile.id))) {
+      revalidatePath(`/teacher/quizzes/${quizId}`);
+      return { ok: false, message: "الاختبار بدأ بالفعل — التعديل مقفول" };
+    }
+
+    const parsed = updateQuizSchema.parse({
+      title: formData.get("title"),
+      description: formData.get("description") || undefined,
+      total_points: formData.get("total_points"),
+      duration_minutes: formData.get("duration_minutes"),
+      start_time: formData.get("start_time"),
+      end_time: formData.get("end_time"),
+    });
+
+    if (new Date(parsed.end_time) <= new Date(parsed.start_time)) {
+      throw new Error("وقت النهاية لازم يكون بعد وقت البداية");
+    }
+    if (new Date(parsed.start_time) <= new Date()) {
+      throw new Error("وقت البداية الجديد لازم يكون في المستقبل");
+    }
+
+    const { error } = await supabase
+      .from("quizzes")
+      .update({
+        title: parsed.title,
+        description: parsed.description ?? null,
+        total_points: parsed.total_points,
+        duration_minutes: parsed.duration_minutes,
+        start_time: new Date(parsed.start_time).toISOString(),
+        end_time: new Date(parsed.end_time).toISOString(),
+      })
+      .eq("id", quizId);
+    if (error) throw new Error(error.message);
+
+    revalidatePath(`/teacher/quizzes/${quizId}`);
+    revalidatePath("/teacher/quizzes");
+    return { ok: true, message: "تم حفظ التعديلات" };
+  } catch (error) {
+    return {
+      ok: false,
+      message: error instanceof Error ? error.message : "حصل خطأ",
+    };
+  }
 }
 
 export async function publishQuiz(formData: FormData) {
