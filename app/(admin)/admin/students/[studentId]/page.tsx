@@ -9,6 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { EditStudentForm } from "./EditStudentForm";
+import { BackLink } from "@/components/shared/BackLink";
 
 export default async function AdminStudentDetailPage({
   params,
@@ -59,6 +60,7 @@ export default async function AdminStudentDetailPage({
 
   return (
     <div className="space-y-6">
+      <BackLink href="/admin/students" label="رجوع للطلاب" />
       <div>
         <h1 className="text-2xl font-bold">{profile?.full_name}</h1>
         <p className="text-muted-foreground">

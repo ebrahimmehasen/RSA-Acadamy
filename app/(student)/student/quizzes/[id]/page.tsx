@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getSession } from "@/lib/auth/session";
 import { QuizTakingForm } from "./QuizTakingForm";
+import { BackLink } from "@/components/shared/BackLink";
 
 // Deterministic per (quiz, student) shuffle: keeps the render pure (no
 // Math.random() during render) and keeps the question order stable across
@@ -53,13 +54,21 @@ export default async function TakeQuizPage({
   const end = new Date(quiz.end_time);
   if (now < start) {
     return (
-      <p className="text-muted-foreground">
-        الاختبار لسه مبدأش — هيبدأ {start.toLocaleString("ar-EG")}
-      </p>
+      <div className="space-y-4">
+        <BackLink href="/student/quizzes" label="رجوع للاختبارات" />
+        <p className="text-muted-foreground">
+          الاختبار لسه مبدأش — هيبدأ {start.toLocaleString("ar-EG")}
+        </p>
+      </div>
     );
   }
   if (now > end) {
-    return <p className="text-muted-foreground">انتهى وقت الاختبار.</p>;
+    return (
+      <div className="space-y-4">
+        <BackLink href="/student/quizzes" label="رجوع للاختبارات" />
+        <p className="text-muted-foreground">انتهى وقت الاختبار.</p>
+      </div>
+    );
   }
 
   let { data: questions } = await supabase

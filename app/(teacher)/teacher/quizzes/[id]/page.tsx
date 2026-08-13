@@ -15,6 +15,7 @@ import { publishQuiz } from "../actions";
 import { AddQuestionForm } from "./AddQuestionForm";
 import { EditQuizForm } from "./EditQuizForm";
 import { EditQuestionForm } from "./EditQuestionForm";
+import { BackLink } from "@/components/shared/BackLink";
 
 const TYPE_LABELS: Record<string, string> = {
   multiple_choice: "اختيار من متعدد",
@@ -73,6 +74,7 @@ export default async function TeacherQuizDetailPage({
 
   return (
     <div className="space-y-6">
+      <BackLink href="/teacher/quizzes" label="رجوع للاختبارات" />
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
           <h1 className="text-2xl font-bold">{quiz.title}</h1>

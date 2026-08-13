@@ -9,6 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { BackLink } from "@/components/shared/BackLink";
 
 export default async function QuizResultsPage({
   params,
@@ -78,6 +79,7 @@ export default async function QuizResultsPage({
 
   return (
     <div className="space-y-6">
+      <BackLink href="/student/quizzes" label="رجوع للاختبارات" />
       <div>
         <h1 className="text-2xl font-bold">{quiz.title} — النتيجة</h1>
         {submission.status === "graded" ? (

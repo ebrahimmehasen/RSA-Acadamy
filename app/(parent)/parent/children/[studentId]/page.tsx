@@ -16,6 +16,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { BackLink } from "@/components/shared/BackLink";
 
 export default async function ParentChildDetailPage({
   params,
@@ -91,6 +92,7 @@ export default async function ParentChildDetailPage({
 
   return (
     <div className="space-y-6">
+      <BackLink href="/parent/children" label="رجوع للأبناء" />
       <div>
         <h1 className="text-2xl font-bold">{profile?.full_name}</h1>
         <p className="text-muted-foreground">

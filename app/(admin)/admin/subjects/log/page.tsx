@@ -1,5 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { Badge } from "@/components/ui/badge";
+import { BackLink } from "@/components/shared/BackLink";
 import {
   Table,
   TableBody,
@@ -28,6 +29,7 @@ export default async function SubjectEnrollmentLogPage() {
 
   return (
     <div className="space-y-6">
+      <BackLink href="/admin/subjects" label="رجوع للمواد" />
       <div>
         <h1 className="text-2xl font-bold">سجل تسجيل المواد</h1>
         <p className="text-muted-foreground">

@@ -13,6 +13,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { createSlot } from "../actions";
+import { BackLink } from "@/components/shared/BackLink";
 
 export default async function SuggestDistributionPage({
   params,
@@ -35,6 +36,7 @@ export default async function SuggestDistributionPage({
 
   return (
     <div className="space-y-6">
+      <BackLink href={`/admin/classes/${id}`} label={`رجوع لـ ${cls.class_name}`} />
       <div>
         <h1 className="text-2xl font-bold">اقتراح توزيع — {cls.class_name}</h1>
         <CardDescription>

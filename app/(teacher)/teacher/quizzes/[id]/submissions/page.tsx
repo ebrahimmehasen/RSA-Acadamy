@@ -12,6 +12,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { gradeQuizAnswer } from "./actions";
+import { BackLink } from "@/components/shared/BackLink";
 
 export default async function QuizSubmissionsPage({
   params,
@@ -67,6 +68,7 @@ export default async function QuizSubmissionsPage({
 
   return (
     <div className="space-y-6">
+      <BackLink href={`/teacher/quizzes/${quizId}`} label={`رجوع لـ ${quiz.title}`} />
       <div>
         <h1 className="text-2xl font-bold">تصحيح التسليمات — {quiz.title}</h1>
         <p className="text-muted-foreground">الدرجة الكلية: {quiz.total_points}</p>

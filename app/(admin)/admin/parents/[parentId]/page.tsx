@@ -9,6 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { EditParentForm } from "./EditParentForm";
+import { BackLink } from "@/components/shared/BackLink";
 
 export default async function AdminParentDetailPage({
   params,
@@ -46,6 +47,7 @@ export default async function AdminParentDetailPage({
 
   return (
     <div className="space-y-6">
+      <BackLink href="/admin/parents" label="رجوع لأولياء الأمور" />
       <div>
         <h1 className="text-2xl font-bold">{profile?.full_name}</h1>
         <p className="text-muted-foreground">

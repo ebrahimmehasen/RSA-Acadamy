@@ -25,6 +25,7 @@ import {
 import Link from "next/link";
 import { createSlot, deleteSlot } from "./actions";
 import { AddSlotForm } from "./AddSlotForm";
+import { BackLink } from "@/components/shared/BackLink";
 
 export default async function AdminClassSchedulePage({
   params,
@@ -76,6 +77,7 @@ export default async function AdminClassSchedulePage({
 
   return (
     <div className="space-y-6">
+      <BackLink href="/admin/classes" label="رجوع للفصول" />
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
           <h1 className="text-2xl font-bold">{cls.class_name}</h1>

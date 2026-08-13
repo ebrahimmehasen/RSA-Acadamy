@@ -9,6 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { GradeForm } from "./GradeForm";
+import { BackLink } from "@/components/shared/BackLink";
 
 export default async function TeacherAssignmentDetailPage({
   params,
@@ -40,6 +41,7 @@ export default async function TeacherAssignmentDetailPage({
 
   return (
     <div className="space-y-6">
+      <BackLink href="/teacher/assignments" label="رجوع للواجبات" />
       <div>
         <h1 className="text-2xl font-bold">{assignment.title}</h1>
         <p className="text-muted-foreground">

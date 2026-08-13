@@ -10,6 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { VideoTracker } from "./VideoTracker";
 import { RatingForm } from "./RatingForm";
+import { BackLink } from "@/components/shared/BackLink";
 
 export default async function StudentSessionDetailPage({
   params,
@@ -40,6 +41,7 @@ export default async function StudentSessionDetailPage({
 
   return (
     <div className="space-y-6">
+      <BackLink href="/student/sessions" label="رجوع للحصص المسجلة" />
       <div>
         <h1 className="text-2xl font-bold">{recordedSession.title}</h1>
         <p className="text-muted-foreground">

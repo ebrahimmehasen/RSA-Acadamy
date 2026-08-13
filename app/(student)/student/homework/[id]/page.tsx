@@ -11,6 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { SubmitForm } from "./SubmitForm";
+import { BackLink } from "@/components/shared/BackLink";
 
 export default async function AssignmentDetailPage({
   params,
@@ -51,6 +52,7 @@ export default async function AssignmentDetailPage({
 
   return (
     <div className="space-y-6">
+      <BackLink href="/student/homework" label="رجوع للواجبات" />
       <div>
         <h1 className="text-2xl font-bold">{assignment.title}</h1>
         <p className="text-muted-foreground">
