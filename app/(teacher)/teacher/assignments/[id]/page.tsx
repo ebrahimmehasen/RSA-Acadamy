@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/card";
 import { GradeForm } from "./GradeForm";
 import { BackLink } from "@/components/shared/BackLink";
+import { RealtimeRefresh } from "@/components/shared/RealtimeRefresh";
 
 export default async function TeacherAssignmentDetailPage({
   params,
@@ -41,6 +42,12 @@ export default async function TeacherAssignmentDetailPage({
 
   return (
     <div className="space-y-6">
+      <RealtimeRefresh
+        channelName={`assignment-detail:${assignmentId}`}
+        watches={[
+          { table: "assignment_submissions", filter: `assignment_id=eq.${assignmentId}` },
+        ]}
+      />
       <BackLink href="/teacher/assignments" label="رجوع للواجبات" />
       <div>
         <h1 className="text-2xl font-bold">{assignment.title}</h1>

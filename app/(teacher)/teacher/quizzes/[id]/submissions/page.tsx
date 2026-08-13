@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/card";
 import { gradeQuizAnswer } from "./actions";
 import { BackLink } from "@/components/shared/BackLink";
+import { RealtimeRefresh } from "@/components/shared/RealtimeRefresh";
 
 export default async function QuizSubmissionsPage({
   params,
@@ -68,6 +69,10 @@ export default async function QuizSubmissionsPage({
 
   return (
     <div className="space-y-6">
+      <RealtimeRefresh
+        channelName={`quiz-submissions:${quizId}`}
+        watches={[{ table: "quiz_submissions", filter: `quiz_id=eq.${quizId}` }]}
+      />
       <BackLink href={`/teacher/quizzes/${quizId}`} label={`رجوع لـ ${quiz.title}`} />
       <div>
         <h1 className="text-2xl font-bold">تصحيح التسليمات — {quiz.title}</h1>

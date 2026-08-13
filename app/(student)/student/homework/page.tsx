@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getSession } from "@/lib/auth/session";
 import { Badge } from "@/components/ui/badge";
+import { RealtimeRefresh } from "@/components/shared/RealtimeRefresh";
 import {
   Card,
   CardContent,
@@ -12,6 +13,12 @@ import {
 export default async function StudentHomeworkPage() {
   const session = await getSession();
   const supabase = await createClient();
+
+  const { data: studentRow } = await supabase
+    .from("students")
+    .select("class_id")
+    .eq("user_id", session!.profile.id)
+    .maybeSingle();
 
   const [{ data: assignments }, { data: submissions }] = await Promise.all([
     supabase
@@ -30,6 +37,15 @@ export default async function StudentHomeworkPage() {
 
   return (
     <div className="space-y-6">
+      <RealtimeRefresh
+        channelName={`homework:${session!.profile.id}`}
+        watches={[
+          ...(studentRow?.class_id
+            ? [{ table: "assignments", filter: `class_id=eq.${studentRow.class_id}` }]
+            : []),
+          { table: "assignment_submissions", filter: `student_id=eq.${session!.profile.id}` },
+        ]}
+      />
       <h1 className="text-2xl font-bold">الواجبات</h1>
       {(assignments ?? []).length === 0 && (
         <p className="text-muted-foreground">مفيش واجبات لحد دلوقتي.</p>

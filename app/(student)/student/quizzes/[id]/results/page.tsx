@@ -10,6 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { BackLink } from "@/components/shared/BackLink";
+import { RealtimeRefresh } from "@/components/shared/RealtimeRefresh";
 
 export default async function QuizResultsPage({
   params,
@@ -79,6 +80,10 @@ export default async function QuizResultsPage({
 
   return (
     <div className="space-y-6">
+      <RealtimeRefresh
+        channelName={`quiz-results:${quizId}:${session!.profile.id}`}
+        watches={[{ table: "quiz_submissions", filter: `id=eq.${submission.id}` }]}
+      />
       <BackLink href="/student/quizzes" label="رجوع للاختبارات" />
       <div>
         <h1 className="text-2xl font-bold">{quiz.title} — النتيجة</h1>

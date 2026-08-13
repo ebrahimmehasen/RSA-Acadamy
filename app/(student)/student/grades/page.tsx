@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getSession } from "@/lib/auth/session";
 import { summarizeGrades, type GradedRow } from "@/lib/grades";
 import { GradeTrendChart } from "@/components/charts/GradeTrendChart";
+import { RealtimeRefresh } from "@/components/shared/RealtimeRefresh";
 import {
   Card,
   CardContent,
@@ -42,6 +43,13 @@ export default async function StudentGradesPage() {
 
   return (
     <div className="space-y-6">
+      <RealtimeRefresh
+        channelName={`grades:${session!.profile.id}`}
+        watches={[
+          { table: "assignment_submissions", filter: `student_id=eq.${session!.profile.id}` },
+          { table: "quiz_submissions", filter: `student_id=eq.${session!.profile.id}` },
+        ]}
+      />
       <h1 className="text-2xl font-bold">الدرجات</h1>
 
       {summary.average === null ? (
