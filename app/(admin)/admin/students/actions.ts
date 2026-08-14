@@ -10,6 +10,7 @@ import {
   updateAccountProfile,
 } from "@/lib/users";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { logAdminEdit } from "@/lib/adminLog";
 
 const createStudentSchema = z.object({
   full_name: z.string().min(3),
@@ -99,7 +100,7 @@ export async function editStudentAction(
   formData: FormData,
 ): Promise<EditStudentResult> {
   try {
-    await requireRole("admin");
+    const session = await requireRole("admin");
     const studentId = z.coerce
       .number()
       .int()
@@ -131,6 +132,14 @@ export async function editStudentAction(
       .eq("user_id", studentId);
     if (error) throw new Error(error.message);
 
+    await logAdminEdit({
+      adminId: session.profile.id,
+      adminName: session.profile.full_name,
+      targetType: "student",
+      targetId: studentId,
+      description: `تعديل بيانات الحساب (الاسم/الإيميل/الهاتف/الصف/الشعبة/ولي الأمر)`,
+    });
+
     revalidatePath(`/admin/students/${studentId}`);
     revalidatePath("/admin/students");
     return { ok: true, message: "تم حفظ التعديلات" };
@@ -153,13 +162,20 @@ export async function resetStudentPasswordAction(
   formData: FormData,
 ): Promise<ResetPasswordResult> {
   try {
-    await requireRole("admin");
+    const session = await requireRole("admin");
     const studentId = z.coerce
       .number()
       .int()
       .positive()
       .parse(formData.get("student_id"));
     const password = await resetAccountPassword(studentId);
+    await logAdminEdit({
+      adminId: session.profile.id,
+      adminName: session.profile.full_name,
+      targetType: "student",
+      targetId: studentId,
+      description: "إعادة تعيين كلمة السر",
+    });
     return { ok: true, message: "تم إعادة تعيين كلمة السر", password };
   } catch (error) {
     return {

@@ -8,8 +8,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { EditParentForm } from "./EditParentForm";
+import { LinkChildForm } from "./LinkChildForm";
+import { unlinkChild } from "./actions";
 import { BackLink } from "@/components/shared/BackLink";
+import { AdminEditLogCard } from "@/components/shared/AdminEditLogCard";
 
 export default async function AdminParentDetailPage({
   params,
@@ -68,20 +72,38 @@ export default async function AdminParentDetailPage({
           <CardTitle className="text-lg">الأبناء المربوطين</CardTitle>
           <CardDescription>{(children ?? []).length} ابن/ابنة</CardDescription>
         </CardHeader>
-        <CardContent className="flex flex-wrap gap-2">
-          {(children ?? []).map((c) => {
-            const childProfile = c.profiles as unknown as { full_name: string };
-            return (
-              <Badge key={c.user_id} variant="secondary">
-                {childProfile?.full_name} ({c.student_code})
-              </Badge>
-            );
-          })}
-          {(children ?? []).length === 0 && (
-            <p className="text-sm text-muted-foreground">مفيش أبناء مربوطين لسه</p>
-          )}
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            {(children ?? []).map((c) => {
+              const childProfile = c.profiles as unknown as { full_name: string };
+              return (
+                <div
+                  key={c.user_id}
+                  className="flex flex-wrap items-center justify-between gap-2 rounded-lg border p-2"
+                >
+                  <Badge variant="secondary">
+                    {childProfile?.full_name} ({c.student_code})
+                  </Badge>
+                  <form action={unlinkChild}>
+                    <input type="hidden" name="student_id" value={c.user_id} />
+                    <input type="hidden" name="parent_id" value={parentId} />
+                    <Button variant="destructive" size="xs" type="submit">
+                      إزالة ابن
+                    </Button>
+                  </form>
+                </div>
+              );
+            })}
+            {(children ?? []).length === 0 && (
+              <p className="text-sm text-muted-foreground">مفيش أبناء مربوطين لسه</p>
+            )}
+          </div>
+
+          <LinkChildForm parentId={parentId} />
         </CardContent>
       </Card>
+
+      <AdminEditLogCard targetType="parent" targetId={parentId} />
     </div>
   );
 }

@@ -11,6 +11,7 @@ import {
   resetAccountPassword,
   updateAccountProfile,
 } from "@/lib/users";
+import { logAdminEdit } from "@/lib/adminLog";
 
 export async function deleteParent(formData: FormData) {
   await requireRole("admin");
@@ -51,7 +52,7 @@ export async function editParentAction(
   formData: FormData,
 ): Promise<EditParentResult> {
   try {
-    await requireRole("admin");
+    const session = await requireRole("admin");
     const parentId = z.coerce
       .number()
       .int()
@@ -77,6 +78,14 @@ export async function editParentAction(
       .eq("user_id", parentId);
     if (error) throw new Error(error.message);
 
+    await logAdminEdit({
+      adminId: session.profile.id,
+      adminName: session.profile.full_name,
+      targetType: "parent",
+      targetId: parentId,
+      description: "تعديل بيانات الحساب (الاسم/الإيميل/الهاتف/العنوان)",
+    });
+
     revalidatePath(`/admin/parents/${parentId}`);
     revalidatePath("/admin/parents");
     return { ok: true, message: "تم حفظ التعديلات" };
@@ -99,13 +108,20 @@ export async function resetParentPasswordAction(
   formData: FormData,
 ): Promise<ResetPasswordResult> {
   try {
-    await requireRole("admin");
+    const session = await requireRole("admin");
     const parentId = z.coerce
       .number()
       .int()
       .positive()
       .parse(formData.get("parent_id"));
     const password = await resetAccountPassword(parentId);
+    await logAdminEdit({
+      adminId: session.profile.id,
+      adminName: session.profile.full_name,
+      targetType: "parent",
+      targetId: parentId,
+      description: "إعادة تعيين كلمة السر",
+    });
     return { ok: true, message: "تم إعادة تعيين كلمة السر", password };
   } catch (error) {
     return {

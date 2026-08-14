@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireRole } from "@/lib/auth/guards";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { logAdminEdit } from "@/lib/adminLog";
 import {
   createTeacher,
   deleteAccount,
@@ -52,7 +53,7 @@ export async function editTeacherAction(
   formData: FormData,
 ): Promise<EditTeacherResult> {
   try {
-    await requireRole("admin");
+    const session = await requireRole("admin");
     const teacherId = z.coerce
       .number()
       .int()
@@ -82,6 +83,14 @@ export async function editTeacherAction(
       .eq("user_id", teacherId);
     if (error) throw new Error(error.message);
 
+    await logAdminEdit({
+      adminId: session.profile.id,
+      adminName: session.profile.full_name,
+      targetType: "teacher",
+      targetId: teacherId,
+      description: "تعديل بيانات الحساب (الاسم/الإيميل/الهاتف/التخصص/المؤهل)",
+    });
+
     revalidatePath(`/admin/teachers/${teacherId}`);
     revalidatePath("/admin/teachers");
     return { ok: true, message: "تم حفظ التعديلات" };
@@ -104,13 +113,20 @@ export async function resetTeacherPasswordAction(
   formData: FormData,
 ): Promise<ResetPasswordResult> {
   try {
-    await requireRole("admin");
+    const session = await requireRole("admin");
     const teacherId = z.coerce
       .number()
       .int()
       .positive()
       .parse(formData.get("teacher_id"));
     const password = await resetAccountPassword(teacherId);
+    await logAdminEdit({
+      adminId: session.profile.id,
+      adminName: session.profile.full_name,
+      targetType: "teacher",
+      targetId: teacherId,
+      description: "إعادة تعيين كلمة السر",
+    });
     return { ok: true, message: "تم إعادة تعيين كلمة السر", password };
   } catch (error) {
     return {
@@ -121,7 +137,7 @@ export async function resetTeacherPasswordAction(
 }
 
 export async function updateTeacherSubjects(formData: FormData) {
-  await requireRole("admin");
+  const session = await requireRole("admin");
   const teacherId = z.coerce.number().int().positive().parse(formData.get("teacher_id"));
   const subjectCodes = formData.getAll("subjects") as string[];
 
@@ -131,6 +147,14 @@ export async function updateTeacherSubjects(formData: FormData) {
     { onConflict: "teacher_id" },
   );
   if (error) throw new Error(error.message);
+
+  await logAdminEdit({
+    adminId: session.profile.id,
+    adminName: session.profile.full_name,
+    targetType: "teacher",
+    targetId: teacherId,
+    description: `تعديل المواد اللي يقدر يدرّسها (${subjectCodes.length} مادة)`,
+  });
 
   revalidatePath(`/admin/teachers/${teacherId}`);
 }

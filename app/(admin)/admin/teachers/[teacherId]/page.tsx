@@ -22,6 +22,7 @@ import {
 import { updateTeacherSubjects } from "../actions";
 import { EditTeacherForm } from "./EditTeacherForm";
 import { BackLink } from "@/components/shared/BackLink";
+import { AdminEditLogCard } from "@/components/shared/AdminEditLogCard";
 
 export default async function AdminTeacherDetailPage({
   params,
@@ -34,37 +35,54 @@ export default async function AdminTeacherDetailPage({
 
   const supabase = createAdminClient();
 
-  const [{ data: teacher }, { data: prefs }, { data: subjects }, { data: schedule }, { data: availability }] =
-    await Promise.all([
-      supabase
-        .from("teachers")
-        .select(
-          "user_id, specialization, qualification, is_active, cv_drive_id, profiles!teachers_user_id_fkey(full_name, phone, user_id)",
-        )
-        .eq("user_id", teacherId)
-        .maybeSingle(),
-      supabase
-        .from("teacher_preferences")
-        .select("subjects")
-        .eq("teacher_id", teacherId)
-        .maybeSingle(),
-      supabase
-        .from("subjects")
-        .select("subject_id, subject_name, branch, classes(class_name)")
-        .order("class_id"),
-      supabase
-        .from("class_assignments")
-        .select("id, day_of_week, start_time, end_time, is_active, classes(class_name), subjects(subject_name)")
-        .eq("teacher_id", teacherId)
-        .order("day_of_week")
-        .order("start_time"),
-      supabase
-        .from("teacher_availability")
-        .select("id, day_of_week, start_time, end_time")
-        .eq("teacher_id", teacherId)
-        .order("day_of_week")
-        .order("start_time"),
-    ]);
+  const [
+    { data: teacher },
+    { data: prefs },
+    { data: subjects },
+    { data: schedule },
+    { data: availability },
+    { data: assignments },
+    { data: quizzes },
+  ] = await Promise.all([
+    supabase
+      .from("teachers")
+      .select(
+        "user_id, specialization, qualification, is_active, cv_drive_id, profiles!teachers_user_id_fkey(full_name, phone, user_id)",
+      )
+      .eq("user_id", teacherId)
+      .maybeSingle(),
+    supabase
+      .from("teacher_preferences")
+      .select("subjects")
+      .eq("teacher_id", teacherId)
+      .maybeSingle(),
+    supabase
+      .from("subjects")
+      .select("subject_id, subject_name, branch, classes(class_name)")
+      .order("class_id"),
+    supabase
+      .from("class_assignments")
+      .select(
+        "id, class_id, day_of_week, start_time, end_time, is_active, classes(class_name), subjects(subject_name)",
+      )
+      .eq("teacher_id", teacherId)
+      .order("day_of_week")
+      .order("start_time"),
+    supabase
+      .from("teacher_availability")
+      .select("id, day_of_week, start_time, end_time")
+      .eq("teacher_id", teacherId)
+      .order("day_of_week")
+      .order("start_time"),
+    supabase
+      .from("assignments")
+      .select("id, class_id, classes(class_name)")
+      .eq("teacher_id", teacherId),
+    supabase
+      .from("quizzes")
+      .select("id, class_id, classes(class_name)")
+      .eq("teacher_id", teacherId),
+  ]);
 
   if (!teacher) notFound();
 
@@ -75,6 +93,27 @@ export default async function AdminTeacherDetailPage({
   };
   const { data: authUser } = await supabase.auth.admin.getUserById(profile.user_id);
   const preferredSubjects = new Set<string>((prefs?.subjects as string[]) ?? []);
+
+  const classesTaught = new Map<number, string>();
+  for (const row of schedule ?? []) {
+    const cls = row.classes as unknown as { class_name: string } | null;
+    if (cls) classesTaught.set(row.class_id, cls.class_name);
+  }
+
+  const statsByClass = new Map<string, { assignments: number; quizzes: number }>();
+  for (const name of classesTaught.values()) {
+    statsByClass.set(name, { assignments: 0, quizzes: 0 });
+  }
+  for (const a of assignments ?? []) {
+    const name = (a.classes as unknown as { class_name: string } | null)?.class_name ?? "—";
+    if (!statsByClass.has(name)) statsByClass.set(name, { assignments: 0, quizzes: 0 });
+    statsByClass.get(name)!.assignments++;
+  }
+  for (const q of quizzes ?? []) {
+    const name = (q.classes as unknown as { class_name: string } | null)?.class_name ?? "—";
+    if (!statsByClass.has(name)) statsByClass.set(name, { assignments: 0, quizzes: 0 });
+    statsByClass.get(name)!.quizzes++;
+  }
 
   const subjectsByClass = new Map<
     string,
@@ -121,6 +160,55 @@ export default async function AdminTeacherDetailPage({
         specialization={teacher.specialization}
         qualification={teacher.qualification}
       />
+
+      <div className="grid gap-4 sm:grid-cols-3">
+        <Card>
+          <CardHeader>
+            <CardDescription>عدد الفصول</CardDescription>
+            <CardTitle className="text-3xl">{classesTaught.size}</CardTitle>
+          </CardHeader>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardDescription>عدد الواجبات</CardDescription>
+            <CardTitle className="text-3xl">{(assignments ?? []).length}</CardTitle>
+          </CardHeader>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardDescription>عدد الاختبارات</CardDescription>
+            <CardTitle className="text-3xl">{(quizzes ?? []).length}</CardTitle>
+          </CardHeader>
+        </Card>
+      </div>
+
+      {statsByClass.size > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">تفصيل حسب الفصل</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="text-right">الفصل</TableHead>
+                  <TableHead className="text-right">الواجبات</TableHead>
+                  <TableHead className="text-right">الاختبارات</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {[...statsByClass.entries()].map(([name, s]) => (
+                  <TableRow key={name}>
+                    <TableCell>{name}</TableCell>
+                    <TableCell>{s.assignments}</TableCell>
+                    <TableCell>{s.quizzes}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
 
       <Card>
         <CardHeader>
@@ -234,6 +322,8 @@ export default async function AdminTeacherDetailPage({
           </form>
         </CardContent>
       </Card>
+
+      <AdminEditLogCard targetType="teacher" targetId={teacherId} />
     </div>
   );
 }
