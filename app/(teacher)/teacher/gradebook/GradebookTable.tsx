@@ -175,7 +175,12 @@ export function GradebookTable({
             {filtered.map((s) => (
               <TableRow key={s.id}>
                 <TableCell className="whitespace-nowrap">
-                  <p className="font-medium">{s.name}</p>
+                  <Link
+                    href={`/teacher/gradebook/student/${s.id}`}
+                    className="font-medium underline-offset-4 hover:underline"
+                  >
+                    {s.name}
+                  </Link>
                   <p className="font-mono text-xs text-muted-foreground" dir="ltr">
                     {s.code}
                   </p>
