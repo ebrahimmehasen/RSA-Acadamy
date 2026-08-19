@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { motion, type Variants } from "framer-motion";
+import { motion, useReducedMotion, type Variants } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -167,6 +167,47 @@ function Reveal({
   );
 }
 
+/**
+ * Login is temporarily disabled on the landing page (not the /login
+ * route itself) — rendered as a blurred, inert button with a
+ * pulsing "Soon" badge instead of a working Link, per an explicit
+ * decision to soft-block it here for now.
+ */
+function ComingSoonButton({
+  label,
+  variant,
+}: {
+  label: string;
+  variant?: "outline";
+}) {
+  return (
+    <span className="relative inline-flex">
+      <Button
+        size="lg"
+        variant={variant}
+        disabled
+        aria-disabled="true"
+        className={cn(
+          variant === "outline" && cn(GLASS, "bg-white/40 dark:bg-white/[0.04]"),
+          "pointer-events-none blur-[3px] select-none opacity-60",
+        )}
+      >
+        {label}
+      </Button>
+      {/* Plain CSS animate-pulse instead of a framer-motion loop — the
+          browser's own compositor handles it with no per-frame JS, so
+          it stays smooth on low-end phones. */}
+      <span
+        aria-hidden
+        className="pointer-events-none absolute -top-2.5 -right-3 z-10 animate-pulse rounded-full px-2.5 py-1 text-[10px] font-extrabold tracking-widest text-white shadow-lg ring-2 ring-background"
+        style={{ backgroundColor: "var(--brand-gold)", rotate: "6deg" }}
+      >
+        SOON
+      </span>
+    </span>
+  );
+}
+
 function ColorIcon({
   icon: Icon,
   color,
@@ -189,26 +230,33 @@ function ColorIcon({
   );
 }
 
-/** Full-page animated aurora backdrop the glass panels float over. */
+/**
+ * Full-page animated aurora backdrop the glass panels float over.
+ * Kept deliberately light: fewer blobs, a smaller blur radius, and
+ * opacity-only motion (no scale) — animated blur filters are one of
+ * the most expensive things a low-end phone's compositor can do, and
+ * five large continuously-scaling ones were enough to visibly stutter
+ * scroll on weaker devices. Also fully static for prefers-reduced-motion.
+ */
 function AuroraBackground() {
+  const reduceMotion = useReducedMotion();
+
   // Sizes use clamp(min, vw-scaled, max) instead of a fixed rem value so the
   // blobs stay proportional to the viewport: on a ~375px phone they were
   // nearly full-bleed and read as bold moving color, but at fixed rem sizes
   // the same blob was a small, mostly off-screen sliver on a 1440px+
   // desktop — reads as "missing" even though it's rendering correctly.
   const blobs = [
-    { color: "brand-gold", top: "-8%", right: "-8%", size: "clamp(22rem, 30vw, 42rem)", dur: 9, delay: 0 },
-    { color: "brand-teal", top: "18%", left: "-10%", size: "clamp(20rem, 27vw, 38rem)", dur: 11, delay: 1 },
-    { color: "brand-blue", top: "48%", right: "5%", size: "clamp(24rem, 32vw, 46rem)", dur: 12, delay: 0.5 },
-    { color: "brand-terracotta", top: "72%", left: "0%", size: "clamp(18rem, 24vw, 34rem)", dur: 10, delay: 1.5 },
-    { color: "brand-blue", top: "95%", right: "20%", size: "clamp(20rem, 27vw, 38rem)", dur: 13, delay: 2 },
+    { color: "brand-gold", top: "-8%", right: "-8%", size: "clamp(20rem, 28vw, 38rem)", dur: 14, delay: 0 },
+    { color: "brand-teal", top: "22%", left: "-10%", size: "clamp(18rem, 25vw, 34rem)", dur: 17, delay: 1.5 },
+    { color: "brand-blue", top: "60%", right: "5%", size: "clamp(20rem, 28vw, 40rem)", dur: 16, delay: 0.8 },
   ];
   return (
     <div aria-hidden className="fixed inset-0 -z-10 overflow-hidden bg-background">
       {blobs.map((b, i) => (
         <motion.div
           key={i}
-          className="absolute rounded-full blur-3xl"
+          className="absolute rounded-full blur-2xl"
           style={{
             top: b.top,
             left: b.left,
@@ -217,7 +265,7 @@ function AuroraBackground() {
             height: b.size,
             backgroundColor: `color-mix(in oklch, var(--${b.color}) 26%, transparent)`,
           }}
-          animate={{ scale: [1, 1.15, 1], opacity: [0.7, 1, 0.7] }}
+          animate={reduceMotion ? undefined : { opacity: [0.6, 0.9, 0.6] }}
           transition={{ duration: b.dur, repeat: Infinity, ease: "easeInOut", delay: b.delay }}
         />
       ))}
@@ -295,17 +343,8 @@ export function LandingPage() {
             variants={fadeUp}
             transition={{ duration: 0.55, ease: "easeOut" }}
           >
-            <motion.span whileHover={{ y: -2 }} whileTap={{ y: 0 }}>
-              <Button size="lg" render={<Link href="/login">تسجيل الدخول</Link>} />
-            </motion.span>
-            <motion.span whileHover={{ y: -2 }} whileTap={{ y: 0 }}>
-              <Button
-                size="lg"
-                variant="outline"
-                className={cn(GLASS, GLASS_HOVER, "bg-white/40 dark:bg-white/[0.04]")}
-                render={<Link href="/signup">إنشاء حساب جديد</Link>}
-              />
-            </motion.span>
+            <ComingSoonButton label="تسجيل الدخول" />
+            <ComingSoonButton label="إنشاء حساب جديد" variant="outline" />
             <motion.span whileHover={{ y: -2 }} whileTap={{ y: 0 }}>
               <Button
                 size="lg"
@@ -471,17 +510,8 @@ export function LandingPage() {
               سواء كنت طالباً، معلماً، أو ولي أمر — حسابك جاهز خلال دقائق.
             </p>
             <div className="flex flex-wrap items-center justify-center gap-3">
-              <motion.span whileHover={{ y: -2 }} whileTap={{ y: 0 }}>
-                <Button size="lg" render={<Link href="/signup">إنشاء حساب جديد</Link>} />
-              </motion.span>
-              <motion.span whileHover={{ y: -2 }} whileTap={{ y: 0 }}>
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className={cn(GLASS, GLASS_HOVER, "bg-white/40 dark:bg-white/[0.04]")}
-                  render={<Link href="/login">تسجيل الدخول</Link>}
-                />
-              </motion.span>
+              <ComingSoonButton label="إنشاء حساب جديد" />
+              <ComingSoonButton label="تسجيل الدخول" variant="outline" />
             </div>
           </div>
         </Reveal>
