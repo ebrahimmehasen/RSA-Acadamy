@@ -151,7 +151,19 @@ export function EditStudentForm({
         )}
 
         <div className="border-t pt-4">
-          <form action={resetAction} className="flex items-end gap-3">
+          <form
+            action={resetAction}
+            className="flex items-end gap-3"
+            onSubmit={(e) => {
+              if (
+                !confirm(
+                  `متأكد إنك عايز تعيد تعيين كلمة سر "${fullName}"؟ كلمة السر الحالية هتتلغي فورًا.`,
+                )
+              ) {
+                e.preventDefault();
+              }
+            }}
+          >
             <input type="hidden" name="student_id" value={studentId} />
             <Button type="submit" variant="outline" disabled={resetPending}>
               {resetPending ? "جاري إعادة التعيين…" : "إعادة تعيين كلمة السر"}
