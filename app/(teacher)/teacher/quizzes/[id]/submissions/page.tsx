@@ -3,7 +3,6 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getSession } from "@/lib/auth/session";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Card,
@@ -14,6 +13,7 @@ import {
 import { gradeQuizAnswer } from "./actions";
 import { BackLink } from "@/components/shared/BackLink";
 import { RealtimeRefresh } from "@/components/shared/RealtimeRefresh";
+import { GradeSaveButton } from "./GradeSaveButton";
 
 export default async function QuizSubmissionsPage({
   params,
@@ -155,9 +155,7 @@ export default async function QuizSubmissionsPage({
                             className="w-24"
                           />
                         </div>
-                        <Button type="submit" size="sm">
-                          حفظ
-                        </Button>
+                        <GradeSaveButton />
                       </form>
                     </div>
                   );

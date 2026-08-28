@@ -70,7 +70,7 @@ export function QuizTakingForm({
         </div>
         <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
           <div
-            className="h-full bg-primary transition-all"
+            className="h-full bg-primary transition-[width]"
             style={{ width: `${progress}%` }}
           />
         </div>
@@ -79,7 +79,7 @@ export function QuizTakingForm({
       {questions.map((q, i) => (
         <Card key={q.id}>
           <CardHeader>
-            <CardTitle className="text-base">
+            <CardTitle id={`question_${q.id}`} className="text-base">
               {i + 1}. {q.question_text}{" "}
               <span className="text-destructive">*</span>{" "}
               <span className="text-sm font-normal text-muted-foreground">
@@ -121,13 +121,14 @@ export function QuizTakingForm({
             {q.question_type === "dropdown" && (
               <select
                 name={`answer_${q.id}`}
+                aria-labelledby={`question_${q.id}`}
                 required
                 dir="rtl"
-                className="h-8 w-full rounded-lg border border-input bg-background px-2 text-sm"
+                className="h-8 w-full rounded-lg border border-input bg-background px-2 text-sm text-foreground"
                 defaultValue=""
               >
                 <option value="" disabled>
-                  اختر إجابة...
+                  اختر إجابة…
                 </option>
                 {Object.entries(q.options ?? {}).map(([key, label]) => (
                   <option key={key} value={key}>
@@ -151,11 +152,21 @@ export function QuizTakingForm({
             )}
 
             {q.question_type === "short_answer" && (
-              <Input name={`answer_${q.id}`} required dir="rtl" />
+              <Input
+                name={`answer_${q.id}`}
+                aria-labelledby={`question_${q.id}`}
+                required
+                dir="rtl"
+              />
             )}
 
             {q.question_type === "essay" && (
-              <Textarea name={`answer_${q.id}`} rows={4} required />
+              <Textarea
+                name={`answer_${q.id}`}
+                aria-labelledby={`question_${q.id}`}
+                rows={4}
+                required
+              />
             )}
           </CardContent>
         </Card>

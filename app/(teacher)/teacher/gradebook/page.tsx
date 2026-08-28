@@ -189,6 +189,7 @@ export default async function TeacherGradebookPage({
               <Link
                 key={c.id}
                 href={`/teacher/gradebook?classId=${c.id}`}
+                aria-current={c.id === classId ? "true" : undefined}
                 className={cn(
                   "rounded-full border px-3 py-1.5 text-sm",
                   c.id === classId

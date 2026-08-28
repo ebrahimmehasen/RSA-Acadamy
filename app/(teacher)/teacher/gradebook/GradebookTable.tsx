@@ -121,7 +121,8 @@ export function GradebookTable({
   return (
     <div className="space-y-3">
       <Input
-        placeholder="بحث بالاسم أو كود الطالب..."
+        placeholder="بحث بالاسم أو كود الطالب…"
+        aria-label="بحث بالاسم أو كود الطالب"
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         className="max-w-sm"
@@ -131,11 +132,14 @@ export function GradebookTable({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead
-                className="cursor-pointer whitespace-nowrap text-right"
-                onClick={() => toggleSort("name")}
-              >
-                الطالب{sortArrow("name")}
+              <TableHead className="whitespace-nowrap text-right">
+                <button
+                  type="button"
+                  className="cursor-pointer"
+                  onClick={() => toggleSort("name")}
+                >
+                  الطالب{sortArrow("name")}
+                </button>
               </TableHead>
               {assignmentHeaders.map((h) => (
                 <TableHead key={`a-${h.id}`} className="whitespace-nowrap text-center">
@@ -157,17 +161,23 @@ export function GradebookTable({
                   </Link>
                 </TableHead>
               ))}
-              <TableHead
-                className="cursor-pointer whitespace-nowrap text-center"
-                onClick={() => toggleSort("average")}
-              >
-                المتوسط العام{sortArrow("average")}
+              <TableHead className="whitespace-nowrap text-center">
+                <button
+                  type="button"
+                  className="cursor-pointer"
+                  onClick={() => toggleSort("average")}
+                >
+                  المتوسط العام{sortArrow("average")}
+                </button>
               </TableHead>
-              <TableHead
-                className="cursor-pointer whitespace-nowrap text-center"
-                onClick={() => toggleSort("late")}
-              >
-                مرات التأخير{sortArrow("late")}
+              <TableHead className="whitespace-nowrap text-center">
+                <button
+                  type="button"
+                  className="cursor-pointer"
+                  onClick={() => toggleSort("late")}
+                >
+                  مرات التأخير{sortArrow("late")}
+                </button>
               </TableHead>
             </TableRow>
           </TableHeader>

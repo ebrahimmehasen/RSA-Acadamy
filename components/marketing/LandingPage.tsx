@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { motion, useReducedMotion, type Variants } from "framer-motion";
+import { motion, MotionConfig, useReducedMotion, type Variants } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -276,8 +276,13 @@ function AuroraBackground() {
 
 export function LandingPage() {
   return (
-    <main dir="rtl" className="relative min-h-screen overflow-x-clip">
-      <AuroraBackground />
+    // reducedMotion="user" makes every whileInView/whileHover/animate
+    // animation in this file (fadeUp, staggerContainer, card hover lifts,
+    // etc.) collapse to instant/opacity-only for prefers-reduced-motion —
+    // one switch instead of threading useReducedMotion through each variant.
+    <MotionConfig reducedMotion="user">
+      <main dir="rtl" className="relative min-h-screen overflow-x-clip">
+        <AuroraBackground />
 
       {/* Hero */}
       <div className="relative overflow-hidden">
@@ -536,6 +541,7 @@ export function LandingPage() {
           </p>
         </div>
       </footer>
-    </main>
+      </main>
+    </MotionConfig>
   );
 }

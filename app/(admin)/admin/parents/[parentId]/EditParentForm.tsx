@@ -96,6 +96,7 @@ export function EditParentForm({
         {editResult && (
           <p
             className={`text-sm ${editResult.ok ? "text-green-600" : "text-destructive"}`}
+            aria-live="polite"
           >
             {editResult.message}
           </p>

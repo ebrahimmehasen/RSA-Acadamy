@@ -16,6 +16,7 @@ import { AddQuestionForm } from "./AddQuestionForm";
 import { EditQuizForm } from "./EditQuizForm";
 import { EditQuestionForm } from "./EditQuestionForm";
 import { BackLink } from "@/components/shared/BackLink";
+import { PublishButton } from "./PublishButton";
 
 const TYPE_LABELS: Record<string, string> = {
   multiple_choice: "اختيار من متعدد",
@@ -91,7 +92,7 @@ export default async function TeacherQuizDetailPage({
         ) : (
           <form action={publishQuiz}>
             <input type="hidden" name="quiz_id" value={quizId} />
-            <Button type="submit">نشر الاختبار</Button>
+            <PublishButton />
           </form>
         )}
       </div>

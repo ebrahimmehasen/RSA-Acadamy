@@ -127,6 +127,7 @@ export function EditQuizForm({
           {result && (
             <p
               className={`text-sm sm:col-span-2 ${result.ok ? "text-green-600" : "text-destructive"}`}
+              aria-live="polite"
             >
               {result.message}
             </p>
@@ -134,7 +135,7 @@ export function EditQuizForm({
 
           <div className="flex justify-end sm:col-span-2">
             <Button type="submit" size="sm" disabled={isPending}>
-              {isPending ? "جاري الحفظ..." : "حفظ التعديلات"}
+              {isPending ? "جاري الحفظ…" : "حفظ التعديلات"}
             </Button>
           </div>
         </form>
