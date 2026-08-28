@@ -25,7 +25,9 @@ export function VideoTracker({
     <video
       src={`/api/files/${driveId}`}
       controls
-      className="w-full rounded-lg border"
+      width={1280}
+      height={720}
+      className="aspect-video w-full rounded-lg border"
       onTimeUpdate={(e) => {
         const video = e.currentTarget;
         if (!video.duration) return;

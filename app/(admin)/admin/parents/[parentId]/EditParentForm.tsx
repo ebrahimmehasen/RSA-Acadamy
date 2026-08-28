@@ -49,7 +49,13 @@ export function EditParentForm({
           <input type="hidden" name="parent_id" value={parentId} />
           <div className="space-y-2">
             <Label htmlFor="full_name">الاسم الكامل</Label>
-            <Input id="full_name" name="full_name" defaultValue={fullName} required />
+            <Input
+              id="full_name"
+              name="full_name"
+              autoComplete="name"
+              defaultValue={fullName}
+              required
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="email">البريد الإلكتروني</Label>
@@ -58,13 +64,24 @@ export function EditParentForm({
               name="email"
               type="email"
               dir="ltr"
+              autoComplete="email"
+              spellCheck={false}
               defaultValue={email}
               required
             />
           </div>
           <div className="space-y-2">
             <Label htmlFor="phone">الهاتف</Label>
-            <Input id="phone" name="phone" dir="ltr" defaultValue={phone ?? ""} required />
+            <Input
+              id="phone"
+              name="phone"
+              type="tel"
+              dir="ltr"
+              autoComplete="tel"
+              inputMode="tel"
+              defaultValue={phone ?? ""}
+              required
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="address">العنوان (اختياري)</Label>
@@ -72,7 +89,7 @@ export function EditParentForm({
           </div>
           <div className="flex items-end">
             <Button type="submit" disabled={editPending}>
-              {editPending ? "جاري الحفظ..." : "حفظ التعديلات"}
+              {editPending ? "جاري الحفظ…" : "حفظ التعديلات"}
             </Button>
           </div>
         </form>
@@ -85,25 +102,39 @@ export function EditParentForm({
         )}
 
         <div className="border-t pt-4">
-          <form action={resetAction} className="flex items-end gap-3">
+          <form
+            action={resetAction}
+            className="flex items-end gap-3"
+            onSubmit={(e) => {
+              if (
+                !confirm(
+                  `متأكد إنك عايز تعيد تعيين كلمة سر "${fullName}"؟ كلمة السر الحالية هتتلغي فورًا.`,
+                )
+              ) {
+                e.preventDefault();
+              }
+            }}
+          >
             <input type="hidden" name="parent_id" value={parentId} />
             <Button type="submit" variant="outline" disabled={resetPending}>
-              {resetPending ? "جاري إعادة التعيين..." : "إعادة تعيين كلمة السر"}
+              {resetPending ? "جاري إعادة التعيين…" : "إعادة تعيين كلمة السر"}
             </Button>
           </form>
-          {resetResult?.ok && resetResult.password && (
-            <div className="mt-2 rounded-lg border border-green-300 bg-green-50 p-3 text-sm dark:bg-green-950">
-              <p dir="ltr">
-                كلمة السر الجديدة: <b>{resetResult.password}</b>
-              </p>
-              <p className="text-muted-foreground">
-                ⚠️ انسخها دلوقتي وسلّمها لولي الأمر — مش هتظهر تاني
-              </p>
-            </div>
-          )}
-          {resetResult && !resetResult.ok && (
-            <p className="mt-2 text-sm text-destructive">{resetResult.message}</p>
-          )}
+          <div aria-live="polite">
+            {resetResult?.ok && resetResult.password && (
+              <div className="mt-2 rounded-lg border border-green-300 bg-green-50 p-3 text-sm dark:bg-green-950">
+                <p dir="ltr">
+                  كلمة السر الجديدة: <b>{resetResult.password}</b>
+                </p>
+                <p className="text-muted-foreground">
+                  ⚠️ انسخها دلوقتي وسلّمها لولي الأمر — مش هتظهر تاني
+                </p>
+              </div>
+            )}
+            {resetResult && !resetResult.ok && (
+              <p className="mt-2 text-sm text-destructive">{resetResult.message}</p>
+            )}
+          </div>
         </div>
       </CardContent>
     </Card>

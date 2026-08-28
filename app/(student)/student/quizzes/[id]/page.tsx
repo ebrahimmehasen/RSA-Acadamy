@@ -1,7 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getSession } from "@/lib/auth/session";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -11,6 +10,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { submitQuiz } from "./actions";
+import { QuizForm } from "./QuizForm";
+import { SubmitButton } from "./SubmitButton";
 
 // Deterministic per (quiz, student) shuffle: keeps the render pure (no
 // Math.random() during render) and keeps the question order stable across
@@ -93,9 +94,7 @@ export default async function TakeQuizPage({
         </p>
       </div>
 
-      <form action={submitQuiz} className="space-y-4">
-        <input type="hidden" name="quiz_id" value={quizId} />
-
+      <QuizForm action={submitQuiz} quizId={quizId}>
         {questions.map((q, i) => (
           <Card key={q.id}>
             <CardHeader>
@@ -149,10 +148,8 @@ export default async function TakeQuizPage({
           </Card>
         ))}
 
-        <Button type="submit" size="lg">
-          تسليم الاختبار
-        </Button>
-      </form>
+        <SubmitButton />
+      </QuizForm>
     </div>
   );
 }

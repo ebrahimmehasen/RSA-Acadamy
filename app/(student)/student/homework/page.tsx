@@ -43,7 +43,7 @@ export default async function StudentHomeworkPage() {
               <Card className="transition-colors hover:bg-accent">
                 <CardHeader>
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <CardTitle className="text-base">{a.title}</CardTitle>
+                    <CardTitle className="min-w-0 truncate text-base">{a.title}</CardTitle>
                     {submission?.status === "graded" ? (
                       <Badge>
                         الدرجة: {submission.grade}/{a.max_grade}

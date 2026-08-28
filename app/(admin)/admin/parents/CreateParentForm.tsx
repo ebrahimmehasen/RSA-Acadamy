@@ -30,45 +30,63 @@ export function CreateParentForm() {
         <form action={formAction} className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
             <Label htmlFor="full_name">الاسم الكامل</Label>
-            <Input id="full_name" name="full_name" required />
+            <Input id="full_name" name="full_name" autoComplete="name" required />
           </div>
           <div className="space-y-2">
             <Label htmlFor="email">البريد الإلكتروني</Label>
-            <Input id="email" name="email" type="email" dir="ltr" required />
+            <Input
+              id="email"
+              name="email"
+              type="email"
+              dir="ltr"
+              autoComplete="email"
+              spellCheck={false}
+              required
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="phone">الهاتف</Label>
-            <Input id="phone" name="phone" dir="ltr" required />
+            <Input
+              id="phone"
+              name="phone"
+              type="tel"
+              dir="ltr"
+              autoComplete="tel"
+              inputMode="tel"
+              required
+            />
           </div>
           <div className="flex items-end">
             <Button type="submit" disabled={isPending}>
-              {isPending ? "جاري الإنشاء..." : "إنشاء ولي الأمر"}
+              {isPending ? "جاري الإنشاء…" : "إنشاء ولي الأمر"}
             </Button>
           </div>
         </form>
 
-        {result && (
-          <div
-            className={`rounded-lg border p-4 text-sm ${
-              result.ok
-                ? "border-green-300 bg-green-50 dark:bg-green-950"
-                : "border-destructive bg-destructive/10"
-            }`}
-          >
-            <p className="font-medium">{result.message}</p>
-            {result.credentials && (
-              <div className="mt-2 space-y-1" dir="ltr">
-                <p>Email: {result.credentials.email}</p>
-                <p>
-                  Password: <b>{result.credentials.password}</b>
-                </p>
-                <p dir="rtl" className="text-muted-foreground">
-                  ⚠️ انسخ البيانات دي دلوقتي وسلّمها لولي الأمر — مش هتظهر تاني
-                </p>
-              </div>
-            )}
-          </div>
-        )}
+        <div aria-live="polite">
+          {result && (
+            <div
+              className={`rounded-lg border p-4 text-sm ${
+                result.ok
+                  ? "border-green-300 bg-green-50 dark:bg-green-950"
+                  : "border-destructive bg-destructive/10"
+              }`}
+            >
+              <p className="font-medium">{result.message}</p>
+              {result.credentials && (
+                <div className="mt-2 space-y-1" dir="ltr">
+                  <p>Email: {result.credentials.email}</p>
+                  <p>
+                    Password: <b>{result.credentials.password}</b>
+                  </p>
+                  <p dir="rtl" className="text-muted-foreground">
+                    ⚠️ انسخ البيانات دي دلوقتي وسلّمها لولي الأمر — مش هتظهر تاني
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </CardContent>
     </Card>
   );

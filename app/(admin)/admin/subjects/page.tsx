@@ -28,7 +28,8 @@ export default async function AdminSubjectsPage() {
     supabase
       .from("subjects")
       .select("subject_id, subject_name, branch, is_active, classes(class_name)")
-      .order("class_id"),
+      .order("class_id")
+      .limit(100),
   ]);
 
   return (

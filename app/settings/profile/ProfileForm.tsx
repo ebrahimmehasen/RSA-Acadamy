@@ -57,13 +57,14 @@ export function ProfileForm({
           </div>
           <div className="space-y-2">
             <Label>البريد الإلكتروني</Label>
-            <Input value={email} dir="ltr" disabled />
+            <Input value={email} dir="ltr" readOnly />
           </div>
           <div className="space-y-2">
             <Label htmlFor="full_name">الاسم الكامل</Label>
             <Input
               id="full_name"
               name="full_name"
+              autoComplete="name"
               defaultValue={fullName}
               required
               minLength={3}
@@ -74,19 +75,22 @@ export function ProfileForm({
             <Input
               id="phone"
               name="phone"
+              type="tel"
               dir="ltr"
+              autoComplete="tel"
               defaultValue={phone ?? ""}
             />
           </div>
           {result && (
             <p
               className={`text-sm ${result.ok ? "text-green-600" : "text-destructive"}`}
+              aria-live="polite"
             >
               {result.message}
             </p>
           )}
           <Button type="submit" disabled={isPending}>
-            {isPending ? "جاري الحفظ..." : "حفظ التعديلات"}
+            {isPending ? "جاري الحفظ…" : "حفظ التعديلات"}
           </Button>
         </form>
       </CardContent>

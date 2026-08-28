@@ -34,7 +34,7 @@ export function CreateStudentForm({
         <form action={formAction} className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2 sm:col-span-2">
             <Label htmlFor="full_name">الاسم الكامل</Label>
-            <Input id="full_name" name="full_name" required />
+            <Input id="full_name" name="full_name" autoComplete="name" required />
             <p className="text-xs text-muted-foreground">
               الإيميل وكلمة السر بيتولّدوا تلقائيًا — مش محتاج تدخلهم
             </p>
@@ -45,9 +45,9 @@ export function CreateStudentForm({
               id="class_id"
               name="class_id"
               required
-              className="h-8 w-full rounded-lg border border-input bg-background px-2 text-sm"
+              className="h-8 w-full rounded-lg border border-input bg-background text-foreground px-2 text-sm"
             >
-              <option value="">اختر الصف...</option>
+              <option value="">اختر الصف…</option>
               {classes.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.class_name}
@@ -61,7 +61,7 @@ export function CreateStudentForm({
               id="branch"
               name="branch"
               required
-              className="h-8 w-full rounded-lg border border-input bg-background px-2 text-sm"
+              className="h-8 w-full rounded-lg border border-input bg-background text-foreground px-2 text-sm"
             >
               <option value="Arabic">عربي</option>
               <option value="Languages">لغات</option>
@@ -69,40 +69,49 @@ export function CreateStudentForm({
           </div>
           <div className="space-y-2">
             <Label htmlFor="phone">الهاتف (اختياري)</Label>
-            <Input id="phone" name="phone" dir="ltr" />
+            <Input
+              id="phone"
+              name="phone"
+              type="tel"
+              dir="ltr"
+              autoComplete="tel"
+              inputMode="tel"
+            />
           </div>
           <div className="flex items-end">
             <Button type="submit" disabled={isPending}>
-              {isPending ? "جاري الإنشاء..." : "إنشاء الطالب"}
+              {isPending ? "جاري الإنشاء…" : "إنشاء الطالب"}
             </Button>
           </div>
         </form>
 
-        {result && (
-          <div
-            className={`rounded-lg border p-4 text-sm ${
-              result.ok
-                ? "border-green-300 bg-green-50 dark:bg-green-950"
-                : "border-destructive bg-destructive/10"
-            }`}
-          >
-            <p className="font-medium">{result.message}</p>
-            {result.credentials && (
-              <div className="mt-2 space-y-1" dir="ltr">
-                <p>Email: {result.credentials.email}</p>
-                <p>
-                  Password: <b>{result.credentials.password}</b>
-                </p>
-                <p>
-                  Student Code: <b>{result.credentials.studentCode}</b>
-                </p>
-                <p dir="rtl" className="text-muted-foreground">
-                  ⚠️ انسخ البيانات دي دلوقتي وسلّمها للطالب — مش هتظهر تاني
-                </p>
-              </div>
-            )}
-          </div>
-        )}
+        <div aria-live="polite">
+          {result && (
+            <div
+              className={`rounded-lg border p-4 text-sm ${
+                result.ok
+                  ? "border-green-300 bg-green-50 dark:bg-green-950"
+                  : "border-destructive bg-destructive/10"
+              }`}
+            >
+              <p className="font-medium">{result.message}</p>
+              {result.credentials && (
+                <div className="mt-2 space-y-1" dir="ltr">
+                  <p>Email: {result.credentials.email}</p>
+                  <p>
+                    Password: <b>{result.credentials.password}</b>
+                  </p>
+                  <p>
+                    Student Code: <b>{result.credentials.studentCode}</b>
+                  </p>
+                  <p dir="rtl" className="text-muted-foreground">
+                    ⚠️ انسخ البيانات دي دلوقتي وسلّمها للطالب — مش هتظهر تاني
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </CardContent>
     </Card>
   );

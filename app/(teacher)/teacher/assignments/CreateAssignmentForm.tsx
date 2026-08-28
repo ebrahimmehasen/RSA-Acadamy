@@ -40,7 +40,7 @@ export function CreateAssignmentForm({
               value={selection}
               onChange={(e) => setSelection(e.target.value)}
               required
-              className="h-8 w-full rounded-lg border border-input bg-background px-2 text-sm"
+              className="h-8 w-full rounded-lg border border-input bg-background px-2 text-sm text-foreground"
             >
               <option value="">اختر...</option>
               {slots.map((s) => (
@@ -135,13 +135,14 @@ export function CreateAssignmentForm({
           {result && (
             <p
               className={`text-sm ${result.ok ? "text-green-600" : "text-destructive"}`}
+              aria-live="polite"
             >
               {result.message}
             </p>
           )}
 
           <Button type="submit" disabled={isPending}>
-            {isPending ? "جاري الإنشاء..." : "إنشاء الواجب"}
+            {isPending ? "جاري الإنشاء…" : "إنشاء الواجب"}
           </Button>
         </form>
       </CardContent>

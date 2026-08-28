@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { motion, type Variants } from "framer-motion";
+import { motion, useReducedMotion, type Variants } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -196,6 +196,7 @@ function AuroraBackground() {
   // nearly full-bleed and read as bold moving color, but at fixed rem sizes
   // the same blob was a small, mostly off-screen sliver on a 1440px+
   // desktop — reads as "missing" even though it's rendering correctly.
+  const prefersReducedMotion = useReducedMotion();
   const blobs = [
     { color: "brand-gold", top: "-8%", right: "-8%", size: "clamp(22rem, 30vw, 42rem)", dur: 9, delay: 0 },
     { color: "brand-teal", top: "18%", left: "-10%", size: "clamp(20rem, 27vw, 38rem)", dur: 11, delay: 1 },
@@ -217,7 +218,11 @@ function AuroraBackground() {
             height: b.size,
             backgroundColor: `color-mix(in oklch, var(--${b.color}) 26%, transparent)`,
           }}
-          animate={{ scale: [1, 1.15, 1], opacity: [0.7, 1, 0.7] }}
+          animate={
+            prefersReducedMotion
+              ? undefined
+              : { scale: [1, 1.15, 1], opacity: [0.7, 1, 0.7] }
+          }
           transition={{ duration: b.dur, repeat: Infinity, ease: "easeInOut", delay: b.delay }}
         />
       ))}
@@ -248,7 +253,7 @@ export function LandingPage() {
             transition={{ duration: 0.6, ease: "easeOut" }}
           >
             <div
-              className="relative h-20 sm:h-24"
+              className="relative h-28 sm:h-32"
               style={{ aspectRatio: "5266 / 1931" }}
             >
               <Image
@@ -332,7 +337,11 @@ export function LandingPage() {
               variants={fadeUp}
               transition={{ duration: 0.5, ease: "easeOut" }}
               whileHover={{ y: -6 }}
-              className={cn("rounded-2xl p-5 text-right transition-all", GLASS, GLASS_HOVER)}
+              className={cn(
+                "rounded-2xl p-5 text-right transition-[border-color,background-color,box-shadow]",
+                GLASS,
+                GLASS_HOVER
+              )}
             >
               <span className="mb-3 block w-fit">
                 <ColorIcon icon={Icon} color={color} />
@@ -399,7 +408,7 @@ export function LandingPage() {
                         transition={{ duration: 0.4, ease: "easeOut" }}
                         whileHover={{ y: -4 }}
                         className={cn(
-                          "flex items-start gap-3 rounded-2xl p-4 text-right transition-all",
+                          "flex items-start gap-3 rounded-2xl p-4 text-right transition-[border-color,background-color,box-shadow]",
                           GLASS,
                           GLASS_HOVER
                         )}
@@ -445,7 +454,7 @@ export function LandingPage() {
               transition={{ duration: 0.5, ease: "easeOut" }}
               whileHover={{ y: -4 }}
               className={cn(
-                "flex items-start gap-4 rounded-2xl p-5 text-right transition-all",
+                "flex items-start gap-4 rounded-2xl p-5 text-right transition-[border-color,background-color,box-shadow]",
                 GLASS,
                 GLASS_HOVER
               )}

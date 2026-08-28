@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useActionState, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,7 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { createQuiz } from "./actions";
+import { createQuiz, type ActionResult } from "./actions";
 
 export function CreateQuizForm({
   slots,
@@ -30,6 +30,10 @@ export function CreateQuizForm({
     subjectId: string;
   }[];
 }) {
+  const [result, formAction, isPending] = useActionState<
+    ActionResult | null,
+    FormData
+  >(createQuiz, null);
   const [selection, setSelection] = useState("");
   const [startLocal, setStartLocal] = useState("");
   const [endLocal, setEndLocal] = useState("");
@@ -44,7 +48,7 @@ export function CreateQuizForm({
         <CardTitle className="text-lg">إنشاء اختبار جديد</CardTitle>
       </CardHeader>
       <CardContent>
-        <form action={createQuiz} className="grid gap-4 sm:grid-cols-2">
+        <form action={formAction} className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2 sm:col-span-2">
             <Label htmlFor="slot">الفصل والمادة</Label>
             <select
@@ -52,7 +56,7 @@ export function CreateQuizForm({
               value={selection}
               onChange={(e) => setSelection(e.target.value)}
               required
-              className="h-8 w-full rounded-lg border border-input bg-background px-2 text-sm"
+              className="h-8 w-full rounded-lg border border-input bg-background px-2 text-sm text-foreground"
             >
               <option value="">اختر...</option>
               {slots.map((s) => (
@@ -145,7 +149,7 @@ export function CreateQuizForm({
               <select
                 id="assignment_id"
                 name="assignment_id"
-                className="h-8 w-full rounded-lg border border-input bg-background px-2 text-sm"
+                className="h-8 w-full rounded-lg border border-input bg-background px-2 text-sm text-foreground"
               >
                 <option value="">اختبار مستقل (غير مرتبط)</option>
                 {matchingAssignments.map((a) => (
@@ -164,8 +168,15 @@ export function CreateQuizForm({
             />
             <label htmlFor="shuffle_questions">ترتيب عشوائي للأسئلة</label>
           </div>
+          {result && !result.ok && (
+            <p className="text-sm text-destructive sm:col-span-2" aria-live="polite">
+              {result.message}
+            </p>
+          )}
           <div className="flex items-end justify-end">
-            <Button type="submit">إنشاء ومتابعة إضافة الأسئلة</Button>
+            <Button type="submit" disabled={isPending}>
+              {isPending ? "جاري الإنشاء…" : "إنشاء ومتابعة إضافة الأسئلة"}
+            </Button>
           </div>
         </form>
       </CardContent>

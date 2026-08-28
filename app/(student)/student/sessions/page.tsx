@@ -37,7 +37,7 @@ export default async function StudentSessionsPage() {
             <Link key={s.id} href={`/student/sessions/${s.id}`}>
               <Card className="transition-colors hover:bg-accent">
                 <CardHeader>
-                  <CardTitle className="text-base">{s.title}</CardTitle>
+                  <CardTitle className="truncate text-base">{s.title}</CardTitle>
                 </CardHeader>
                 <CardContent className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
                   <span>

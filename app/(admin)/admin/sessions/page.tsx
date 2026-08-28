@@ -17,7 +17,8 @@ export default async function AdminSessionsPage() {
     .select(
       "id, title, view_count, total_rating, rating_count, is_published, is_archived, is_public, classes(class_name), subjects(subject_name), teachers!recorded_sessions_teacher_id_fkey(profiles!teachers_user_id_fkey(full_name))",
     )
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .limit(100);
 
   return (
     <div className="space-y-6">

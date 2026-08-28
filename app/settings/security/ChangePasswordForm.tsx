@@ -74,6 +74,7 @@ export function ChangePasswordForm({ email }: { email: string }) {
               id="current_password"
               type="password"
               dir="ltr"
+              autoComplete="current-password"
               required
               value={current}
               onChange={(e) => setCurrent(e.target.value)}
@@ -85,6 +86,7 @@ export function ChangePasswordForm({ email }: { email: string }) {
               id="new_password"
               type="password"
               dir="ltr"
+              autoComplete="new-password"
               required
               value={next}
               onChange={(e) => setNext(e.target.value)}
@@ -96,6 +98,7 @@ export function ChangePasswordForm({ email }: { email: string }) {
               id="confirm_password"
               type="password"
               dir="ltr"
+              autoComplete="new-password"
               required
               value={confirm}
               onChange={(e) => setConfirm(e.target.value)}
@@ -104,12 +107,13 @@ export function ChangePasswordForm({ email }: { email: string }) {
           {message && (
             <p
               className={`text-sm ${message.ok ? "text-green-600" : "text-destructive"}`}
+              aria-live="polite"
             >
               {message.text}
             </p>
           )}
           <Button type="submit" size="sm" disabled={loading}>
-            {loading ? "جاري الحفظ..." : "حفظ كلمة السر الجديدة"}
+            {loading ? "جاري الحفظ…" : "حفظ كلمة السر الجديدة"}
           </Button>
         </form>
       </CardContent>

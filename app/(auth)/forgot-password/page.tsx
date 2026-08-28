@@ -46,7 +46,7 @@ export default function ForgotPasswordPage() {
       </CardHeader>
       <CardContent>
         {sent ? (
-          <div className="space-y-3 text-sm">
+          <div className="space-y-3 text-sm" aria-live="polite">
             <p className="text-green-600">
               لو الإيميل ده مسجّل عندنا، هيوصلك رابط إعادة التعيين ✅
             </p>
@@ -62,14 +62,20 @@ export default function ForgotPasswordPage() {
                 id="email"
                 type="email"
                 dir="ltr"
+                autoComplete="email"
+                spellCheck={false}
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>
-            {error && <p className="text-sm text-destructive">{error}</p>}
+            {error && (
+              <p className="text-sm text-destructive" aria-live="polite">
+                {error}
+              </p>
+            )}
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "جاري الإرسال..." : "إرسال رابط إعادة التعيين"}
+              {loading ? "جاري الإرسال…" : "إرسال رابط إعادة التعيين"}
             </Button>
             <Link
               href="/login"

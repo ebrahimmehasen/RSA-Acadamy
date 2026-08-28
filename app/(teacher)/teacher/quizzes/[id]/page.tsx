@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/card";
 import { deleteQuestion, publishQuiz } from "../actions";
 import { AddQuestionForm } from "./AddQuestionForm";
+import { ConfirmDeleteButton } from "@/components/shared/ConfirmDeleteButton";
 
 const TYPE_LABELS: Record<string, string> = {
   multiple_choice: "اختيار من متعدد",
@@ -131,13 +132,11 @@ export default async function TeacherQuizDetailPage({
                 </p>
               </div>
               {!quiz.is_published && (
-                <form action={deleteQuestion}>
-                  <input type="hidden" name="question_id" value={q.id} />
-                  <input type="hidden" name="quiz_id" value={quizId} />
-                  <Button variant="destructive" size="xs" type="submit">
-                    حذف
-                  </Button>
-                </form>
+                <ConfirmDeleteButton
+                  action={deleteQuestion}
+                  hiddenFields={{ question_id: q.id, quiz_id: quizId }}
+                  confirmMessage="هل أنت متأكد من حذف هذا السؤال؟"
+                />
               )}
             </div>
           ))}

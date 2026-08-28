@@ -70,7 +70,9 @@ export default async function TeacherQuizzesPage() {
             <Card className="transition-colors hover:bg-accent">
               <CardHeader>
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <CardTitle className="text-base">{q.title}</CardTitle>
+                  <CardTitle className="min-w-0 flex-1 truncate text-base">
+                    {q.title}
+                  </CardTitle>
                   <div className="flex gap-1">
                     {q.quiz_type === "embedded" && (
                       <Badge variant="secondary">مرتبط بواجب</Badge>

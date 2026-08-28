@@ -25,6 +25,7 @@ import {
 import Link from "next/link";
 import { createSlot, deleteSlot } from "./actions";
 import { AddSlotForm } from "./AddSlotForm";
+import { ConfirmDeleteButton } from "@/components/shared/ConfirmDeleteButton";
 
 export default async function AdminClassSchedulePage({
   params,
@@ -130,13 +131,11 @@ export default async function AdminClassSchedulePage({
                         )}
                       </TableCell>
                       <TableCell>
-                        <form action={deleteSlot}>
-                          <input type="hidden" name="slot_id" value={slot.id} />
-                          <input type="hidden" name="class_id" value={id} />
-                          <Button variant="destructive" size="xs" type="submit">
-                            حذف
-                          </Button>
-                        </form>
+                        <ConfirmDeleteButton
+                          action={deleteSlot}
+                          hiddenFields={{ slot_id: slot.id, class_id: id }}
+                          confirmMessage="متأكد إنك عايز تحذف الحصة دي؟ الإجراء ده نهائي ومش هيتراجع."
+                        />
                       </TableCell>
                     </TableRow>
                   ))}

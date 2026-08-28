@@ -39,9 +39,9 @@ export function AddSlotForm({
           id="subject_id"
           name="subject_id"
           required
-          className="h-8 w-full rounded-lg border border-input bg-background px-2 text-sm"
+          className="h-8 w-full rounded-lg border border-input bg-background text-foreground px-2 text-sm"
         >
-          <option value="">اختر المادة...</option>
+          <option value="">اختر المادة…</option>
           {subjects.map((s) => (
             <option key={s.id} value={s.id}>
               {s.label}
@@ -55,7 +55,7 @@ export function AddSlotForm({
         <select
           id="teacher_id"
           name="teacher_id"
-          className="h-8 w-full rounded-lg border border-input bg-background px-2 text-sm"
+          className="h-8 w-full rounded-lg border border-input bg-background text-foreground px-2 text-sm"
         >
           <option value="">غير محدد</option>
           {teachers.map((t) => (
@@ -72,7 +72,7 @@ export function AddSlotForm({
           id="day_of_week"
           name="day_of_week"
           required
-          className="h-8 w-full rounded-lg border border-input bg-background px-2 text-sm"
+          className="h-8 w-full rounded-lg border border-input bg-background text-foreground px-2 text-sm"
         >
           {DAYS.map((d) => (
             <option key={d} value={d}>
@@ -115,7 +115,7 @@ export function AddSlotForm({
 
       <div className="flex items-end">
         <Button type="submit" disabled={isPending}>
-          {isPending ? "جاري الإضافة..." : "إضافة الحصة"}
+          {isPending ? "جاري الإضافة…" : "إضافة الحصة"}
         </Button>
       </div>
     </form>

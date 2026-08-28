@@ -110,75 +110,86 @@ export async function createAssignment(
   }
 }
 
-export async function gradeSubmission(formData: FormData) {
-  const session = await requireRole("teacher");
-  const submissionId = z.coerce
-    .number()
-    .int()
-    .positive()
-    .parse(formData.get("submission_id"));
-  const assignmentId = z.coerce
-    .number()
-    .int()
-    .positive()
-    .parse(formData.get("assignment_id"));
-  const grade = z.coerce.number().int().min(0).parse(formData.get("grade"));
-  const notes = String(formData.get("teacher_notes") ?? "").trim();
+export async function gradeSubmission(
+  _prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  try {
+    const session = await requireRole("teacher");
+    const submissionId = z.coerce
+      .number()
+      .int()
+      .positive()
+      .parse(formData.get("submission_id"));
+    const assignmentId = z.coerce
+      .number()
+      .int()
+      .positive()
+      .parse(formData.get("assignment_id"));
+    const grade = z.coerce.number().int().min(0).parse(formData.get("grade"));
+    const notes = String(formData.get("teacher_notes") ?? "").trim();
 
-  const supabase = createAdminClient();
+    const supabase = createAdminClient();
 
-  const { data: assignment } = await supabase
-    .from("assignments")
-    .select("teacher_id, max_grade, title")
-    .eq("id", assignmentId)
-    .single();
-  if (assignment?.teacher_id !== session.profile.id) {
-    throw new Error("مش واجبك تصححه");
-  }
-  if (grade > assignment.max_grade) {
-    throw new Error(`الدرجة العظمى ${assignment.max_grade}`);
-  }
+    const { data: assignment } = await supabase
+      .from("assignments")
+      .select("teacher_id, max_grade, title")
+      .eq("id", assignmentId)
+      .single();
+    if (assignment?.teacher_id !== session.profile.id) {
+      return { ok: false, message: "مش واجبك تصححه" };
+    }
+    if (grade > assignment.max_grade) {
+      return { ok: false, message: `الدرجة العظمى ${assignment.max_grade}` };
+    }
 
-  const { data: submission, error } = await supabase
-    .from("assignment_submissions")
-    .update({
-      grade,
-      teacher_notes: notes || null,
-      status: "graded",
-      graded_at: new Date().toISOString(),
-    })
-    .eq("id", submissionId)
-    .select("student_id, students!assignment_submissions_student_id_fkey(profiles!students_user_id_fkey(full_name))")
-    .single();
-  if (error) throw new Error(error.message);
-
-  await createNotification({
-    profileId: submission.student_id,
-    type: "grade",
-    title: "تم تصحيح واجبك",
-    message: `حصلت على ${grade}/${assignment.max_grade}`,
-    relatedId: assignmentId,
-  });
-
-  const gradeSettings = await getNotificationSettings(submission.student_id);
-  const studentEmail = gradeSettings.email_notifications
-    ? await getAuthEmail(submission.student_id)
-    : null;
-  if (studentEmail) {
-    const studentName =
-      (submission.students as unknown as { profiles: { full_name: string } })
-        ?.profiles?.full_name ?? "الطالب";
-    await sendEmail({
-      to: studentEmail,
-      subject: "تم تصحيح واجبك",
-      html: assignmentGradedEmail({
-        studentName,
-        title: assignment.title,
+    const { data: submission, error } = await supabase
+      .from("assignment_submissions")
+      .update({
         grade,
-        maxGrade: assignment.max_grade,
-      }),
-    });
-  }
+        teacher_notes: notes || null,
+        status: "graded",
+        graded_at: new Date().toISOString(),
+      })
+      .eq("id", submissionId)
+      .select("student_id, students!assignment_submissions_student_id_fkey(profiles!students_user_id_fkey(full_name))")
+      .single();
+    if (error) return { ok: false, message: error.message };
 
-  revalidatePath(`/teacher/assignments/${assignmentId}`);
+    await createNotification({
+      profileId: submission.student_id,
+      type: "grade",
+      title: "تم تصحيح واجبك",
+      message: `حصلت على ${grade}/${assignment.max_grade}`,
+      relatedId: assignmentId,
+    });
+
+    const gradeSettings = await getNotificationSettings(submission.student_id);
+    const studentEmail = gradeSettings.email_notifications
+      ? await getAuthEmail(submission.student_id)
+      : null;
+    if (studentEmail) {
+      const studentName =
+        (submission.students as unknown as { profiles: { full_name: string } })
+          ?.profiles?.full_name ?? "الطالب";
+      await sendEmail({
+        to: studentEmail,
+        subject: "تم تصحيح واجبك",
+        html: assignmentGradedEmail({
+          studentName,
+          title: assignment.title,
+          grade,
+          maxGrade: assignment.max_grade,
+        }),
+      });
+    }
+
+    revalidatePath(`/teacher/assignments/${assignmentId}`);
+    return { ok: true, message: "تم حفظ الدرجة ✅" };
+  } catch (error) {
+    return {
+      ok: false,
+      message: error instanceof Error ? error.message : "حصل خطأ",
+    };
+  }
 }

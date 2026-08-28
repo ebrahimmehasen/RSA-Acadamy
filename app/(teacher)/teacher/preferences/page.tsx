@@ -108,7 +108,7 @@ export default async function TeacherPreferencesPage() {
               <select
                 id="day_of_week"
                 name="day_of_week"
-                className="h-8 rounded-lg border border-input bg-background px-2 text-sm"
+                className="h-8 rounded-lg border border-input bg-background px-2 text-sm text-foreground"
               >
                 {DAYS.map((d) => (
                   <option key={d} value={d}>

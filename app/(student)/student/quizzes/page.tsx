@@ -66,7 +66,7 @@ export default async function StudentQuizzesPage() {
               <Card className="transition-colors hover:bg-accent">
                 <CardHeader>
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <CardTitle className="text-base">{q.title}</CardTitle>
+                    <CardTitle className="min-w-0 truncate text-base">{q.title}</CardTitle>
                     {statusBadge}
                   </div>
                 </CardHeader>

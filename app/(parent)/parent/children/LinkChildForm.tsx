@@ -40,14 +40,17 @@ export function LinkChildForm() {
               maxLength={6}
               placeholder="847392"
               required
+              autoComplete="off"
+              spellCheck={false}
               className="w-36 text-center font-mono"
             />
           </div>
           <Button type="submit" disabled={isPending}>
-            {isPending ? "جاري الربط..." : "ربط"}
+            {isPending ? "جاري الربط…" : "ربط"}
           </Button>
           {result && (
             <p
+              aria-live="polite"
               className={`text-sm ${result.ok ? "text-green-600" : "text-destructive"}`}
             >
               {result.message}

@@ -40,8 +40,8 @@ export default async function StudentSessionDetailPage({
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">{recordedSession.title}</h1>
+      <div className="min-w-0">
+        <h1 className="truncate text-2xl font-bold">{recordedSession.title}</h1>
         <p className="text-muted-foreground">
           {(recordedSession.subjects as unknown as { subject_name: string })
             ?.subject_name}

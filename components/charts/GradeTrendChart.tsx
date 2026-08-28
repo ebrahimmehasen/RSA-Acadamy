@@ -15,7 +15,13 @@ export interface GradePoint {
 }
 
 export function GradeTrendChart({ data }: { data: GradePoint[] }) {
-  if (data.length < 2) return null;
+  if (data.length < 2) {
+    return (
+      <div className="flex h-56 w-full items-center justify-center text-center text-sm text-muted-foreground">
+        لا توجد بيانات كافية لعرض الرسم البياني
+      </div>
+    );
+  }
 
   return (
     <div className="h-56 w-full" dir="ltr">

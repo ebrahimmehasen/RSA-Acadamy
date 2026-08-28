@@ -35,7 +35,7 @@ export default async function ParentChildrenPage() {
             <Link key={child.user_id} href={`/parent/children/${child.user_id}`}>
               <Card className="transition-colors hover:bg-accent">
                 <CardHeader>
-                  <CardTitle className="text-base">
+                  <CardTitle className="truncate text-base">
                     {profile?.full_name}
                   </CardTitle>
                   <CardDescription>
