@@ -62,6 +62,7 @@ export default async function AdminAnnouncementsPage() {
                       key={id}
                       href={`/api/files/${id}`}
                       target="_blank"
+                      rel="noopener noreferrer"
                       className="text-primary underline underline-offset-4"
                     >
                       مرفق {i + 1} 📎

@@ -23,7 +23,7 @@ export function SubmitForm({
 
   return (
     <form action={formAction} className="space-y-4">
-      <input type="hidden" name="assignment_id" value={assignmentId} />
+      <input type="hidden" name="assignment_id" defaultValue={assignmentId} />
 
       {allowFile && (
         <div className="space-y-2">
@@ -51,6 +51,7 @@ export function SubmitForm({
 
       {result && (
         <p
+          aria-live="polite"
           className={`text-sm ${result.ok ? "text-green-600" : "text-destructive"}`}
         >
           {result.message}
@@ -58,7 +59,7 @@ export function SubmitForm({
       )}
 
       <Button type="submit" disabled={isPending}>
-        {isPending ? "جاري التسليم..." : "تسليم الواجب"}
+        {isPending ? "جاري التسليم…" : "تسليم الواجب"}
       </Button>
     </form>
   );

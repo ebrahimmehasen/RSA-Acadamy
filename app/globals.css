@@ -53,6 +53,8 @@
 }
 
 :root {
+  color-scheme: light;
+
   /* RSA brand palette (from logo): blue, teal, terracotta, gold */
   --brand-blue: oklch(0.55 0.16 254);
   --brand-teal: oklch(0.52 0.11 165);
@@ -94,6 +96,8 @@
 }
 
 .dark {
+  color-scheme: dark;
+
   --brand-blue: oklch(0.68 0.13 254);
   --brand-teal: oklch(0.65 0.1 165);
   --brand-terracotta: oklch(0.64 0.13 35);
@@ -141,6 +145,14 @@
   }
   html {
     @apply font-sans;
+  }
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    text-wrap: balance;
   }
 }
 

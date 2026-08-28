@@ -6,11 +6,17 @@ import { cn } from "@/lib/utils";
  * exported from the platform's real logo artwork so it matches print/social
  * assets exactly instead of an approximated recreation.
  */
-function LogoMark({ className }: { className?: string }) {
+function LogoMark({
+  className,
+  alt = "رياض الصالحين",
+}: {
+  className?: string;
+  alt?: string;
+}) {
   return (
     <Image
       src="/brand/mark.png"
-      alt="رياض الصالحين"
+      alt={alt}
       width={256}
       height={256}
       priority
@@ -32,7 +38,10 @@ export function Logo({
 }) {
   return (
     <span className={cn("inline-flex items-center gap-2", className)}>
-      <LogoMark className={cn("h-9 w-9", markClassName)} />
+      <LogoMark
+        className={cn("h-9 w-9", markClassName)}
+        alt={showWordmark ? "" : wordmark}
+      />
       {showWordmark && (
         <span className="text-lg font-extrabold tracking-tight text-foreground">
           {wordmark}

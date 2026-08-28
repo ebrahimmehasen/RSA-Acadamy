@@ -24,6 +24,14 @@ export function SimpleBarChart({
   color?: string;
   valueSuffix?: string;
 }) {
+  if (data.length === 0) {
+    return (
+      <div className="flex h-64 w-full items-center justify-center text-center text-sm text-muted-foreground">
+        لا توجد بيانات كافية لعرض الرسم البياني
+      </div>
+    );
+  }
+
   return (
     <div className="h-64 w-full" dir="ltr">
       <ResponsiveContainer width="100%" height="100%">

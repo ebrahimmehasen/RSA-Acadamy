@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { updateQuestion, deleteQuestion } from "../actions";
+import { ConfirmDeleteButton } from "@/components/shared/ConfirmDeleteButton";
 
 const OPTION_TYPES = new Set(["multiple_choice", "checkboxes", "dropdown"]);
 
@@ -28,13 +29,12 @@ export function EditQuestionForm({ question }: { question: QuestionProp }) {
         <Button variant="outline" size="xs" onClick={() => setOpen(true)}>
           تعديل
         </Button>
-        <form action={deleteQuestion}>
-          <input type="hidden" name="question_id" value={question.id} />
-          <input type="hidden" name="quiz_id" value={question.quiz_id} />
-          <Button variant="destructive" size="xs" type="submit">
-            حذف
-          </Button>
-        </form>
+        <ConfirmDeleteButton
+          action={deleteQuestion}
+          hiddenFields={{ question_id: question.id, quiz_id: question.quiz_id }}
+          confirmMessage="هل أنت متأكد من حذف هذا السؤال؟"
+          label="حذف"
+        />
       </div>
     );
   }

@@ -40,6 +40,7 @@ export function EditSubjectName({
       <input type="hidden" name="subject_id" value={subjectId} />
       <Input
         name="subject_name"
+        aria-label="اسم المادة"
         defaultValue={subjectName}
         className="h-7 w-40 text-sm"
         required

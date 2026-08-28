@@ -69,7 +69,9 @@ export default async function TeacherAssignmentsPage() {
             <Card className="transition-colors hover:bg-accent">
               <CardHeader>
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <CardTitle className="text-base">{a.title}</CardTitle>
+                  <CardTitle className="min-w-0 flex-1 truncate text-base">
+                    {a.title}
+                  </CardTitle>
                   {(pendingCountByAssignment.get(a.id) ?? 0) > 0 && (
                     <Badge>
                       {pendingCountByAssignment.get(a.id)} بانتظار التصحيح

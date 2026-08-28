@@ -33,10 +33,10 @@ export function AnnouncementCard({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">{title}</CardTitle>
+        <CardTitle className="text-base line-clamp-2">{title}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-2 text-sm">
-        <p className="whitespace-pre-wrap">{content}</p>
+        <p className="whitespace-pre-wrap break-words">{content}</p>
         {attachmentIds.length > 0 && (
           <div className="flex flex-wrap gap-2">
             {attachmentIds.map((driveId, i) => (
@@ -44,6 +44,7 @@ export function AnnouncementCard({
                 key={driveId}
                 href={`/api/files/${driveId}`}
                 target="_blank"
+                rel="noopener noreferrer"
                 className="text-primary underline underline-offset-4"
               >
                 مرفق {i + 1} 📎

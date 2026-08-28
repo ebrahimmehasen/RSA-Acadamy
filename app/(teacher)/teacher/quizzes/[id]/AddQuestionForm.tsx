@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useActionState, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,7 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { addQuestion } from "../actions";
+import { addQuestion, type ActionResult } from "../actions";
 
 const TYPE_LABELS: Record<string, string> = {
   multiple_choice: "اختيار من متعدد",
@@ -25,6 +25,17 @@ const TYPE_LABELS: Record<string, string> = {
 export function AddQuestionForm({ quizId }: { quizId: number }) {
   const [type, setType] = useState("multiple_choice");
   const formRef = useRef<HTMLFormElement>(null);
+  const [result, formAction, isPending] = useActionState<
+    ActionResult | null,
+    FormData
+  >(async (_prev, formData) => {
+    const res = await addQuestion(_prev, formData);
+    if (res.ok) {
+      formRef.current?.reset();
+      setType("multiple_choice");
+    }
+    return res;
+  }, null);
 
   return (
     <Card>
@@ -32,15 +43,7 @@ export function AddQuestionForm({ quizId }: { quizId: number }) {
         <CardTitle className="text-lg">إضافة سؤال</CardTitle>
       </CardHeader>
       <CardContent>
-        <form
-          ref={formRef}
-          action={async (formData) => {
-            await addQuestion(formData);
-            formRef.current?.reset();
-            setType("multiple_choice");
-          }}
-          className="space-y-4"
-        >
+        <form ref={formRef} action={formAction} className="space-y-4">
           <input type="hidden" name="quiz_id" value={quizId} />
 
           <div className="space-y-2">
@@ -56,7 +59,7 @@ export function AddQuestionForm({ quizId }: { quizId: number }) {
                 name="question_type"
                 value={type}
                 onChange={(e) => setType(e.target.value)}
-                className="h-8 w-full rounded-lg border border-input bg-background px-2 text-sm"
+                className="h-8 w-full rounded-lg border border-input bg-background px-2 text-sm text-foreground"
               >
                 {Object.entries(TYPE_LABELS).map(([value, label]) => (
                   <option key={value} value={value}>
@@ -73,10 +76,22 @@ export function AddQuestionForm({ quizId }: { quizId: number }) {
 
           {type === "multiple_choice" && (
             <div className="grid gap-3 sm:grid-cols-2">
-              <Input name="option_a" placeholder="اختيار A" />
-              <Input name="option_b" placeholder="اختيار B" />
-              <Input name="option_c" placeholder="اختيار C" />
-              <Input name="option_d" placeholder="اختيار D" />
+              <div className="space-y-2">
+                <Label htmlFor="option_a">الخيار أ</Label>
+                <Input id="option_a" name="option_a" placeholder="اختيار A" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="option_b">الخيار ب</Label>
+                <Input id="option_b" name="option_b" placeholder="اختيار B" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="option_c">الخيار ج</Label>
+                <Input id="option_c" name="option_c" placeholder="اختيار C" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="option_d">الخيار د</Label>
+                <Input id="option_d" name="option_d" placeholder="اختيار D" />
+              </div>
               <div className="space-y-2 sm:col-span-2">
                 <Label htmlFor="correct_answer_mc">الإجابة الصحيحة (A/B/C/D)</Label>
                 <Input id="correct_answer_mc" name="correct_answer" maxLength={1} dir="ltr" />
@@ -118,7 +133,7 @@ export function AddQuestionForm({ quizId }: { quizId: number }) {
               <select
                 id="correct_answer_tf"
                 name="correct_answer"
-                className="h-8 w-full rounded-lg border border-input bg-background px-2 text-sm"
+                className="h-8 w-full rounded-lg border border-input bg-background px-2 text-sm text-foreground"
               >
                 <option value="true">صح</option>
                 <option value="false">خطأ</option>
@@ -149,8 +164,14 @@ export function AddQuestionForm({ quizId }: { quizId: number }) {
             />
           </div>
 
-          <Button type="submit" size="sm">
-            إضافة السؤال
+          {result && !result.ok && (
+            <p className="text-sm text-destructive" aria-live="polite">
+              {result.message}
+            </p>
+          )}
+
+          <Button type="submit" size="sm" disabled={isPending}>
+            {isPending ? "جاري الإضافة…" : "إضافة السؤال"}
           </Button>
         </form>
       </CardContent>

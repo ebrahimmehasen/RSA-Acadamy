@@ -60,6 +60,13 @@ export function TwoFactorSettings({ initiallyEnabled }: { initiallyEnabled: bool
   }
 
   async function disable() {
+    if (
+      !window.confirm(
+        "متأكد إنك عايز تلغي تفعيل التحقق بخطوتين؟ ده هيقلل من حماية حسابك.",
+      )
+    ) {
+      return;
+    }
     setLoading(true);
     setError(null);
     const res = await fetch("/api/auth/2fa/disable", {
@@ -89,7 +96,7 @@ export function TwoFactorSettings({ initiallyEnabled }: { initiallyEnabled: bool
       <CardContent className="space-y-4">
         {step === "idle" && (
           <Button onClick={startSetup} disabled={loading}>
-            {loading ? "جاري التجهيز..." : "تفعيل 2FA"}
+            {loading ? "جاري التجهيز…" : "تفعيل 2FA"}
           </Button>
         )}
 
@@ -106,15 +113,17 @@ export function TwoFactorSettings({ initiallyEnabled }: { initiallyEnabled: bool
               <Label htmlFor="setup_token">اكتب الكود من التطبيق للتأكيد</Label>
               <Input
                 id="setup_token"
+                name="setup_token"
                 dir="ltr"
                 inputMode="numeric"
+                autoComplete="one-time-code"
                 value={token}
                 onChange={(e) => setToken(e.target.value.trim())}
                 className="w-40 text-center font-mono"
               />
             </div>
             <Button onClick={confirmEnable} disabled={loading || token.length !== 6}>
-              {loading ? "جاري التأكيد..." : "تأكيد وتفعيل"}
+              {loading ? "جاري التأكيد…" : "تأكيد وتفعيل"}
             </Button>
           </div>
         )}
@@ -141,8 +150,10 @@ export function TwoFactorSettings({ initiallyEnabled }: { initiallyEnabled: bool
               </Label>
               <Input
                 id="disable_token"
+                name="disable_token"
                 dir="ltr"
                 inputMode="numeric"
+                autoComplete="one-time-code"
                 value={token}
                 onChange={(e) => setToken(e.target.value.trim())}
                 className="w-40 text-center font-mono"
@@ -153,12 +164,16 @@ export function TwoFactorSettings({ initiallyEnabled }: { initiallyEnabled: bool
               onClick={disable}
               disabled={loading || token.length !== 6}
             >
-              {loading ? "جاري الإلغاء..." : "إلغاء تفعيل 2FA"}
+              {loading ? "جاري الإلغاء…" : "إلغاء تفعيل 2FA"}
             </Button>
           </div>
         )}
 
-        {error && <p className="text-sm text-destructive">{error}</p>}
+        {error && (
+          <p className="text-sm text-destructive" aria-live="polite">
+            {error}
+          </p>
+        )}
       </CardContent>
     </Card>
   );

@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Cairo } from "next/font/google";
 import "./globals.css";
 
@@ -14,6 +14,13 @@ export const metadata: Metadata = {
     icon: "/favicon.ico",
     apple: "/apple-icon.png",
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "oklch(0.99 0.003 240)" },
+    { media: "(prefers-color-scheme: dark)", color: "oklch(0.17 0.025 254)" },
+  ],
 };
 
 export default function RootLayout({

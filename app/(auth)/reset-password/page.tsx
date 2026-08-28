@@ -102,6 +102,7 @@ function ResetPasswordForm() {
               id="password"
               type="password"
               dir="ltr"
+              autoComplete="new-password"
               required
               disabled={!ready}
               value={password}
@@ -114,15 +115,20 @@ function ResetPasswordForm() {
               id="confirm"
               type="password"
               dir="ltr"
+              autoComplete="new-password"
               required
               disabled={!ready}
               value={confirm}
               onChange={(e) => setConfirm(e.target.value)}
             />
           </div>
-          {error && <p className="text-sm text-destructive">{error}</p>}
+          {error && (
+            <p className="text-sm text-destructive" aria-live="polite">
+              {error}
+            </p>
+          )}
           <Button type="submit" className="w-full" disabled={loading || !ready}>
-            {loading ? "جاري الحفظ..." : "حفظ كلمة السر"}
+            {loading ? "جاري الحفظ…" : "حفظ كلمة السر"}
           </Button>
         </form>
       </CardContent>

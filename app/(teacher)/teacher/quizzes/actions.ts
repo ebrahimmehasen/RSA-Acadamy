@@ -21,47 +21,64 @@ const createQuizSchema = z.object({
   assignment_id: z.coerce.number().int().positive().optional(),
 });
 
-export async function createQuiz(formData: FormData) {
-  const session = await requireRole("teacher");
-  const parsed = createQuizSchema.parse({
-    class_id: formData.get("class_id"),
-    subject_id: formData.get("subject_id"),
-    title: formData.get("title"),
-    description: formData.get("description") || undefined,
-    total_points: formData.get("total_points") || 100,
-    duration_minutes: formData.get("duration_minutes"),
-    start_time: formData.get("start_time"),
-    end_time: formData.get("end_time"),
-    shuffle_questions: formData.get("shuffle_questions") === "on",
-    assignment_id: formData.get("assignment_id") || undefined,
-  });
+export interface ActionResult {
+  ok: boolean;
+  message: string;
+}
 
-  if (new Date(parsed.end_time) <= new Date(parsed.start_time)) {
-    throw new Error("وقت النهاية لازم يكون بعد وقت البداية");
+export async function createQuiz(
+  _prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  let quizId: number;
+  try {
+    const session = await requireRole("teacher");
+    const parsed = createQuizSchema.parse({
+      class_id: formData.get("class_id"),
+      subject_id: formData.get("subject_id"),
+      title: formData.get("title"),
+      description: formData.get("description") || undefined,
+      total_points: formData.get("total_points") || 100,
+      duration_minutes: formData.get("duration_minutes"),
+      start_time: formData.get("start_time"),
+      end_time: formData.get("end_time"),
+      shuffle_questions: formData.get("shuffle_questions") === "on",
+      assignment_id: formData.get("assignment_id") || undefined,
+    });
+
+    if (new Date(parsed.end_time) <= new Date(parsed.start_time)) {
+      return { ok: false, message: "وقت النهاية لازم يكون بعد وقت البداية" };
+    }
+
+    const supabase = createAdminClient();
+    const { data: quiz, error } = await supabase
+      .from("quizzes")
+      .insert({
+        class_id: parsed.class_id,
+        subject_id: parsed.subject_id,
+        teacher_id: session.profile.id,
+        title: parsed.title,
+        description: parsed.description ?? null,
+        total_points: parsed.total_points,
+        duration_minutes: parsed.duration_minutes,
+        start_time: new Date(parsed.start_time).toISOString(),
+        end_time: new Date(parsed.end_time).toISOString(),
+        shuffle_questions: parsed.shuffle_questions,
+        assignment_id: parsed.assignment_id ?? null,
+        quiz_type: parsed.assignment_id ? "embedded" : "standalone",
+      })
+      .select("id")
+      .single();
+    if (error) return { ok: false, message: error.message };
+    quizId = quiz.id;
+  } catch (error) {
+    return {
+      ok: false,
+      message: error instanceof Error ? error.message : "حصل خطأ",
+    };
   }
 
-  const supabase = createAdminClient();
-  const { data: quiz, error } = await supabase
-    .from("quizzes")
-    .insert({
-      class_id: parsed.class_id,
-      subject_id: parsed.subject_id,
-      teacher_id: session.profile.id,
-      title: parsed.title,
-      description: parsed.description ?? null,
-      total_points: parsed.total_points,
-      duration_minutes: parsed.duration_minutes,
-      start_time: new Date(parsed.start_time).toISOString(),
-      end_time: new Date(parsed.end_time).toISOString(),
-      shuffle_questions: parsed.shuffle_questions,
-      assignment_id: parsed.assignment_id ?? null,
-      quiz_type: parsed.assignment_id ? "embedded" : "standalone",
-    })
-    .select("id")
-    .single();
-  if (error) throw new Error(error.message);
-
-  redirect(`/teacher/quizzes/${quiz.id}`);
+  redirect(`/teacher/quizzes/${quizId}`);
 }
 
 const questionSchema = z.object({
@@ -107,93 +124,104 @@ async function assertEditable(
   return quiz;
 }
 
-export async function addQuestion(formData: FormData) {
-  const session = await requireRole("teacher");
-  const quizId = z.coerce.number().int().positive().parse(formData.get("quiz_id"));
+export async function addQuestion(
+  _prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  try {
+    const session = await requireRole("teacher");
+    const quizId = z.coerce.number().int().positive().parse(formData.get("quiz_id"));
 
-  const supabase = createAdminClient();
-  if (!(await assertEditable(supabase, quizId, session.profile.id))) {
-    revalidatePath(`/teacher/quizzes/${quizId}`);
-    return;
-  }
+    const supabase = createAdminClient();
+    if (!(await assertEditable(supabase, quizId, session.profile.id))) {
+      revalidatePath(`/teacher/quizzes/${quizId}`);
+      return { ok: false, message: "الاختبار بدأ بالفعل — التعديل مقفول" };
+    }
 
-  const parsed = questionSchema.parse({
-    question_text: formData.get("question_text"),
-    question_type: formData.get("question_type"),
-    points: formData.get("points") || 1,
-    option_a: formData.get("option_a") || undefined,
-    option_b: formData.get("option_b") || undefined,
-    option_c: formData.get("option_c") || undefined,
-    option_d: formData.get("option_d") || undefined,
-    correct_answer: formData.get("correct_answer") || undefined,
-  });
-
-  let options: Record<string, string> | null = null;
-  if (
-    parsed.question_type === "multiple_choice" ||
-    parsed.question_type === "checkboxes" ||
-    parsed.question_type === "dropdown"
-  ) {
-    options = {};
-    if (parsed.option_a) options.A = parsed.option_a;
-    if (parsed.option_b) options.B = parsed.option_b;
-    if (parsed.option_c) options.C = parsed.option_c;
-    if (parsed.option_d) options.D = parsed.option_d;
-  } else if (parsed.question_type === "true_false") {
-    options = { true: "صح", false: "خطأ" };
-  }
-
-  const { count } = await supabase
-    .from("quiz_questions")
-    .select("id", { count: "exact", head: true })
-    .eq("quiz_id", quizId);
-
-  // canonicalize checkboxes' correct_answer to a sorted, comma-joined
-  // set so grading can do a plain string comparison later
-  const correctAnswer =
-    parsed.question_type === "checkboxes" && parsed.correct_answer
-      ? parsed.correct_answer
-          .split(",")
-          .map((s) => s.trim().toUpperCase())
-          .filter(Boolean)
-          .sort()
-          .join(",")
-      : parsed.correct_answer || null;
-
-  const { data: created, error } = await supabase
-    .from("quiz_questions")
-    .insert({
-      quiz_id: quizId,
-      question_order: (count ?? 0) + 1,
-      question_text: parsed.question_text,
-      question_type: parsed.question_type,
-      points: parsed.points,
-      options,
-      correct_answer: correctAnswer,
-    })
-    .select("id")
-    .single();
-  if (error) throw new Error(error.message);
-
-  const attachment = formData.get("attachment") as File | null;
-  if (attachment && attachment.size > 0) {
-    const validationError = validateUpload("quiz", attachment.type, attachment.size);
-    if (validationError) throw new Error(validationError);
-    const buffer = Buffer.from(await attachment.arrayBuffer());
-    const uploaded = await uploadQuizAttachment({
-      buffer,
-      fileName: attachment.name,
-      mimeType: attachment.type,
-      uploadedBy: session.profile.id,
-      quizId,
+    const parsed = questionSchema.parse({
+      question_text: formData.get("question_text"),
+      question_type: formData.get("question_type"),
+      points: formData.get("points") || 1,
+      option_a: formData.get("option_a") || undefined,
+      option_b: formData.get("option_b") || undefined,
+      option_c: formData.get("option_c") || undefined,
+      option_d: formData.get("option_d") || undefined,
+      correct_answer: formData.get("correct_answer") || undefined,
     });
-    await supabase
-      .from("quiz_questions")
-      .update({ attachment_drive_id: uploaded.fileId })
-      .eq("id", created.id);
-  }
 
-  revalidatePath(`/teacher/quizzes/${quizId}`);
+    let options: Record<string, string> | null = null;
+    if (
+      parsed.question_type === "multiple_choice" ||
+      parsed.question_type === "checkboxes" ||
+      parsed.question_type === "dropdown"
+    ) {
+      options = {};
+      if (parsed.option_a) options.A = parsed.option_a;
+      if (parsed.option_b) options.B = parsed.option_b;
+      if (parsed.option_c) options.C = parsed.option_c;
+      if (parsed.option_d) options.D = parsed.option_d;
+    } else if (parsed.question_type === "true_false") {
+      options = { true: "صح", false: "خطأ" };
+    }
+
+    const { count } = await supabase
+      .from("quiz_questions")
+      .select("id", { count: "exact", head: true })
+      .eq("quiz_id", quizId);
+
+    // canonicalize checkboxes' correct_answer to a sorted, comma-joined
+    // set so grading can do a plain string comparison later
+    const correctAnswer =
+      parsed.question_type === "checkboxes" && parsed.correct_answer
+        ? parsed.correct_answer
+            .split(",")
+            .map((s) => s.trim().toUpperCase())
+            .filter(Boolean)
+            .sort()
+            .join(",")
+        : parsed.correct_answer || null;
+
+    const { data: created, error } = await supabase
+      .from("quiz_questions")
+      .insert({
+        quiz_id: quizId,
+        question_order: (count ?? 0) + 1,
+        question_text: parsed.question_text,
+        question_type: parsed.question_type,
+        points: parsed.points,
+        options,
+        correct_answer: correctAnswer,
+      })
+      .select("id")
+      .single();
+    if (error) return { ok: false, message: error.message };
+
+    const attachment = formData.get("attachment") as File | null;
+    if (attachment && attachment.size > 0) {
+      const validationError = validateUpload("quiz", attachment.type, attachment.size);
+      if (validationError) return { ok: false, message: validationError };
+      const buffer = Buffer.from(await attachment.arrayBuffer());
+      const uploaded = await uploadQuizAttachment({
+        buffer,
+        fileName: attachment.name,
+        mimeType: attachment.type,
+        uploadedBy: session.profile.id,
+        quizId,
+      });
+      await supabase
+        .from("quiz_questions")
+        .update({ attachment_drive_id: uploaded.fileId })
+        .eq("id", created.id);
+    }
+
+    revalidatePath(`/teacher/quizzes/${quizId}`);
+    return { ok: true, message: "تمت إضافة السؤال ✅" };
+  } catch (error) {
+    return {
+      ok: false,
+      message: error instanceof Error ? error.message : "حصل خطأ",
+    };
+  }
 }
 
 export async function deleteQuestion(formData: FormData) {

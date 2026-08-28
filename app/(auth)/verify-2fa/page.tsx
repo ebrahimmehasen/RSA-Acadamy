@@ -53,17 +53,23 @@ function Verify2faForm() {
             <Label htmlFor="token">الكود</Label>
             <Input
               id="token"
+              name="token"
               dir="ltr"
               inputMode="numeric"
+              autoComplete="one-time-code"
               autoFocus
               value={token}
               onChange={(e) => setToken(e.target.value.trim())}
               className="text-center font-mono text-lg"
             />
           </div>
-          {error && <p className="text-sm text-destructive">{error}</p>}
+          {error && (
+            <p className="text-sm text-destructive" aria-live="polite">
+              {error}
+            </p>
+          )}
           <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? "جاري التحقق..." : "تأكيد"}
+            {loading ? "جاري التحقق…" : "تأكيد"}
           </Button>
         </form>
       </CardContent>

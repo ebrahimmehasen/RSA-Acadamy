@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useActionState, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { gradeSubmission } from "../actions";
+import { gradeSubmission, type ActionResult } from "../actions";
 
 export function GradeForm({
   submissionId,
@@ -20,6 +20,19 @@ export function GradeForm({
   currentNotes: string | null;
 }) {
   const [open, setOpen] = useState(currentGrade === null);
+  const [result, formAction, isPending] = useActionState<
+    ActionResult | null,
+    FormData
+  >(gradeSubmission, null);
+
+  // Close the form once a save succeeds. Adjusting state during render
+  // (rather than in an effect) avoids an extra render pass; see
+  // https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes
+  const [handledResult, setHandledResult] = useState(result);
+  if (result !== handledResult) {
+    setHandledResult(result);
+    if (result?.ok) setOpen(false);
+  }
 
   if (!open) {
     return (
@@ -30,7 +43,7 @@ export function GradeForm({
   }
 
   return (
-    <form action={gradeSubmission} className="flex flex-wrap items-end gap-2">
+    <form action={formAction} className="flex flex-wrap items-end gap-2">
       <input type="hidden" name="submission_id" value={submissionId} />
       <input type="hidden" name="assignment_id" value={assignmentId} />
       <div className="space-y-1">
@@ -60,9 +73,14 @@ export function GradeForm({
           rows={1}
         />
       </div>
-      <Button type="submit" size="sm">
-        حفظ الدرجة
+      <Button type="submit" size="sm" disabled={isPending}>
+        {isPending ? "جاري الحفظ…" : "حفظ الدرجة"}
       </Button>
+      {result && !result.ok && (
+        <p className="w-full text-xs text-destructive" aria-live="polite">
+          {result.message}
+        </p>
+      )}
     </form>
   );
 }

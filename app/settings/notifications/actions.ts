@@ -13,23 +13,39 @@ const schema = z.object({
   email_notifications: z.boolean(),
 });
 
-export async function saveNotificationSettings(formData: FormData) {
-  const session = await requireAuth();
-  const parsed = schema.parse({
-    class_reminder_enabled: formData.get("class_reminder_enabled") === "on",
-    class_reminder_minutes: formData.get("class_reminder_minutes") || 15,
-    assignment_notification: formData.get("assignment_notification") === "on",
-    parent_secondary_notifications:
-      formData.get("parent_secondary_notifications") === "on",
-    email_notifications: formData.get("email_notifications") === "on",
-  });
+export interface SaveNotificationSettingsResult {
+  ok: boolean;
+  message: string;
+}
 
-  const supabase = createAdminClient();
-  const { error } = await supabase.from("notification_settings").upsert(
-    { profile_id: session.profile.id, ...parsed },
-    { onConflict: "profile_id" },
-  );
-  if (error) throw new Error(error.message);
+export async function saveNotificationSettings(
+  _prev: SaveNotificationSettingsResult | null,
+  formData: FormData,
+): Promise<SaveNotificationSettingsResult> {
+  try {
+    const session = await requireAuth();
+    const parsed = schema.parse({
+      class_reminder_enabled: formData.get("class_reminder_enabled") === "on",
+      class_reminder_minutes: formData.get("class_reminder_minutes") || 15,
+      assignment_notification: formData.get("assignment_notification") === "on",
+      parent_secondary_notifications:
+        formData.get("parent_secondary_notifications") === "on",
+      email_notifications: formData.get("email_notifications") === "on",
+    });
 
-  revalidatePath("/settings/notifications");
+    const supabase = createAdminClient();
+    const { error } = await supabase.from("notification_settings").upsert(
+      { profile_id: session.profile.id, ...parsed },
+      { onConflict: "profile_id" },
+    );
+    if (error) throw new Error(error.message);
+
+    revalidatePath("/settings/notifications");
+    return { ok: true, message: "تم حفظ إعدادات الإشعارات ✅" };
+  } catch (error) {
+    return {
+      ok: false,
+      message: error instanceof Error ? error.message : "حصل خطأ",
+    };
+  }
 }

@@ -1,7 +1,18 @@
 "use client";
 
 import { useRef } from "react";
+import { useFormStatus } from "react-dom";
 import { Button } from "@/components/ui/button";
+
+function DeleteSubmitButton({ label }: { label: string }) {
+  const { pending } = useFormStatus();
+
+  return (
+    <Button variant="destructive" size="xs" type="submit" disabled={pending}>
+      {pending ? "جارٍ الحذف..." : label}
+    </Button>
+  );
+}
 
 export function ConfirmDeleteButton({
   action,
@@ -27,9 +38,7 @@ export function ConfirmDeleteButton({
       {Object.entries(hiddenFields).map(([name, value]) => (
         <input key={name} type="hidden" name={name} value={value} />
       ))}
-      <Button variant="destructive" size="xs" type="submit">
-        {label}
-      </Button>
+      <DeleteSubmitButton label={label} />
     </form>
   );
 }

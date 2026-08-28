@@ -18,8 +18,8 @@ export function RatingForm({
 
   return (
     <form action={rateSession} className="space-y-3">
-      <input type="hidden" name="session_id" value={sessionId} />
-      <input type="hidden" name="rating" value={rating} />
+      <input type="hidden" name="session_id" value={sessionId} readOnly />
+      <input type="hidden" name="rating" value={rating} readOnly />
 
       <div className="flex gap-1 text-2xl">
         {[1, 2, 3, 4, 5].map((star) => (
@@ -27,6 +27,7 @@ export function RatingForm({
             key={star}
             type="button"
             onClick={() => setRating(star)}
+            aria-label={`تقييم ${star} نجوم`}
             className={star <= rating ? "text-yellow-500" : "text-muted-foreground"}
           >
             ★

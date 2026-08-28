@@ -138,8 +138,14 @@ export default async function QuizSubmissionsPage({
                         <input type="hidden" name="quiz_id" value={quizId} />
                         <input type="hidden" name="max_points" value={maxPoints} />
                         <div className="space-y-1">
-                          <label className="text-xs">الدرجة (من {maxPoints})</label>
+                          <label
+                            className="text-xs"
+                            htmlFor={`points-${answer.id}`}
+                          >
+                            الدرجة (من {maxPoints})
+                          </label>
                           <Input
+                            id={`points-${answer.id}`}
                             name="points"
                             type="number"
                             min={0}

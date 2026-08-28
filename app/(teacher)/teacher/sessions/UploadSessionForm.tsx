@@ -132,13 +132,14 @@ export function UploadSessionForm({
           {result && (
             <p
               className={`text-sm ${result.ok ? "text-green-600" : "text-destructive"}`}
+              aria-live="polite"
             >
               {result.message}
             </p>
           )}
 
           <Button type="submit" disabled={isPending}>
-            {isPending ? "جاري الرفع... قد يستغرق وقت حسب حجم الفيديو" : "رفع الحصة"}
+            {isPending ? "جاري الرفع… قد يستغرق وقت حسب حجم الفيديو" : "رفع الحصة"}
           </Button>
         </form>
       </CardContent>

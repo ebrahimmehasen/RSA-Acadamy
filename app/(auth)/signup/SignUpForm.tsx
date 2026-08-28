@@ -63,7 +63,7 @@ export function SignUpForm({
       </CardHeader>
       <CardContent>
         {result?.ok ? (
-          <div className="space-y-3 text-sm">
+          <div className="space-y-3 text-sm" aria-live="polite">
             <p className="text-green-600">{result.message}</p>
             <Link
               href="/login"
@@ -76,7 +76,13 @@ export function SignUpForm({
           <form action={formAction} className="space-y-4" encType="multipart/form-data">
             <div className="space-y-2">
               <Label htmlFor="full_name">الاسم الكامل</Label>
-              <Input id="full_name" name="full_name" required minLength={3} />
+              <Input
+                id="full_name"
+                name="full_name"
+                autoComplete="name"
+                required
+                minLength={3}
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="role">نوع الحساب</Label>
@@ -97,7 +103,15 @@ export function SignUpForm({
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">البريد الإلكتروني</Label>
-              <Input id="email" name="email" type="email" dir="ltr" required />
+              <Input
+                id="email"
+                name="email"
+                type="email"
+                dir="ltr"
+                autoComplete="email"
+                spellCheck={false}
+                required
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="phone">
@@ -106,7 +120,10 @@ export function SignUpForm({
               <Input
                 id="phone"
                 name="phone"
+                type="tel"
                 dir="ltr"
+                autoComplete="tel"
+                inputMode="tel"
                 required={phoneRequired}
               />
             </div>
@@ -117,6 +134,7 @@ export function SignUpForm({
                 name="password"
                 type="password"
                 dir="ltr"
+                autoComplete="new-password"
                 required
                 minLength={8}
               />
@@ -245,10 +263,12 @@ export function SignUpForm({
             )}
 
             {result && !result.ok && (
-              <p className="text-sm text-destructive">{result.message}</p>
+              <p className="text-sm text-destructive" aria-live="polite">
+                {result.message}
+              </p>
             )}
             <Button type="submit" className="w-full" disabled={isPending}>
-              {isPending ? "جاري الإنشاء..." : "إنشاء الحساب"}
+              {isPending ? "جاري الإنشاء…" : "إنشاء الحساب"}
             </Button>
             <Link
               href="/login"

@@ -13,6 +13,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { ConfirmDeleteButton } from "@/components/shared/ConfirmDeleteButton";
 import { deleteStudent, toggleStudentActive } from "./actions";
 
@@ -43,8 +44,12 @@ export function StudentsTable({ students }: { students: StudentRow[] }) {
 
   return (
     <div className="space-y-3">
+      <Label htmlFor="student-search" className="sr-only">
+        بحث بالاسم / كود الطالب / الهاتف
+      </Label>
       <Input
-        placeholder="بحث بالاسم / كود الطالب / الهاتف..."
+        id="student-search"
+        placeholder="بحث بالاسم / كود الطالب / الهاتف…"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         className="max-w-sm"

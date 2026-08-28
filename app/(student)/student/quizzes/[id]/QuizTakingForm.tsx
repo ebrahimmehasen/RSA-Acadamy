@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -11,6 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { submitQuiz } from "./actions";
+import { SubmitButton } from "./SubmitButton";
 
 interface QuestionProp {
   id: number;
@@ -29,6 +29,7 @@ export function QuizTakingForm({
   questions: QuestionProp[];
 }) {
   const [answered, setAnswered] = useState<Set<number>>(new Set());
+  const [submitting, setSubmitting] = useState(false);
   const total = questions.length;
   const progress = total ? Math.round((answered.size / total) * 100) : 0;
 
@@ -41,8 +42,23 @@ export function QuizTakingForm({
     });
   }
 
+  // Warn before navigating away with unanswered progress lost — skip once
+  // the form is actually being submitted.
+  useEffect(() => {
+    if (answered.size === 0 || submitting) return;
+    function handleBeforeUnload(e: BeforeUnloadEvent) {
+      e.preventDefault();
+    }
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [answered.size, submitting]);
+
   return (
-    <form action={submitQuiz} className="space-y-4">
+    <form
+      action={submitQuiz}
+      onSubmit={() => setSubmitting(true)}
+      className="space-y-4"
+    >
       <input type="hidden" name="quiz_id" value={quizId} />
 
       <div className="sticky top-14 z-10 -mx-4 space-y-1 border-b bg-background/95 px-4 py-2 backdrop-blur supports-backdrop-filter:bg-background/70 md:-mx-6 md:px-6">
@@ -145,9 +161,7 @@ export function QuizTakingForm({
         </Card>
       ))}
 
-      <Button type="submit" size="lg">
-        تسليم الاختبار
-      </Button>
+      <SubmitButton />
     </form>
   );
 }

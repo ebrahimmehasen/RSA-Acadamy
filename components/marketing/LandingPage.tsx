@@ -296,7 +296,7 @@ export function LandingPage() {
             transition={{ duration: 0.6, ease: "easeOut" }}
           >
             <div
-              className="relative h-20 sm:h-24"
+              className="relative h-28 sm:h-32"
               style={{ aspectRatio: "5266 / 1931" }}
             >
               <Image
@@ -371,7 +371,11 @@ export function LandingPage() {
               variants={fadeUp}
               transition={{ duration: 0.5, ease: "easeOut" }}
               whileHover={{ y: -6 }}
-              className={cn("rounded-2xl p-5 text-right transition-all", GLASS, GLASS_HOVER)}
+              className={cn(
+                "rounded-2xl p-5 text-right transition-[border-color,background-color,box-shadow]",
+                GLASS,
+                GLASS_HOVER
+              )}
             >
               <span className="mb-3 block w-fit">
                 <ColorIcon icon={Icon} color={color} />
@@ -438,7 +442,7 @@ export function LandingPage() {
                         transition={{ duration: 0.4, ease: "easeOut" }}
                         whileHover={{ y: -4 }}
                         className={cn(
-                          "flex items-start gap-3 rounded-2xl p-4 text-right transition-all",
+                          "flex items-start gap-3 rounded-2xl p-4 text-right transition-[border-color,background-color,box-shadow]",
                           GLASS,
                           GLASS_HOVER
                         )}
@@ -484,7 +488,7 @@ export function LandingPage() {
               transition={{ duration: 0.5, ease: "easeOut" }}
               whileHover={{ y: -4 }}
               className={cn(
-                "flex items-start gap-4 rounded-2xl p-5 text-right transition-all",
+                "flex items-start gap-4 rounded-2xl p-5 text-right transition-[border-color,background-color,box-shadow]",
                 GLASS,
                 GLASS_HOVER
               )}

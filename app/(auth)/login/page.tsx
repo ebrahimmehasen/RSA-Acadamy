@@ -61,10 +61,13 @@ export default function LoginPage() {
               type="email"
               dir="ltr"
               autoComplete="email"
+              spellCheck={false}
               {...register("email")}
             />
             {errors.email && (
-              <p className="text-sm text-destructive">{errors.email.message}</p>
+              <p className="text-sm text-destructive" aria-live="polite">
+                {errors.email.message}
+              </p>
             )}
           </div>
           <div className="space-y-2">
@@ -85,16 +88,18 @@ export default function LoginPage() {
               {...register("password")}
             />
             {errors.password && (
-              <p className="text-sm text-destructive">
+              <p className="text-sm text-destructive" aria-live="polite">
                 {errors.password.message}
               </p>
             )}
           </div>
           {serverError && (
-            <p className="text-sm text-destructive">{serverError}</p>
+            <p className="text-sm text-destructive" aria-live="polite">
+              {serverError}
+            </p>
           )}
           <Button type="submit" className="w-full" disabled={isSubmitting}>
-            {isSubmitting ? "جاري الدخول..." : "تسجيل الدخول"}
+            {isSubmitting ? "جاري الدخول…" : "تسجيل الدخول"}
           </Button>
           <div className="space-y-2 text-center text-sm">
             <p className="text-muted-foreground">

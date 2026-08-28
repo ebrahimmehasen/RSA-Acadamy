@@ -93,8 +93,8 @@ export default async function ParentChildDetailPage({
   return (
     <div className="space-y-6">
       <BackLink href="/parent/children" label="رجوع للأبناء" />
-      <div>
-        <h1 className="text-2xl font-bold">{profile?.full_name}</h1>
+      <div className="min-w-0">
+        <h1 className="truncate text-2xl font-bold">{profile?.full_name}</h1>
         <p className="text-muted-foreground">
           {(child.classes as unknown as { class_name: string })?.class_name} ·{" "}
           {child.branch === "Arabic" ? "عربي" : "لغات"}
