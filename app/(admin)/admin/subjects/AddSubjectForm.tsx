@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,7 +13,7 @@ export function AddSubjectForm({
   return (
     <form action={addSubject} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
       <div className="space-y-2">
-        <Label htmlFor="class_id">ط§ظ„طµظپ</Label>
+        <Label htmlFor="class_id">الصف</Label>
         <select
           id="class_id"
           name="class_id"
@@ -28,27 +28,27 @@ export function AddSubjectForm({
         </select>
       </div>
       <div className="space-y-2">
-        <Label htmlFor="branch">ط§ظ„ط´ط¹ط¨ط©</Label>
+        <Label htmlFor="branch">الشعبة</Label>
         <select
           id="branch"
           name="branch"
           required
           className="h-8 w-full rounded-lg border border-input bg-background text-foreground px-2 text-sm"
         >
-          <option value="Arabic">ط¹ط±ط¨ظٹ</option>
-          <option value="Languages">ظ„ط؛ط§طھ</option>
+          <option value="Arabic">عربي</option>
+          <option value="Languages">لغات</option>
         </select>
       </div>
       <div className="space-y-2">
-        <Label htmlFor="subject_name">ط§ط³ظ… ط§ظ„ظ…ط§ط¯ط©</Label>
+        <Label htmlFor="subject_name">اسم المادة</Label>
         <Input id="subject_name" name="subject_name" required />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="subject_code">ظƒظˆط¯ ط§ظ„ظ…ط§ط¯ط© (ط¥ظ†ط¬ظ„ظٹط²ظٹ)</Label>
+        <Label htmlFor="subject_code">كود المادة (إنجليزي)</Label>
         <Input id="subject_code" name="subject_code" dir="ltr" placeholder="ART" required />
       </div>
       <div className="flex items-end lg:col-span-4">
-        <Button type="submit">ط¥ط¶ط§ظپط© ط§ظ„ظ…ط§ط¯ط©</Button>
+        <Button type="submit">إضافة المادة</Button>
       </div>
     </form>
   );
