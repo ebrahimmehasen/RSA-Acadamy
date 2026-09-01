@@ -31,6 +31,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { NotificationBell } from "@/components/shared/NotificationBell";
 import { Logo } from "@/components/shared/Logo";
+import { ThemeToggle } from "@/components/shared/ThemeToggle";
 
 export interface NavItem {
   href: string;
@@ -124,7 +125,10 @@ export function RoleShell({
             <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary">
               {fullName.charAt(0)}
             </span>
-            <p className="truncate text-sm font-medium">{fullName}</p>
+            <p className="min-w-0 flex-1 truncate text-sm font-medium">
+              {fullName}
+            </p>
+            <ThemeToggle />
           </div>
           <Button
             variant="outline"
@@ -148,6 +152,7 @@ export function RoleShell({
             </h1>
           </div>
           <div className="flex items-center gap-2">
+            <ThemeToggle />
             <NotificationBell profileId={profileId} />
             <Button
               variant="ghost"

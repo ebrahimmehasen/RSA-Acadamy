@@ -6,6 +6,7 @@ import { motion, MotionConfig, useReducedMotion, type Variants } from "framer-mo
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { ThemeToggle } from "@/components/shared/ThemeToggle";
 import { cn } from "@/lib/utils";
 import {
   GraduationCap,
@@ -283,6 +284,9 @@ export function LandingPage() {
     <MotionConfig reducedMotion="user">
       <main dir="rtl" className="relative min-h-screen overflow-x-clip">
         <AuroraBackground />
+        <div className="fixed end-4 top-4 z-20">
+          <ThemeToggle />
+        </div>
 
       {/* Hero */}
       <div className="relative overflow-hidden">
