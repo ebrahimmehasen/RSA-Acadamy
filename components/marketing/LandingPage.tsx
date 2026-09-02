@@ -209,6 +209,31 @@ function ComingSoonButton({
   );
 }
 
+function AuthCta({
+  authEnabled,
+  href,
+  label,
+  variant,
+}: {
+  authEnabled: boolean;
+  href: "/login" | "/signup";
+  label: string;
+  variant?: "outline";
+}) {
+  if (!authEnabled) return <ComingSoonButton label={label} variant={variant} />;
+
+  return (
+    <motion.span whileHover={{ y: -2 }} whileTap={{ y: 0 }}>
+      <Button
+        size="lg"
+        variant={variant}
+        className={variant === "outline" ? cn(GLASS, "bg-white/40 dark:bg-white/[0.04]") : undefined}
+        render={<Link href={href}>{label}</Link>}
+      />
+    </motion.span>
+  );
+}
+
 function ColorIcon({
   icon: Icon,
   color,
@@ -275,7 +300,7 @@ function AuroraBackground() {
   );
 }
 
-export function LandingPage() {
+export function LandingPage({ authEnabled }: { authEnabled: boolean }) {
   return (
     // reducedMotion="user" makes every whileInView/whileHover/animate
     // animation in this file (fadeUp, staggerContainer, card hover lifts,
@@ -352,8 +377,13 @@ export function LandingPage() {
             variants={fadeUp}
             transition={{ duration: 0.55, ease: "easeOut" }}
           >
-            <ComingSoonButton label="تسجيل الدخول" />
-            <ComingSoonButton label="إنشاء حساب جديد" variant="outline" />
+            <AuthCta authEnabled={authEnabled} href="/login" label="تسجيل الدخول" />
+            <AuthCta
+              authEnabled={authEnabled}
+              href="/signup"
+              label="إنشاء حساب جديد"
+              variant="outline"
+            />
             <motion.span whileHover={{ y: -2 }} whileTap={{ y: 0 }}>
               <Button
                 size="lg"
@@ -523,8 +553,13 @@ export function LandingPage() {
               سواء كنت طالباً، معلماً، أو ولي أمر — حسابك جاهز خلال دقائق.
             </p>
             <div className="flex flex-wrap items-center justify-center gap-3">
-              <ComingSoonButton label="إنشاء حساب جديد" />
-              <ComingSoonButton label="تسجيل الدخول" variant="outline" />
+              <AuthCta authEnabled={authEnabled} href="/signup" label="إنشاء حساب جديد" />
+              <AuthCta
+                authEnabled={authEnabled}
+                href="/login"
+                label="تسجيل الدخول"
+                variant="outline"
+              />
             </div>
           </div>
         </Reveal>

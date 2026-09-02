@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth/session";
+import { getPlatformSettings } from "@/lib/settings";
 import { LandingPage } from "@/components/marketing/LandingPage";
 
 export default async function Home() {
@@ -8,5 +9,6 @@ export default async function Home() {
     redirect(`/${session.profile.role}/dashboard`);
   }
 
-  return <LandingPage />;
+  const { authEnabled } = await getPlatformSettings();
+  return <LandingPage authEnabled={authEnabled} />;
 }

@@ -61,6 +61,7 @@ const ICON_BY_SEGMENT: Record<string, LucideIcon> = {
   parents: UsersRound,
   admins: ShieldPlus,
   gradebook: ClipboardCheck,
+  platform: Settings,
 };
 
 function iconForHref(href: string): LucideIcon {
