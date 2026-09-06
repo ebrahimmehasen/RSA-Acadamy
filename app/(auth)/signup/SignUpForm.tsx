@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useMemo, useState } from "react";
+import { useActionState, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,6 +30,40 @@ interface SubjectRow {
   class_name: string;
 }
 
+// Everything except the password and the two file inputs (profile picture,
+// CV) — those three can't safely or technically survive a refresh: a
+// password shouldn't sit in localStorage in plain text, and browsers won't
+// let JS repopulate a file input for security reasons either way.
+interface SignUpDraft {
+  full_name: string;
+  role: string;
+  email: string;
+  phone: string;
+  date_of_birth: string;
+  class_id: string;
+  branch: string;
+  address: string;
+  qualification: string;
+  specialization: string;
+  subjects: string[];
+}
+
+const EMPTY_DRAFT: SignUpDraft = {
+  full_name: "",
+  role: "student",
+  email: "",
+  phone: "",
+  date_of_birth: "",
+  class_id: "",
+  branch: "",
+  address: "",
+  qualification: "",
+  specialization: "",
+  subjects: [],
+};
+
+const DRAFT_KEY = "rsa-signup-draft";
+
 export function SignUpForm({
   classes,
   subjects,
@@ -41,8 +75,57 @@ export function SignUpForm({
     SignUpResult | null,
     FormData
   >(signUpAction, null);
-  const [role, setRole] = useState("student");
-  const phoneRequired = role === "parent" || role === "teacher";
+
+  const [draft, setDraft] = useState<SignUpDraft>(EMPTY_DRAFT);
+
+  // Restore a saved draft once the component mounts (localStorage isn't
+  // available during server rendering). Runs once — a brief flash from
+  // empty to saved values is expected and harmless.
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(DRAFT_KEY);
+      // Can only read localStorage client-side; this runs once, right after
+      // mount, to restore a draft the server had no way to render.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      if (saved) setDraft({ ...EMPTY_DRAFT, ...JSON.parse(saved) });
+    } catch {
+      // corrupted or inaccessible (private browsing) — just start fresh
+    }
+  }, []);
+
+  // Clear the draft once the account is actually created.
+  useEffect(() => {
+    if (result?.ok) {
+      try {
+        localStorage.removeItem(DRAFT_KEY);
+      } catch {
+        // ignore
+      }
+    }
+  }, [result?.ok]);
+
+  function update<K extends keyof SignUpDraft>(key: K, value: SignUpDraft[K]) {
+    setDraft((prev) => {
+      const next = { ...prev, [key]: value };
+      try {
+        localStorage.setItem(DRAFT_KEY, JSON.stringify(next));
+      } catch {
+        // storage full or unavailable — form still works, just won't persist
+      }
+      return next;
+    });
+  }
+
+  function toggleSubject(subjectId: string, checked: boolean) {
+    update(
+      "subjects",
+      checked
+        ? [...draft.subjects, subjectId]
+        : draft.subjects.filter((id) => id !== subjectId),
+    );
+  }
+
+  const phoneRequired = draft.role === "parent" || draft.role === "teacher";
 
   const subjectsByClass = useMemo(() => {
     const map = new Map<string, SubjectRow[]>();
@@ -82,6 +165,8 @@ export function SignUpForm({
                 autoComplete="name"
                 required
                 minLength={3}
+                value={draft.full_name}
+                onChange={(e) => update("full_name", e.target.value)}
               />
             </div>
             <div className="space-y-2">
@@ -90,9 +175,9 @@ export function SignUpForm({
                 id="role"
                 name="role"
                 required
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
-                className="h-8 w-full rounded-lg border border-input bg-background px-2 text-sm"
+                value={draft.role}
+                onChange={(e) => update("role", e.target.value)}
+                className="h-8 w-full rounded-lg border border-input bg-background text-foreground px-2 text-sm"
               >
                 {Object.entries(ROLE_LABELS).map(([value, label]) => (
                   <option key={value} value={value}>
@@ -111,6 +196,8 @@ export function SignUpForm({
                 autoComplete="email"
                 spellCheck={false}
                 required
+                value={draft.email}
+                onChange={(e) => update("email", e.target.value)}
               />
             </div>
             <div className="space-y-2">
@@ -125,6 +212,8 @@ export function SignUpForm({
                 autoComplete="tel"
                 inputMode="tel"
                 required={phoneRequired}
+                value={draft.phone}
+                onChange={(e) => update("phone", e.target.value)}
               />
             </div>
             <div className="space-y-2">
@@ -138,6 +227,9 @@ export function SignUpForm({
                 required
                 minLength={8}
               />
+              <p className="text-xs text-muted-foreground">
+                كلمة السر ما بتتحفظش لو عملت ريفريش، لازم تكتبها تاني للأمان
+              </p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="profile_picture">الصورة الشخصية (اختياري)</Label>
@@ -149,7 +241,7 @@ export function SignUpForm({
               />
             </div>
 
-            {role === "student" && (
+            {draft.role === "student" && (
               <>
                 <div className="space-y-2">
                   <Label htmlFor="date_of_birth">تاريخ الميلاد</Label>
@@ -159,6 +251,8 @@ export function SignUpForm({
                     type="date"
                     dir="ltr"
                     required
+                    value={draft.date_of_birth}
+                    onChange={(e) => update("date_of_birth", e.target.value)}
                   />
                 </div>
                 <div className="space-y-2">
@@ -166,9 +260,10 @@ export function SignUpForm({
                   <select
                     id="class_id"
                     name="class_id"
-                    defaultValue=""
                     required
-                    className="h-8 w-full rounded-lg border border-input bg-background px-2 text-sm"
+                    value={draft.class_id}
+                    onChange={(e) => update("class_id", e.target.value)}
+                    className="h-8 w-full rounded-lg border border-input bg-background text-foreground px-2 text-sm"
                   >
                     <option value="" disabled>
                       اختر الصف الدراسي
@@ -185,8 +280,9 @@ export function SignUpForm({
                   <select
                     id="branch"
                     name="branch"
-                    defaultValue=""
-                    className="h-8 w-full rounded-lg border border-input bg-background px-2 text-sm"
+                    value={draft.branch}
+                    onChange={(e) => update("branch", e.target.value)}
+                    className="h-8 w-full rounded-lg border border-input bg-background text-foreground px-2 text-sm"
                   >
                     <option value="">—</option>
                     <option value="Arabic">عربي</option>
@@ -196,22 +292,28 @@ export function SignUpForm({
               </>
             )}
 
-            {role === "parent" && (
+            {draft.role === "parent" && (
               <div className="space-y-2">
                 <Label htmlFor="address">العنوان (اختياري)</Label>
-                <Input id="address" name="address" />
+                <Input
+                  id="address"
+                  name="address"
+                  value={draft.address}
+                  onChange={(e) => update("address", e.target.value)}
+                />
               </div>
             )}
 
-            {role === "teacher" && (
+            {draft.role === "teacher" && (
               <>
                 <div className="space-y-2">
                   <Label htmlFor="qualification">المؤهل العلمي (اختياري)</Label>
                   <select
                     id="qualification"
                     name="qualification"
-                    defaultValue=""
-                    className="h-8 w-full rounded-lg border border-input bg-background px-2 text-sm"
+                    value={draft.qualification}
+                    onChange={(e) => update("qualification", e.target.value)}
+                    className="h-8 w-full rounded-lg border border-input bg-background text-foreground px-2 text-sm"
                   >
                     <option value="">اختر المؤهل</option>
                     {QUALIFICATIONS.map((q) => (
@@ -223,7 +325,13 @@ export function SignUpForm({
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="specialization">التخصص</Label>
-                  <Input id="specialization" name="specialization" required />
+                  <Input
+                    id="specialization"
+                    name="specialization"
+                    required
+                    value={draft.specialization}
+                    onChange={(e) => update("specialization", e.target.value)}
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="cv">السيرة الذاتية (CV) — PDF أو Word</Label>
@@ -249,7 +357,14 @@ export function SignUpForm({
                               key={s.subject_id}
                               className="flex items-center gap-1 text-xs"
                             >
-                              <Checkbox name="subjects" value={s.subject_id} />
+                              <Checkbox
+                                name="subjects"
+                                value={s.subject_id}
+                                checked={draft.subjects.includes(s.subject_id)}
+                                onCheckedChange={(checked) =>
+                                  toggleSubject(s.subject_id, checked === true)
+                                }
+                              />
                               {s.subject_name}{" "}
                               {s.branch === "Arabic" ? "(عربي)" : "(لغات)"}
                             </label>
