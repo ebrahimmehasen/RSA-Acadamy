@@ -23,6 +23,32 @@ const ROLE_LABELS: Record<string, string> = {
 
 const QUALIFICATIONS = ["بكالوريوس", "ماجستير", "دكتوراه", "أخرى"];
 
+// Egypt first since that's where almost every existing account is from —
+// the rest cover the countries we're most likely to actually get signups
+// from next.
+const COUNTRY_CODES = [
+  { code: "+20", flag: "🇪🇬", name: "مصر" },
+  { code: "+966", flag: "🇸🇦", name: "السعودية" },
+  { code: "+971", flag: "🇦🇪", name: "الإمارات" },
+  { code: "+965", flag: "🇰🇼", name: "الكويت" },
+  { code: "+974", flag: "🇶🇦", name: "قطر" },
+  { code: "+973", flag: "🇧🇭", name: "البحرين" },
+  { code: "+968", flag: "🇴🇲", name: "عمان" },
+  { code: "+962", flag: "🇯🇴", name: "الأردن" },
+  { code: "+961", flag: "🇱🇧", name: "لبنان" },
+  { code: "+964", flag: "🇮🇶", name: "العراق" },
+  { code: "+970", flag: "🇵🇸", name: "فلسطين" },
+  { code: "+963", flag: "🇸🇾", name: "سوريا" },
+  { code: "+249", flag: "🇸🇩", name: "السودان" },
+  { code: "+212", flag: "🇲🇦", name: "المغرب" },
+  { code: "+213", flag: "🇩🇿", name: "الجزائر" },
+  { code: "+216", flag: "🇹🇳", name: "تونس" },
+  { code: "+218", flag: "🇱🇾", name: "ليبيا" },
+  { code: "+967", flag: "🇾🇪", name: "اليمن" },
+  { code: "+1", flag: "🇺🇸", name: "أمريكا/كندا" },
+  { code: "+44", flag: "🇬🇧", name: "بريطانيا" },
+] as const;
+
 interface SubjectRow {
   subject_id: string;
   subject_name: string;
@@ -38,6 +64,7 @@ interface SignUpDraft {
   full_name: string;
   role: string;
   email: string;
+  country_code: string;
   phone: string;
   date_of_birth: string;
   class_id: string;
@@ -52,6 +79,7 @@ const EMPTY_DRAFT: SignUpDraft = {
   full_name: "",
   role: "student",
   email: "",
+  country_code: COUNTRY_CODES[0].code,
   phone: "",
   date_of_birth: "",
   class_id: "",
@@ -204,16 +232,36 @@ export function SignUpForm({
               <Label htmlFor="phone">
                 رقم الهاتف {phoneRequired ? "" : "(اختياري)"}
               </Label>
-              <Input
-                id="phone"
+              <div className="flex gap-2" dir="ltr">
+                <select
+                  id="country_code"
+                  aria-label="مفتاح الدولة"
+                  value={draft.country_code}
+                  onChange={(e) => update("country_code", e.target.value)}
+                  className="h-8 shrink-0 rounded-lg border border-input bg-background text-foreground px-1.5 text-sm"
+                >
+                  {COUNTRY_CODES.map((c) => (
+                    <option key={c.code} value={c.code}>
+                      {c.flag} {c.code}
+                    </option>
+                  ))}
+                </select>
+                <Input
+                  id="phone"
+                  type="tel"
+                  dir="ltr"
+                  autoComplete="tel"
+                  inputMode="tel"
+                  required={phoneRequired}
+                  value={draft.phone}
+                  onChange={(e) => update("phone", e.target.value)}
+                  className="flex-1"
+                />
+              </div>
+              <input
+                type="hidden"
                 name="phone"
-                type="tel"
-                dir="ltr"
-                autoComplete="tel"
-                inputMode="tel"
-                required={phoneRequired}
-                value={draft.phone}
-                onChange={(e) => update("phone", e.target.value)}
+                value={draft.phone ? `${draft.country_code}${draft.phone}` : ""}
               />
             </div>
             <div className="space-y-2">
