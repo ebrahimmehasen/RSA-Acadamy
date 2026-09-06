@@ -41,3 +41,28 @@ export function formatTime(time: string): string {
   const hour12 = h % 12 === 0 ? 12 : h % 12;
   return `${hour12}:${String(m).padStart(2, "0")} ${period}`;
 }
+
+/**
+ * Fixed periods for the whole platform (matches the school's real
+ * timetable). Start/end times are chosen from this list rather than
+ * typed freely, so every class/teacher slot lines up on the same grid.
+ */
+export const PERIODS = [
+  { label: "الحصة الأولى", start: "09:15", end: "10:00" },
+  { label: "الحصة الثانية", start: "10:00", end: "10:45" },
+  { label: "الحصة الثالثة", start: "10:45", end: "11:30" },
+  { label: "الحصة الرابعة", start: "11:30", end: "12:15" },
+  { label: "الحصة الخامسة", start: "12:30", end: "13:15" },
+  { label: "الحصة السادسة", start: "13:15", end: "14:00" },
+] as const;
+
+export function periodValue(p: (typeof PERIODS)[number]): string {
+  return `${p.start}-${p.end}`;
+}
+
+export function parsePeriod(
+  value: string,
+): { start: string; end: string } | null {
+  const match = PERIODS.find((p) => periodValue(p) === value);
+  return match ? { start: match.start, end: match.end } : null;
+}

@@ -1,8 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { getSession } from "@/lib/auth/session";
-import { DAYS, DAY_LABELS, formatTime } from "@/lib/schedule";
+import { DAYS, DAY_LABELS, PERIODS, formatTime, periodValue } from "@/lib/schedule";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Card,
@@ -118,16 +117,21 @@ export default async function TeacherPreferencesPage() {
               </select>
             </div>
             <div className="space-y-1">
-              <label className="text-sm" htmlFor="start_time">
-                من
+              <label className="text-sm" htmlFor="period">
+                الحصة
               </label>
-              <Input id="start_time" name="start_time" type="time" dir="ltr" required />
-            </div>
-            <div className="space-y-1">
-              <label className="text-sm" htmlFor="end_time">
-                إلى
-              </label>
-              <Input id="end_time" name="end_time" type="time" dir="ltr" required />
+              <select
+                id="period"
+                name="period"
+                required
+                className="h-8 rounded-lg border border-input bg-background px-2 text-sm text-foreground"
+              >
+                {PERIODS.map((p) => (
+                  <option key={periodValue(p)} value={periodValue(p)}>
+                    {p.label} ({formatTime(p.start)}–{formatTime(p.end)})
+                  </option>
+                ))}
+              </select>
             </div>
             <Button type="submit" size="sm">
               إضافة

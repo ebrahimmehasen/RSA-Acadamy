@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useTransition } from "react";
-import { DAYS, DAY_LABELS } from "@/lib/schedule";
+import { DAYS, DAY_LABELS, PERIODS, formatTime, periodValue } from "@/lib/schedule";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -83,13 +83,19 @@ export function AddSlotForm({
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="start_time">من</Label>
-        <Input id="start_time" name="start_time" type="time" required dir="ltr" />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="end_time">إلى</Label>
-        <Input id="end_time" name="end_time" type="time" required dir="ltr" />
+        <Label htmlFor="period">الحصة</Label>
+        <select
+          id="period"
+          name="period"
+          required
+          className="h-8 w-full rounded-lg border border-input bg-background text-foreground px-2 text-sm"
+        >
+          {PERIODS.map((p) => (
+            <option key={periodValue(p)} value={periodValue(p)}>
+              {p.label} ({formatTime(p.start)}–{formatTime(p.end)})
+            </option>
+          ))}
+        </select>
       </div>
 
       <div className="space-y-2">

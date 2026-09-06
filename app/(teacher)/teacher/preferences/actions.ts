@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireRole } from "@/lib/auth/guards";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { DAYS } from "@/lib/schedule";
+import { DAYS, parsePeriod } from "@/lib/schedule";
 
 export async function savePreferences(formData: FormData) {
   const session = await requireRole("teacher");
@@ -27,25 +27,24 @@ export async function savePreferences(formData: FormData) {
 
 const slotSchema = z.object({
   day_of_week: z.enum(DAYS),
-  start_time: z.string().regex(/^\d{2}:\d{2}$/),
-  end_time: z.string().regex(/^\d{2}:\d{2}$/),
+  period: z.string(),
 });
 
 export async function addAvailability(formData: FormData) {
   const session = await requireRole("teacher");
   const parsed = slotSchema.parse({
     day_of_week: formData.get("day_of_week"),
-    start_time: formData.get("start_time"),
-    end_time: formData.get("end_time"),
+    period: formData.get("period"),
   });
-  if (parsed.end_time <= parsed.start_time) {
-    throw new Error("يجب أن يكون وقت النهاية بعد وقت البداية");
-  }
+  const slot = parsePeriod(parsed.period);
+  if (!slot) throw new Error("الحصة المختارة غير صحيحة");
 
   const supabase = createAdminClient();
   const { error } = await supabase.from("teacher_availability").insert({
     teacher_id: session.profile.id,
-    ...parsed,
+    day_of_week: parsed.day_of_week,
+    start_time: slot.start,
+    end_time: slot.end,
   });
   if (error) throw new Error(error.message);
 

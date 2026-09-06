@@ -4,15 +4,14 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireRole } from "@/lib/auth/guards";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { DAYS } from "@/lib/schedule";
+import { DAYS, parsePeriod } from "@/lib/schedule";
 
 const slotSchema = z.object({
   class_id: z.coerce.number().int().positive(),
   subject_id: z.string().min(1),
   teacher_id: z.coerce.number().int().positive().nullable(),
   day_of_week: z.enum(DAYS),
-  start_time: z.string().regex(/^\d{2}:\d{2}$/),
-  end_time: z.string().regex(/^\d{2}:\d{2}$/),
+  period: z.string(),
   zoom_link: z.union([z.url(), z.literal("")]).transform((v) => v || null),
   zoom_meeting_id: z.string().transform((v) => v || null),
   zoom_passcode: z.string().transform((v) => v || null),
@@ -26,20 +25,23 @@ export async function createSlot(formData: FormData) {
     subject_id: formData.get("subject_id"),
     teacher_id: formData.get("teacher_id") || null,
     day_of_week: formData.get("day_of_week"),
-    start_time: formData.get("start_time"),
-    end_time: formData.get("end_time"),
+    period: formData.get("period"),
     zoom_link: formData.get("zoom_link") ?? "",
     zoom_meeting_id: formData.get("zoom_meeting_id") ?? "",
     zoom_passcode: formData.get("zoom_passcode") ?? "",
   });
 
-  if (parsed.end_time <= parsed.start_time) {
-    throw new Error("يجب أن يكون وقت النهاية بعد وقت البداية");
-  }
+  const slot = parsePeriod(parsed.period);
+  if (!slot) throw new Error("الحصة المختارة غير صحيحة");
+
+  const { period, ...rest } = parsed;
+  void period;
 
   const supabase = createAdminClient();
   const { error } = await supabase.from("class_assignments").insert({
-    ...parsed,
+    ...rest,
+    start_time: slot.start,
+    end_time: slot.end,
     assigned_by: session.profile.id,
   });
   if (error) throw new Error(error.message);
