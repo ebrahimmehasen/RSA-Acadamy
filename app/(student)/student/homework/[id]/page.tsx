@@ -84,7 +84,7 @@ export default async function AssignmentDetailPage({
       {linkedQuiz && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">اختبار مرتبط بالواجب ده</CardTitle>
+            <CardTitle className="text-lg">اختبار مرتبط بهذا الواجب</CardTitle>
           </CardHeader>
           <CardContent>
             <Button

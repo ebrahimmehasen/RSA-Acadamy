@@ -23,7 +23,7 @@ export default async function NotificationSettingsPage() {
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">أنواع الإشعارات</CardTitle>
-          <CardDescription>تحكّم في الإشعارات اللي تحب تستقبلها</CardDescription>
+          <CardDescription>تحكّم في الإشعارات التي ترغب في استقبالها</CardDescription>
         </CardHeader>
         <CardContent>
           <NotificationSettingsForm isParent={isParent} settings={settings} />

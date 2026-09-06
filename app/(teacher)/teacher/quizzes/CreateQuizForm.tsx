@@ -58,7 +58,7 @@ export function CreateQuizForm({
               required
               className="h-8 w-full rounded-lg border border-input bg-background px-2 text-sm text-foreground"
             >
-              <option value="">اختر...</option>
+              <option value="">اختر…</option>
               {slots.map((s) => (
                 <option
                   key={`${s.classId}-${s.subjectId}`}

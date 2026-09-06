@@ -55,7 +55,7 @@ export default async function AdminAdminsPage() {
                   </Badge>
                 )}
                 {a.is_super_admin && (
-                  <Badge className="mr-2">الأدمن الرئيسي</Badge>
+                  <Badge className="mr-2">المسؤول الرئيسي</Badge>
                 )}
               </TableCell>
               <TableCell dir="ltr" className="text-right">
@@ -66,7 +66,7 @@ export default async function AdminAdminsPage() {
                   <ConfirmDeleteButton
                     action={deleteAdminAction}
                     hiddenFields={{ admin_id: a.id }}
-                    confirmMessage={`متأكد إنك عايز تحذف المسؤول "${a.full_name}"؟ الإجراء ده نهائي ومش هيتراجع.`}
+                    confirmMessage={`هل أنت متأكد من رغبتك في حذف المسؤول "${a.full_name}"؟ هذا الإجراء نهائي ولا يمكن التراجع عنه.`}
                   />
                 )}
               </TableCell>
@@ -75,7 +75,7 @@ export default async function AdminAdminsPage() {
           {(admins ?? []).length === 0 && (
             <TableRow>
               <TableCell colSpan={3} className="text-center text-muted-foreground">
-                مفيش مسؤولين لسه
+                لا يوجد مسؤولون بعد
               </TableCell>
             </TableRow>
           )}

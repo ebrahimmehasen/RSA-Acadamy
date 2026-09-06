@@ -124,7 +124,7 @@ export default async function ParentChildDetailPage({
         </CardHeader>
         <CardContent className="space-y-2">
           {(assignments ?? []).length === 0 && (
-            <p className="text-sm text-muted-foreground">مفيش واجبات لسه</p>
+            <p className="text-sm text-muted-foreground">لا توجد واجبات بعد</p>
           )}
           {(assignments ?? []).map((a) => {
             const sub = submissionByAssignment.get(a.id);
@@ -159,7 +159,7 @@ export default async function ParentChildDetailPage({
         </CardHeader>
         <CardContent className="space-y-3">
           {typedSlots.length === 0 && (
-            <p className="text-sm text-muted-foreground">مفيش جدول لسه</p>
+            <p className="text-sm text-muted-foreground">لا يوجد جدول بعد</p>
           )}
           {DAYS.map((day) => {
             const daySlots = typedSlots.filter((s) => s.day_of_week === day);

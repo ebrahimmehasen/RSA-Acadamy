@@ -22,7 +22,7 @@ const TYPE_LABELS: Record<string, string> = {
   multiple_choice: "اختيار من متعدد",
   checkboxes: "مربعات اختيار",
   dropdown: "قائمة منسدلة",
-  true_false: "صح / خطأ",
+  true_false: "صحيح / خطأ",
   short_answer: "إجابة قصيرة",
   essay: "مقالي",
 };
@@ -99,7 +99,7 @@ export default async function TeacherQuizDetailPage({
 
       {!canEdit && (
         <p className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
-          الاختبار بدأ بالفعل — التعديل مقفول.
+          الاختبار بدأ بالفعل — التعديل مغلق.
         </p>
       )}
 
@@ -176,7 +176,7 @@ export default async function TeacherQuizDetailPage({
             </div>
           ))}
           {(questions ?? []).length === 0 && (
-            <p className="text-sm text-muted-foreground">مفيش أسئلة لسه</p>
+            <p className="text-sm text-muted-foreground">لا توجد أسئلة بعد</p>
           )}
         </CardContent>
       </Card>

@@ -70,7 +70,7 @@ export default async function ParentReportsPage() {
 
       {reports.length === 0 && (
         <p className="text-muted-foreground">
-          اربط أبناءك الأول من صفحة الأبناء عشان تشوف تقاريرهم
+          اربط أبناءك أولًا من صفحة الأبناء لتتمكن من مشاهدة تقاريرهم
         </p>
       )}
 

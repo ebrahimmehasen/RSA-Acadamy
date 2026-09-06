@@ -64,7 +64,7 @@ export default async function AnnouncementsPage() {
           />
         ))}
         {relevant.length === 0 && (
-          <p className="text-muted-foreground">مفيش إعلانات لسه</p>
+          <p className="text-muted-foreground">لا توجد إعلانات بعد</p>
         )}
       </div>
     </div>

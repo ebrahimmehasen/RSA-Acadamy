@@ -127,7 +127,7 @@ export default async function AdminStudentDetailPage({
             );
           })}
           {(subjects ?? []).length === 0 && (
-            <p className="text-sm text-muted-foreground">مفيش مواد مسجل فيها</p>
+            <p className="text-sm text-muted-foreground">لا توجد مواد مسجَّلة له</p>
           )}
         </CardContent>
       </Card>
@@ -188,7 +188,7 @@ export default async function AdminStudentDetailPage({
               {(assignmentSubs ?? []).length === 0 && (
                 <TableRow>
                   <TableCell colSpan={5} className="text-center text-muted-foreground">
-                    مفيش تسليمات واجبات لسه
+                    لا توجد تسليمات واجبات بعد
                   </TableCell>
                 </TableRow>
               )}
@@ -228,7 +228,7 @@ export default async function AdminStudentDetailPage({
                       ) : sub.status === "submitted" ? (
                         <Badge variant="secondary">قيد التصحيح</Badge>
                       ) : (
-                        <Badge variant="outline">لسه بيحل</Badge>
+                        <Badge variant="outline">لم يُحلّ بعد</Badge>
                       )}
                     </TableCell>
                     <TableCell dir="ltr">
@@ -249,7 +249,7 @@ export default async function AdminStudentDetailPage({
               {(quizSubs ?? []).length === 0 && (
                 <TableRow>
                   <TableCell colSpan={5} className="text-center text-muted-foreground">
-                    مفيش تسليمات اختبارات لسه
+                    لا توجد تسليمات اختبارات بعد
                   </TableCell>
                 </TableRow>
               )}

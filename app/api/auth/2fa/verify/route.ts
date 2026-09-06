@@ -17,7 +17,7 @@ export async function POST(request: Request) {
     const { allowed } = await checkAuthRateLimit(`2fa:${session.profile.id}`);
     if (!allowed) {
       return NextResponse.json(
-        { error: "محاولات كتير — جرب تاني بعد دقيقة" },
+        { error: "محاولات كثيرة جدًا — يرجى المحاولة مرة أخرى بعد دقيقة" },
         { status: 429 },
       );
     }
@@ -31,7 +31,7 @@ export async function POST(request: Request) {
       .eq("profile_id", session.profile.id)
       .maybeSingle();
     if (!record?.is_enabled) {
-      return NextResponse.json({ error: "2FA مش مفعّل" }, { status: 400 });
+      return NextResponse.json({ error: "2FA غير مفعّل" }, { status: 400 });
     }
 
     let ok = false;
@@ -66,7 +66,7 @@ export async function POST(request: Request) {
         profileId: session.profile.id,
         eventType: "2fa_verify_failed",
       });
-      return NextResponse.json({ error: "الكود غلط" }, { status: 400 });
+      return NextResponse.json({ error: "الرمز غير صحيح" }, { status: 400 });
     }
 
     const response = NextResponse.json({ ok: true });

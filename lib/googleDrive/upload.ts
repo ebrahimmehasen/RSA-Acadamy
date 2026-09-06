@@ -77,10 +77,10 @@ export function validateUpload(
 ): string | null {
   const rule = UPLOAD_RULES[kind];
   if (sizeBytes > rule.maxBytes) {
-    return `الملف أكبر من الحد المسموح (${Math.round(rule.maxBytes / 1024 / 1024)}MB)`;
+    return `الملف أكبر من الحد الأقصى المسموح به (${Math.round(rule.maxBytes / 1024 / 1024)}MB)`;
   }
   if (!(rule.mimes as readonly string[]).includes(mimeType)) {
-    return "نوع الملف غير مسموح";
+    return "نوع الملف غير مسموح به";
   }
   return null;
 }

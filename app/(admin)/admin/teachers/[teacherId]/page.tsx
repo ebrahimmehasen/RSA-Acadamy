@@ -214,7 +214,7 @@ export default async function AdminTeacherDetailPage({
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">الجدول الحالي</CardTitle>
-          <CardDescription>الحصص المسندة فعليًا للمدرس ده في الجدول</CardDescription>
+          <CardDescription>الحصص المسندة فعليًا لهذا المدرس في الجدول</CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
@@ -248,7 +248,7 @@ export default async function AdminTeacherDetailPage({
               {(schedule ?? []).length === 0 && (
                 <TableRow>
                   <TableCell colSpan={5} className="text-center text-muted-foreground">
-                    مفيش حصص مسندة لسه
+                    لا توجد حصص مسندة بعد
                   </TableCell>
                 </TableRow>
               )}
@@ -260,11 +260,11 @@ export default async function AdminTeacherDetailPage({
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">أوقات التفرغ</CardTitle>
-          <CardDescription>الأوقات اللي المدرس حدّدها إنه متاح فيها أسبوعيًا</CardDescription>
+          <CardDescription>الأوقات التي حدّد المدرس أنه متاح فيها أسبوعيًا</CardDescription>
         </CardHeader>
         <CardContent className="space-y-2">
           {(availability ?? []).length === 0 && (
-            <p className="text-sm text-muted-foreground">مفيش أوقات تفرغ محددة لسه</p>
+            <p className="text-sm text-muted-foreground">لا توجد أوقات تفرغ محددة بعد</p>
           )}
           {DAYS.map((day) => {
             const daySlots = (availability ?? []).filter((a) => a.day_of_week === day);
@@ -289,9 +289,9 @@ export default async function AdminTeacherDetailPage({
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">المواد اللي يقدر يدرّسها</CardTitle>
+          <CardTitle className="text-lg">المواد التي يمكنه تدريسها</CardTitle>
           <CardDescription>
-            بتساعد في اقتراح توزيع الجدول تلقائيًا — الأدمن بيقدر يعدّلها هنا
+            تساعد في اقتراح توزيع الجدول تلقائيًا، ويمكن للمسؤول تعديلها هنا
           </CardDescription>
         </CardHeader>
         <CardContent>

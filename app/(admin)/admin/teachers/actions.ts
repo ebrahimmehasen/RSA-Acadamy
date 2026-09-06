@@ -97,7 +97,7 @@ export async function editTeacherAction(
   } catch (error) {
     return {
       ok: false,
-      message: error instanceof Error ? error.message : "حصل خطأ",
+      message: error instanceof Error ? error.message : "حدث خطأ",
     };
   }
 }
@@ -131,7 +131,7 @@ export async function resetTeacherPasswordAction(
   } catch (error) {
     return {
       ok: false,
-      message: error instanceof Error ? error.message : "حصل خطأ",
+      message: error instanceof Error ? error.message : "حدث خطأ",
     };
   }
 }
@@ -153,7 +153,7 @@ export async function updateTeacherSubjects(formData: FormData) {
     adminName: session.profile.full_name,
     targetType: "teacher",
     targetId: teacherId,
-    description: `تعديل المواد اللي يقدر يدرّسها (${subjectCodes.length} مادة)`,
+    description: `تعديل المواد التي يمكنه تدريسها (${subjectCodes.length} مادة)`,
   });
 
   revalidatePath(`/admin/teachers/${teacherId}`);
@@ -203,7 +203,7 @@ export async function createTeacherAction(
   } catch (error) {
     return {
       ok: false,
-      message: error instanceof Error ? error.message : "حصل خطأ",
+      message: error instanceof Error ? error.message : "حدث خطأ",
     };
   }
 }

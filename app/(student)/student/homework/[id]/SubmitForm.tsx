@@ -44,7 +44,7 @@ export function SubmitForm({
             id="text_answer"
             name="text_answer"
             rows={6}
-            placeholder="اكتب إجابتك هنا..."
+            placeholder="اكتب إجابتك هنا…"
           />
         </div>
       )}

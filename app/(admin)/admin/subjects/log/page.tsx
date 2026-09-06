@@ -81,7 +81,7 @@ export default async function SubjectEnrollmentLogPage() {
           {(logs ?? []).length === 0 && (
             <TableRow>
               <TableCell colSpan={5} className="text-center text-muted-foreground">
-                مفيش عمليات مسجلة لسه
+                لا توجد عمليات مسجلة بعد
               </TableCell>
             </TableRow>
           )}

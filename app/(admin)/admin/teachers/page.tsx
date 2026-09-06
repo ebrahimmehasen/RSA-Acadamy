@@ -83,7 +83,7 @@ export default async function AdminTeachersPage() {
                     <ConfirmDeleteButton
                       action={deleteTeacher}
                       hiddenFields={{ teacher_id: t.user_id }}
-                      confirmMessage={`متأكد إنك عايز تحذف المدرس "${profile?.full_name}"؟ الإجراء ده نهائي ومش هيتراجع.`}
+                      confirmMessage={`هل أنت متأكد من رغبتك في حذف المدرس "${profile?.full_name}"؟ هذا الإجراء نهائي ولا يمكن التراجع عنه.`}
                     />
                   </div>
                 </TableCell>
@@ -93,7 +93,7 @@ export default async function AdminTeachersPage() {
           {(teachers ?? []).length === 0 && (
             <TableRow>
               <TableCell colSpan={5} className="text-center text-muted-foreground">
-                مفيش مدرسين لسه
+                لا يوجد مدرسون بعد
               </TableCell>
             </TableRow>
           )}

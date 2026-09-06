@@ -109,7 +109,7 @@ export function EditParentForm({
             onSubmit={(e) => {
               if (
                 !confirm(
-                  `متأكد إنك عايز تعيد تعيين كلمة سر "${fullName}"؟ كلمة السر الحالية هتتلغي فورًا.`,
+                  `هل أنت متأكد من رغبتك في إعادة تعيين كلمة سر "${fullName}"؟ ستُلغى كلمة السر الحالية فورًا.`,
                 )
               ) {
                 e.preventDefault();
@@ -128,7 +128,7 @@ export function EditParentForm({
                   كلمة السر الجديدة: <b>{resetResult.password}</b>
                 </p>
                 <p className="text-muted-foreground">
-                  ⚠️ انسخها دلوقتي وسلّمها لولي الأمر — مش هتظهر تاني
+                  ⚠️ انسخها الآن وسلّمها لولي الأمر، فلن تظهر مرة أخرى
                 </p>
               </div>
             )}

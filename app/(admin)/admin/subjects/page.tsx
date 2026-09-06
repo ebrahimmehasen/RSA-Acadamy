@@ -38,8 +38,8 @@ export default async function AdminSubjectsPage() {
         <div>
           <h1 className="text-2xl font-bold">إدارة المواد الدراسية</h1>
           <p className="text-muted-foreground">
-            {(subjects ?? []).length} مادة في الكتالوج — طلاب الفصل الجدد
-            بيتسجلوا تلقائيًا في مواد فصلهم وشعبتهم
+            {(subjects ?? []).length} مادة في الكتالوج — يُسجَّل طلاب الفصل الجدد
+            تلقائيًا في مواد فصلهم وشعبتهم
           </p>
         </div>
         <Button

@@ -51,7 +51,7 @@ export async function uploadSession(
       .eq("class_id", classId)
       .eq("subject_id", subjectId)
       .eq("is_active", true);
-    if (!count) return { ok: false, message: "مش بتدرس المادة دي للفصل ده" };
+    if (!count) return { ok: false, message: "أنت لا تُدرِّس هذه المادة لهذا الفصل" };
 
     const { data: subject } = await supabase
       .from("subjects")
@@ -96,7 +96,7 @@ export async function uploadSession(
   } catch (error) {
     return {
       ok: false,
-      message: error instanceof Error ? error.message : "حصل خطأ",
+      message: error instanceof Error ? error.message : "حدث خطأ",
     };
   }
 }

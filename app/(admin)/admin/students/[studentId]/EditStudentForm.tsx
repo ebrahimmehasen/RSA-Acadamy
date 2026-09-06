@@ -157,7 +157,7 @@ export function EditStudentForm({
             onSubmit={(e) => {
               if (
                 !confirm(
-                  `متأكد إنك عايز تعيد تعيين كلمة سر "${fullName}"؟ كلمة السر الحالية هتتلغي فورًا.`,
+                  `هل أنت متأكد من رغبتك في إعادة تعيين كلمة سر "${fullName}"؟ ستُلغى كلمة السر الحالية فورًا.`,
                 )
               ) {
                 e.preventDefault();
@@ -176,7 +176,7 @@ export function EditStudentForm({
                   كلمة السر الجديدة: <b>{resetResult.password}</b>
                 </p>
                 <p className="text-muted-foreground">
-                  ⚠️ انسخها دلوقتي وسلّمها للطالب — مش هتظهر تاني
+                  ⚠️ انسخها الآن وسلّمها إلى الطالب، فلن تظهر مرة أخرى
                 </p>
               </div>
             )}

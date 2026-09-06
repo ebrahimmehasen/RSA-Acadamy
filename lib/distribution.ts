@@ -163,8 +163,8 @@ export async function suggestDistribution(
         endTime: null,
         note:
           candidateTeacherIds.length === 0
-            ? "مفيش مدرس مسجل المادة دي في تفضيلاته"
-            : "مفيش وقت متاح بدون تعارض لأي مدرس مرشح",
+            ? "لا يوجد مدرّس مسجَّل لهذه المادة ضمن تفضيلاته"
+            : "لا يوجد وقت متاح دون تعارض لأي مدرّس مرشَّح",
       });
     } else {
       suggestions.push(picked);

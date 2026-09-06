@@ -9,7 +9,7 @@ function DeleteSubmitButton({ label }: { label: string }) {
 
   return (
     <Button variant="destructive" size="xs" type="submit" disabled={pending}>
-      {pending ? "جارٍ الحذف..." : label}
+      {pending ? "جارٍ الحذف…" : label}
     </Button>
   );
 }

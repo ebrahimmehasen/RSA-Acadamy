@@ -24,7 +24,7 @@ export function CreateAdminForm() {
       <CardHeader>
         <CardTitle className="text-lg">إضافة مسؤول جديد</CardTitle>
         <CardDescription>
-          هيكون له نفس صلاحياتك الكاملة في لوحة الإدارة
+          سيكون له نفس صلاحياتك الكاملة في لوحة الإدارة
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">

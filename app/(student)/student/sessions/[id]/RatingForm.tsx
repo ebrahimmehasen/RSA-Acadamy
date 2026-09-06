@@ -27,7 +27,13 @@ export function RatingForm({
             key={star}
             type="button"
             onClick={() => setRating(star)}
-            aria-label={`تقييم ${star} نجوم`}
+            aria-label={
+              star === 1
+                ? "تقييم نجمة واحدة"
+                : star === 2
+                  ? "تقييم نجمتان"
+                  : `تقييم ${star} نجوم`
+            }
             className={star <= rating ? "text-yellow-500" : "text-muted-foreground"}
           >
             ★

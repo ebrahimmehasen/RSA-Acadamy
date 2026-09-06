@@ -31,7 +31,7 @@ export function TwoFactorSettings({ initiallyEnabled }: { initiallyEnabled: bool
     setLoading(false);
     if (!res.ok) {
       const body = await res.json().catch(() => ({}));
-      setError(body.error ?? "حصل خطأ");
+      setError(body.error ?? "حدث خطأ");
       return;
     }
     const data = await res.json();
@@ -51,7 +51,7 @@ export function TwoFactorSettings({ initiallyEnabled }: { initiallyEnabled: bool
     setLoading(false);
     if (!res.ok) {
       const body = await res.json().catch(() => ({}));
-      setError(body.error ?? "الكود غلط");
+      setError(body.error ?? "الكود غير صحيح");
       return;
     }
     const data = await res.json();
@@ -62,7 +62,7 @@ export function TwoFactorSettings({ initiallyEnabled }: { initiallyEnabled: bool
   async function disable() {
     if (
       !window.confirm(
-        "متأكد إنك عايز تلغي تفعيل التحقق بخطوتين؟ ده هيقلل من حماية حسابك.",
+        "هل أنت متأكد من رغبتك في إلغاء تفعيل التحقق بخطوتين؟ سيؤدي هذا إلى تقليل حماية حسابك.",
       )
     ) {
       return;
@@ -77,7 +77,7 @@ export function TwoFactorSettings({ initiallyEnabled }: { initiallyEnabled: bool
     setLoading(false);
     if (!res.ok) {
       const body = await res.json().catch(() => ({}));
-      setError(body.error ?? "الكود غلط");
+      setError(body.error ?? "الكود غير صحيح");
       return;
     }
     setStep("idle");
@@ -90,7 +90,7 @@ export function TwoFactorSettings({ initiallyEnabled }: { initiallyEnabled: bool
       <CardHeader>
         <CardTitle className="text-lg">التحقق بخطوتين (2FA)</CardTitle>
         <CardDescription>
-          حماية إضافية لحسابك عن طريق تطبيق مصادقة زي Google Authenticator
+          حماية إضافية لحسابك عن طريق تطبيق مصادقة مثل Google Authenticator
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -102,7 +102,7 @@ export function TwoFactorSettings({ initiallyEnabled }: { initiallyEnabled: bool
 
         {step === "setup" && qr && (
           <div className="space-y-4">
-            <p className="text-sm">امسح الكود ده بتطبيق المصادقة:</p>
+            <p className="text-sm">امسح هذا الكود بتطبيق المصادقة:</p>
             <Image src={qr} alt="QR" width={200} height={200} unoptimized />
             {secret && (
               <p className="text-xs text-muted-foreground" dir="ltr">
@@ -133,7 +133,7 @@ export function TwoFactorSettings({ initiallyEnabled }: { initiallyEnabled: bool
             {backupCodes ? (
               <div className="space-y-2 rounded-lg border border-green-300 bg-green-50 p-4 dark:bg-green-950">
                 <p className="font-medium">
-                  2FA اتفعّل ✅ — احفظ أكواد الاسترجاع دي في مكان آمن (كل كود يُستخدم مرة واحدة):
+                  تم تفعيل 2FA ✅ — احفظ أكواد الاسترجاع هذه في مكان آمن (كل كود يُستخدم مرة واحدة):
                 </p>
                 <div className="grid grid-cols-2 gap-1 font-mono text-sm" dir="ltr">
                   {backupCodes.map((code) => (
@@ -146,7 +146,7 @@ export function TwoFactorSettings({ initiallyEnabled }: { initiallyEnabled: bool
             )}
             <div className="space-y-2">
               <Label htmlFor="disable_token">
-                اكتب كود حالي من التطبيق عشان تلغي التفعيل
+                اكتب كودًا حاليًا من التطبيق كي تلغي التفعيل
               </Label>
               <Input
                 id="disable_token"

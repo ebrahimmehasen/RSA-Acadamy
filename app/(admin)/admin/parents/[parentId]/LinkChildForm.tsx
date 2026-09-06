@@ -30,12 +30,12 @@ export function LinkChildForm({ parentId }: { parentId: number }) {
           onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), doSearch())}
         />
         <Button type="button" size="sm" onClick={doSearch} disabled={isPending}>
-          {isPending ? "جاري البحث..." : "بحث"}
+          {isPending ? "جاري البحث…" : "بحث"}
         </Button>
       </div>
 
       {searched && results.length === 0 && (
-        <p className="text-sm text-muted-foreground">مفيش طلاب مطابقين</p>
+        <p className="text-sm text-muted-foreground">لا يوجد طلاب مطابقون</p>
       )}
 
       {results.length > 0 && (
@@ -52,7 +52,7 @@ export function LinkChildForm({ parentId }: { parentId: number }) {
                 </span>{" "}
                 — {r.className}
                 {r.hasParent && (
-                  <span className="text-destructive"> · مربوط بولي أمر تاني بالفعل</span>
+                  <span className="text-destructive"> · مربوط بولي أمر آخر بالفعل</span>
                 )}
               </span>
               <form action={linkChild}>

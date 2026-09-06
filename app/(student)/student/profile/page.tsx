@@ -58,9 +58,9 @@ export default async function StudentProfilePage() {
           <p>
             ولي الأمر:{" "}
             {student?.parent_id ? (
-              <Badge>مربوط</Badge>
+              <Badge>مرتبط</Badge>
             ) : (
-              <Badge variant="outline">غير مربوط</Badge>
+              <Badge variant="outline">غير مرتبط</Badge>
             )}
           </p>
         </CardContent>

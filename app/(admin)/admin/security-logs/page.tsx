@@ -65,7 +65,7 @@ export default async function AdminSecurityLogsPage() {
           {(logs ?? []).length === 0 && (
             <TableRow>
               <TableCell colSpan={3} className="text-center text-muted-foreground">
-                مفيش أحداث مسجلة لسه
+                لا توجد أحداث مسجلة بعد
               </TableCell>
             </TableRow>
           )}

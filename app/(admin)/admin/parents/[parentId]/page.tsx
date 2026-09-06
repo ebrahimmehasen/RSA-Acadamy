@@ -95,7 +95,7 @@ export default async function AdminParentDetailPage({
               );
             })}
             {(children ?? []).length === 0 && (
-              <p className="text-sm text-muted-foreground">مفيش أبناء مربوطين لسه</p>
+              <p className="text-sm text-muted-foreground">لا يوجد أبناء مربوطون بعد</p>
             )}
           </div>
 

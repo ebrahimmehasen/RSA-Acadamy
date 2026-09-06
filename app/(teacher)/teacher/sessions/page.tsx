@@ -88,7 +88,7 @@ export default async function TeacherSessionsPage() {
           </Card>
         ))}
         {(sessions ?? []).length === 0 && (
-          <p className="text-muted-foreground">مفيش حصص مرفوعة لسه</p>
+          <p className="text-muted-foreground">لا توجد حصص مرفوعة بعد</p>
         )}
       </div>
     </div>

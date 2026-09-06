@@ -72,15 +72,15 @@ export default async function TeacherDashboard() {
           <CardHeader>
             <CardTitle>واجبات بانتظار التصحيح</CardTitle>
             <CardDescription>
-              {pendingGradingCount ?? 0} تسليم لسه محتاج تصحيح
+              {pendingGradingCount ?? 0} تسليم لا يزال بحاجة إلى تصحيح
             </CardDescription>
           </CardHeader>
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>كويزات بانتظار تصحيح يدوي</CardTitle>
+            <CardTitle>اختبارات بانتظار تصحيح يدوي</CardTitle>
             <CardDescription>
-              {pendingQuizGradingCount ?? 0} تسليم كويز محتاج مراجعة
+              {pendingQuizGradingCount ?? 0} تسليم اختبار بحاجة إلى مراجعة
             </CardDescription>
           </CardHeader>
         </Card>

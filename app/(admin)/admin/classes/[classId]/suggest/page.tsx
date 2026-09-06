@@ -41,7 +41,7 @@ export default async function SuggestDistributionPage({
         <h1 className="text-2xl font-bold">اقتراح توزيع — {cls.class_name}</h1>
         <CardDescription>
           مقترحات بناءً على تفضيلات المدرسين وأوقات توافرهم — راجع واعتمد كل
-          صف على حدة، مفيش حاجة بتتحفظ تلقائيًا
+          صف على حدة، فلا شيء يُحفظ تلقائيًا
         </CardDescription>
       </div>
 
@@ -49,7 +49,7 @@ export default async function SuggestDistributionPage({
 
       {suggestions.length === 0 && (
         <p className="text-muted-foreground">
-          كل مواد الفصل ده متوزعة بالفعل ✅
+          كل مواد هذا الفصل موزَّعة بالفعل ✅
         </p>
       )}
 

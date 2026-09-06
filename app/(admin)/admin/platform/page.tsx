@@ -20,10 +20,10 @@ export default async function AdminPlatformSettingsPage() {
         <CardHeader>
           <CardTitle className="text-lg">تسجيل الدخول وإنشاء الحساب</CardTitle>
           <CardDescription>
-            لما تكون موقّفة، زرار &quot;تسجيل الدخول&quot; و&quot;إنشاء حساب
-            جديد&quot; في الصفحة الرئيسية بيظهروا بشارة &quot;SOON&quot;
-            ومش شغالين — الصفحتين نفسهم (/login و/signup) بيفضلوا شغالين
-            عادي، ده بس بيتحكم في اللينكات الظاهرة للزوار الجدد.
+            عندما تكون معطَّلة، يظهر زرّا &quot;تسجيل الدخول&quot; و&quot;إنشاء حساب
+            جديد&quot; في الصفحة الرئيسية بشارة &quot;SOON&quot;
+            ولا يعملان، في حين تبقى الصفحتان نفساهما (/login و/signup)
+            تعملان بشكل طبيعي؛ فهذا الإعداد يتحكم فقط في الروابط الظاهرة للزوار الجدد.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -36,7 +36,7 @@ export default async function AdminPlatformSettingsPage() {
                   : "font-semibold text-muted-foreground"
               }
             >
-              {authEnabled ? "شغالة" : "موقّفة (SOON)"}
+              {authEnabled ? "مفعَّلة" : "معطَّلة (SOON)"}
             </span>
           </p>
           <form action={toggleAuthEnabled}>

@@ -110,7 +110,7 @@ export function EditQuestionForm({ question }: { question: QuestionProp }) {
             defaultValue={question.correct_answer ?? "true"}
             className="h-8 w-full rounded-lg border border-input bg-background px-2 text-sm"
           >
-            <option value="true">صح</option>
+            <option value="true">صحيح</option>
             <option value="false">خطأ</option>
           </select>
         </div>
@@ -131,7 +131,7 @@ export function EditQuestionForm({ question }: { question: QuestionProp }) {
 
       {question.question_type === "essay" && (
         <p className="text-sm text-muted-foreground">
-          هيتم تصحيح السؤال ده يدويًا بعد التسليم
+          سيتم تصحيح هذا السؤال يدويًا بعد التسليم
         </p>
       )}
 

@@ -166,7 +166,7 @@ export default async function QuizSubmissionsPage({
         );
       })}
       {(submissions ?? []).length === 0 && (
-        <p className="text-muted-foreground">مفيش تسليمات لسه</p>
+        <p className="text-muted-foreground">لا توجد تسليمات بعد</p>
       )}
     </div>
   );

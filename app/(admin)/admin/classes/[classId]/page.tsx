@@ -140,7 +140,7 @@ export default async function AdminClassSchedulePage({
                         <ConfirmDeleteButton
                           action={deleteSlot}
                           hiddenFields={{ slot_id: slot.id, class_id: id }}
-                          confirmMessage="متأكد إنك عايز تحذف الحصة دي؟ الإجراء ده نهائي ومش هيتراجع."
+                          confirmMessage="هل أنت متأكد من رغبتك في حذف هذه الحصة؟ هذا الإجراء نهائي ولا يمكن التراجع عنه."
                         />
                       </TableCell>
                     </TableRow>

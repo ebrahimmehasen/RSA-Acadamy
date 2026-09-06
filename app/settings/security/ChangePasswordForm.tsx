@@ -26,11 +26,11 @@ export function ChangePasswordForm({ email }: { email: string }) {
     setMessage(null);
 
     if (next.length < 8) {
-      setMessage({ ok: false, text: "كلمة السر الجديدة لازم تكون 8 حروف على الأقل" });
+      setMessage({ ok: false, text: "يجب أن تتكون كلمة السر الجديدة من 8 أحرف على الأقل" });
       return;
     }
     if (next !== confirm) {
-      setMessage({ ok: false, text: "كلمتا السر الجديدتين مش متطابقتين" });
+      setMessage({ ok: false, text: "كلمتا السر الجديدتان غير متطابقتين" });
       return;
     }
 
@@ -44,14 +44,14 @@ export function ChangePasswordForm({ email }: { email: string }) {
     });
     if (signInError) {
       setLoading(false);
-      setMessage({ ok: false, text: "كلمة السر الحالية غلط" });
+      setMessage({ ok: false, text: "كلمة السر الحالية غير صحيحة" });
       return;
     }
 
     const { error } = await supabase.auth.updateUser({ password: next });
     setLoading(false);
     if (error) {
-      setMessage({ ok: false, text: "حصل خطأ — حاول تاني" });
+      setMessage({ ok: false, text: "حدث خطأ — حاول مرة أخرى" });
       return;
     }
 

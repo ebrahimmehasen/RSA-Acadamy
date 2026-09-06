@@ -197,7 +197,7 @@ export default async function TeacherStudentSheetPage({
               {(assignmentSubs ?? []).length === 0 && (
                 <TableRow>
                   <TableCell colSpan={5} className="text-center text-muted-foreground">
-                    مفيش تسليمات واجبات لسه
+                    لا توجد تسليمات واجبات بعد
                   </TableCell>
                 </TableRow>
               )}
@@ -236,7 +236,7 @@ export default async function TeacherStudentSheetPage({
                       ) : sub.status === "submitted" ? (
                         <Badge variant="secondary">قيد التصحيح</Badge>
                       ) : (
-                        <Badge variant="outline">لسه بيحل</Badge>
+                        <Badge variant="outline">قيد الحل</Badge>
                       )}
                     </TableCell>
                     <TableCell dir="ltr">
@@ -248,7 +248,7 @@ export default async function TeacherStudentSheetPage({
               {(quizSubs ?? []).length === 0 && (
                 <TableRow>
                   <TableCell colSpan={4} className="text-center text-muted-foreground">
-                    مفيش تسليمات اختبارات لسه
+                    لا توجد تسليمات اختبارات بعد
                   </TableCell>
                 </TableRow>
               )}
@@ -258,7 +258,7 @@ export default async function TeacherStudentSheetPage({
       </Card>
 
       <p className="text-xs text-muted-foreground">
-        بيانات الحضور مش متاحة في المنصة حاليًا.
+        بيانات الحضور غير متاحة في المنصة حاليًا.
       </p>
     </div>
   );

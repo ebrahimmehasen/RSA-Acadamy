@@ -79,7 +79,7 @@ export async function deleteAccount(profileId: number): Promise<void> {
     .select("user_id")
     .eq("id", profileId)
     .maybeSingle();
-  if (!profile) throw new Error("الحساب مش موجود");
+  if (!profile) throw new Error("الحساب غير موجود");
 
   const { error } = await supabase.auth.admin.deleteUser(profile.user_id);
   if (error) throw new Error(error.message);
@@ -115,7 +115,7 @@ export async function updateAccountProfile(
       .select("user_id")
       .eq("id", profileId)
       .maybeSingle();
-    if (!profile) throw new Error("الحساب مش موجود");
+    if (!profile) throw new Error("الحساب غير موجود");
 
     const { error } = await supabase.auth.admin.updateUserById(profile.user_id, {
       email: updates.email,
@@ -132,7 +132,7 @@ export async function resetAccountPassword(profileId: number): Promise<string> {
     .select("user_id")
     .eq("id", profileId)
     .maybeSingle();
-  if (!profile) throw new Error("الحساب مش موجود");
+  if (!profile) throw new Error("الحساب غير موجود");
 
   const password = generatePassword();
   const { error } = await supabase.auth.admin.updateUserById(profile.user_id, {

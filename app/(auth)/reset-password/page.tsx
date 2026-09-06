@@ -66,11 +66,11 @@ function ResetPasswordForm() {
     e.preventDefault();
     setError(null);
     if (password.length < 8) {
-      setError("كلمة السر لازم تكون 8 حروف على الأقل");
+      setError("يجب أن تتكون كلمة السر من 8 أحرف على الأقل");
       return;
     }
     if (password !== confirm) {
-      setError("كلمتا السر مش متطابقتين");
+      setError("كلمتا السر غير متطابقتين");
       return;
     }
     setLoading(true);
@@ -79,7 +79,7 @@ function ResetPasswordForm() {
     setLoading(false);
     if (error) {
       if (error.code === "same_password") {
-        setError("كلمة السر الجديدة لازم تكون مختلفة عن كلمة السر الحالية");
+        setError("يجب أن تكون كلمة السر الجديدة مختلفة عن كلمة السر الحالية");
       } else {
         setError(EXPIRED_LINK_ERROR);
       }
@@ -92,7 +92,7 @@ function ResetPasswordForm() {
     <Card className="w-full max-w-sm" dir="rtl">
       <CardHeader>
         <CardTitle>تعيين كلمة سر جديدة</CardTitle>
-        <CardDescription>اكتب كلمة السر الجديدة بتاعتك</CardDescription>
+        <CardDescription>اكتب كلمة السر الجديدة الخاصة بك</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={onSubmit} className="space-y-4">

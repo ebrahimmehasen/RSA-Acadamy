@@ -53,7 +53,7 @@ export default async function AdminReportsPage() {
             <SimpleBarChart data={gradesChart} valueSuffix="%" color="#0f8a72" />
           ) : (
             <p className="text-sm text-muted-foreground">
-              مفيش درجات مصححة لسه
+              لا توجد درجات مصححة بعد
             </p>
           )}
         </CardContent>

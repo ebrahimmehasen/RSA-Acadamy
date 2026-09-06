@@ -57,7 +57,7 @@ export default async function TakeQuizPage({
       <div className="space-y-4">
         <BackLink href="/student/quizzes" label="رجوع للاختبارات" />
         <p className="text-muted-foreground">
-          الاختبار لسه مبدأش — هيبدأ {start.toLocaleString("ar-EG")}
+          لم يبدأ الاختبار بعد — سيبدأ {start.toLocaleString("ar-EG")}. بالتوفيق!
         </p>
       </div>
     );

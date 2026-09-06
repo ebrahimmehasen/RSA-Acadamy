@@ -54,7 +54,8 @@ export default async function StudentGradesPage() {
 
       {summary.average === null ? (
         <p className="text-muted-foreground">
-          مفيش درجات لسه — هتظهر هنا أول ما المدرس يصحح واجباتك.
+          لا توجد درجات بعد — ستظهر هنا حالما يصحّح المدرس واجباتك. واصل
+          اجتهادك!
         </p>
       ) : (
         <>

@@ -90,7 +90,7 @@ export default async function TeacherAssignmentsPage() {
           </Link>
         ))}
         {(assignments ?? []).length === 0 && (
-          <p className="text-muted-foreground">مفيش واجبات لسه</p>
+          <p className="text-muted-foreground">لا توجد واجبات بعد</p>
         )}
       </div>
     </div>

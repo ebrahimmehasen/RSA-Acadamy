@@ -54,7 +54,7 @@ export async function createStudentAction(
   } catch (error) {
     return {
       ok: false,
-      message: error instanceof Error ? error.message : "حصل خطأ",
+      message: error instanceof Error ? error.message : "حدث خطأ",
     };
   }
 }
@@ -146,7 +146,7 @@ export async function editStudentAction(
   } catch (error) {
     return {
       ok: false,
-      message: error instanceof Error ? error.message : "حصل خطأ",
+      message: error instanceof Error ? error.message : "حدث خطأ",
     };
   }
 }
@@ -180,7 +180,7 @@ export async function resetStudentPasswordAction(
   } catch (error) {
     return {
       ok: false,
-      message: error instanceof Error ? error.message : "حصل خطأ",
+      message: error instanceof Error ? error.message : "حدث خطأ",
     };
   }
 }

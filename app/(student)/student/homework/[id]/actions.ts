@@ -47,14 +47,14 @@ export async function submitAssignment(
       .eq("user_id", session.profile.id)
       .single();
     if (student?.class_id !== assignment.class_id) {
-      return { ok: false, message: "الواجب ده مش لفصلك" };
+      return { ok: false, message: "هذا الواجب ليس لفصلك" };
     }
 
     if (hasFile && !assignment.allow_file) {
-      return { ok: false, message: "الواجب ده مايقبلش ملفات — اكتب إجابة نصية" };
+      return { ok: false, message: "هذا الواجب لا يقبل الملفات — يرجى كتابة إجابة نصية" };
     }
     if (!hasFile && !assignment.allow_text) {
-      return { ok: false, message: "الواجب ده لازم يتسلم كملف" };
+      return { ok: false, message: "يجب تسليم هذا الواجب كملف" };
     }
 
     // block re-submission after grading
@@ -65,7 +65,7 @@ export async function submitAssignment(
       .eq("student_id", session.profile.id)
       .maybeSingle();
     if (existing?.status === "graded") {
-      return { ok: false, message: "الواجب اتصحح خلاص — مينفعش تعدل التسليم" };
+      return { ok: false, message: "تم تصحيح هذا الواجب بالفعل — لا يمكن تعديل التسليم" };
     }
 
     let fileDriveId: string | null = null;
@@ -111,12 +111,12 @@ export async function submitAssignment(
     revalidatePath("/student/homework");
     return {
       ok: true,
-      message: isLate ? "تم التسليم (متأخر) ✅" : "تم التسليم ✅",
+      message: isLate ? "تم التسليم (متأخر) ✅" : "تم التسليم بنجاح ✅ أحسنت!",
     };
   } catch (error) {
     return {
       ok: false,
-      message: error instanceof Error ? error.message : "حصل خطأ",
+      message: error instanceof Error ? error.message : "حدث خطأ",
     };
   }
 }

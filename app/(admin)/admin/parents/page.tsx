@@ -91,7 +91,7 @@ export default async function AdminParentsPage() {
                     <ConfirmDeleteButton
                       action={deleteParent}
                       hiddenFields={{ parent_id: p.user_id }}
-                      confirmMessage={`متأكد إنك عايز تحذف ولي الأمر "${profile?.full_name}"؟ الإجراء ده نهائي ومش هيتراجع.`}
+                      confirmMessage={`هل أنت متأكد من رغبتك في حذف ولي الأمر "${profile?.full_name}"؟ هذا الإجراء نهائي ولا يمكن التراجع عنه.`}
                     />
                   </div>
                 </TableCell>
@@ -101,7 +101,7 @@ export default async function AdminParentsPage() {
           {(parents ?? []).length === 0 && (
             <TableRow>
               <TableCell colSpan={5} className="text-center text-muted-foreground">
-                مفيش أولياء أمور لسه
+                لا يوجد أولياء أمور بعد
               </TableCell>
             </TableRow>
           )}

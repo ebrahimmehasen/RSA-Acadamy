@@ -117,12 +117,12 @@ export async function signUpAction(
     return {
       ok: true,
       message:
-        "تم إنشاء الحساب بنجاح — سجّل الدخول دلوقتي. حسابك هيفضل مقفول لحد ما الإدارة تفعّله.",
+        "تم إنشاء الحساب بنجاح — سجّل الدخول الآن. سيظل حسابك مغلقًا إلى أن تقوم الإدارة بتفعيله.",
     };
   } catch (error) {
     return {
       ok: false,
-      message: error instanceof Error ? error.message : "حصل خطأ",
+      message: error instanceof Error ? error.message : "حدث خطأ",
     };
   }
 }

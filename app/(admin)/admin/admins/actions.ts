@@ -6,9 +6,9 @@ import { requireRole } from "@/lib/auth/guards";
 import { createAdmin, deleteAccount } from "@/lib/users";
 
 const schema = z.object({
-  full_name: z.string().min(3, "الاسم لازم يكون 3 أحرف على الأقل"),
+  full_name: z.string().min(3, "يجب أن يتكون الاسم من 3 أحرف على الأقل"),
   email: z.email(),
-  password: z.string().min(8, "كلمة السر لازم تكون 8 أحرف على الأقل"),
+  password: z.string().min(8, "يجب أن تتكون كلمة السر من 8 أحرف على الأقل"),
 });
 
 export interface CreateAdminResult {
@@ -37,7 +37,7 @@ export async function createAdminAction(
     revalidatePath("/admin/admins");
     return {
       ok: true,
-      message: `تم إنشاء حساب المسؤول — سلّم البريد وكلمة السر اللي كتبتها لـ ${parsed.full_name}`,
+      message: `تم إنشاء حساب المسؤول، يُرجى تسليم البريد الإلكتروني الذي أدخلته وكلمة السر التي أدخلتها إلى ${parsed.full_name}`,
     };
   } catch (error) {
     return {
@@ -47,7 +47,7 @@ export async function createAdminAction(
           ? error.issues[0].message
           : error instanceof Error
             ? error.message
-            : "حصل خطأ",
+            : "حدث خطأ",
     };
   }
 }
@@ -55,11 +55,11 @@ export async function createAdminAction(
 export async function deleteAdminAction(formData: FormData) {
   const session = await requireRole("admin");
   if (!session.profile.is_super_admin) {
-    throw new Error("مسموح بس للأدمن الرئيسي إنه يحذف مسؤولين");
+    throw new Error("لا يُسمح إلا للمسؤول الرئيسي بحذف المسؤولين");
   }
   const id = z.coerce.number().int().positive().parse(formData.get("admin_id"));
   if (id === session.profile.id) {
-    throw new Error("مينفعش تحذف حسابك الشخصي");
+    throw new Error("لا يمكنك حذف حسابك الشخصي");
   }
   await deleteAccount(id);
   revalidatePath("/admin/admins");

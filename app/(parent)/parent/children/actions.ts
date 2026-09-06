@@ -28,12 +28,12 @@ export async function linkChildByCode(
       .eq("student_code", code)
       .maybeSingle();
 
-    if (!student) return { ok: false, message: "مفيش طالب بالكود ده" };
+    if (!student) return { ok: false, message: "لا يوجد طالب بهذا الكود" };
     if (student.parent_id === session.profile.id) {
-      return { ok: false, message: "الطالب ده مربوط بيك بالفعل" };
+      return { ok: false, message: "هذا الطالب مرتبط بك بالفعل" };
     }
     if (student.parent_id) {
-      return { ok: false, message: "الطالب ده مربوط بولي أمر آخر — كلم الإدارة" };
+      return { ok: false, message: "هذا الطالب مرتبط بولي أمر آخر — يرجى التواصل مع الإدارة" };
     }
 
     const { error } = await supabase
@@ -49,7 +49,7 @@ export async function linkChildByCode(
   } catch (error) {
     return {
       ok: false,
-      message: error instanceof Error ? error.message : "حصل خطأ",
+      message: error instanceof Error ? error.message : "حدث خطأ",
     };
   }
 }

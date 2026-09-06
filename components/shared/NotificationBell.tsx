@@ -103,7 +103,7 @@ export function NotificationBell({ profileId }: { profileId: number }) {
           >
             {notifications.length === 0 && (
               <p className="p-4 text-center text-sm text-muted-foreground">
-                مفيش إشعارات
+                لا توجد إشعارات
               </p>
             )}
             {notifications.map((n) => (

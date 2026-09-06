@@ -43,7 +43,7 @@ export default async function TeacherPreferencesPage() {
         <CardHeader>
           <CardTitle className="text-lg">الفصول المفضّلة</CardTitle>
           <CardDescription>
-            بتساعد الإدارة توزّع الجدول بشكل أفضل — مش إلزامية
+            تساعد الإدارة على توزيع الجدول بشكل أفضل، وهي غير إلزامية
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -70,7 +70,7 @@ export default async function TeacherPreferencesPage() {
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">أوقات التواجد</CardTitle>
-          <CardDescription>الأوقات اللي تقدر تدرّس فيها أسبوعيًا</CardDescription>
+          <CardDescription>الأوقات التي تستطيع التدريس فيها أسبوعيًا</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {DAYS.map((day) => {

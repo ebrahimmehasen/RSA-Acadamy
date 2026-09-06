@@ -57,7 +57,9 @@ export default async function StudentSessionsPage() {
           );
         })}
         {(sessions ?? []).length === 0 && (
-          <p className="text-muted-foreground">مفيش حصص متاحة لسه</p>
+          <p className="text-muted-foreground">
+            لا توجد حصص متاحة حتى الآن — تابع الجديد قريبًا!
+          </p>
         )}
       </div>
     </div>

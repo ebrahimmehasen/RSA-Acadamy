@@ -180,7 +180,7 @@ export default async function TeacherGradebookPage({
 
       {classes.length === 0 ? (
         <p className="text-muted-foreground">
-          الإدارة لسه موزعتلكش حصص في الجدول — كشف الدرجات هيظهر أول ما يبقى عندك فصول.
+          لم تُوزِّع الإدارة عليك حصصًا في الجدول بعد — سيظهر كشف الدرجات فور أن يصبح لديك فصول.
         </p>
       ) : (
         <>

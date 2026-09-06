@@ -25,7 +25,7 @@ export async function POST(request: Request) {
       .eq("profile_id", session.profile.id)
       .maybeSingle();
     if (!record) {
-      return NextResponse.json({ error: "ابدأ الإعداد الأول" }, { status: 400 });
+      return NextResponse.json({ error: "يجب بدء الإعداد أولًا" }, { status: 400 });
     }
     if (record.is_enabled) {
       return NextResponse.json({ error: "2FA مفعّل بالفعل" }, { status: 400 });
@@ -36,7 +36,7 @@ export async function POST(request: Request) {
         profileId: session.profile.id,
         eventType: "2fa_verify_failed",
       });
-      return NextResponse.json({ error: "الكود غلط" }, { status: 400 });
+      return NextResponse.json({ error: "الرمز غير صحيح" }, { status: 400 });
     }
 
     await supabase

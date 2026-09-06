@@ -84,7 +84,7 @@ export function CreateTeacherForm() {
                     Password: <b>{result.credentials.password}</b>
                   </p>
                   <p dir="rtl" className="text-muted-foreground">
-                    ⚠️ انسخ البيانات دي دلوقتي وسلّمها للمدرس — مش هتظهر تاني
+                    ⚠️ انسخ هذه البيانات الآن وسلّمها إلى المدرس، فلن تظهر مرة أخرى
                   </p>
                 </div>
               )}

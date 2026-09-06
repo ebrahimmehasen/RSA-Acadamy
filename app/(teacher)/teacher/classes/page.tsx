@@ -33,7 +33,7 @@ export default async function TeacherClassesPage() {
       <h1 className="text-2xl font-bold">فصولك وجدولك الأسبوعي</h1>
       {typedSlots.length === 0 && (
         <p className="text-muted-foreground">
-          الإدارة لسه موزعتلكش حصص في الجدول.
+          لم تُوزِّع الإدارة عليك حصصًا في الجدول بعد.
         </p>
       )}
       {DAYS.map((day) => {

@@ -41,13 +41,13 @@ export async function createAnnouncement(formData: FormData) {
 
   let targetStudentId: number | null = null;
   if (parsed.target_type === "student") {
-    if (!parsed.target_student_code) throw new Error("اكتب كود الطالب");
+    if (!parsed.target_student_code) throw new Error("يجب إدخال كود الطالب");
     const { data: student } = await supabase
       .from("students")
       .select("user_id")
       .eq("student_code", parsed.target_student_code)
       .maybeSingle();
-    if (!student) throw new Error("مفيش طالب بالكود ده");
+    if (!student) throw new Error("لا يوجد طالب بهذا الكود");
     targetStudentId = student.user_id;
   }
 

@@ -49,7 +49,7 @@ export async function createAssignment(
     });
 
     if (!parsed.allow_file && !parsed.allow_text) {
-      return { ok: false, message: "لازم تسمح بملف أو إجابة نصية على الأقل" };
+      return { ok: false, message: "يجب السماح بإرفاق ملف أو كتابة إجابة نصية على الأقل" };
     }
 
     const files = formData
@@ -105,7 +105,7 @@ export async function createAssignment(
   } catch (error) {
     return {
       ok: false,
-      message: error instanceof Error ? error.message : "حصل خطأ",
+      message: error instanceof Error ? error.message : "حدث خطأ",
     };
   }
 }
@@ -137,10 +137,10 @@ export async function gradeSubmission(
       .eq("id", assignmentId)
       .single();
     if (assignment?.teacher_id !== session.profile.id) {
-      return { ok: false, message: "مش واجبك تصححه" };
+      return { ok: false, message: "لا يمكنك تصحيح واجب ليس واجبك" };
     }
     if (grade > assignment.max_grade) {
-      return { ok: false, message: `الدرجة العظمى ${assignment.max_grade}` };
+      return { ok: false, message: `الدرجة العظمى هي ${assignment.max_grade}` };
     }
 
     const { data: submission, error } = await supabase
@@ -189,7 +189,7 @@ export async function gradeSubmission(
   } catch (error) {
     return {
       ok: false,
-      message: error instanceof Error ? error.message : "حصل خطأ",
+      message: error instanceof Error ? error.message : "حدث خطأ",
     };
   }
 }

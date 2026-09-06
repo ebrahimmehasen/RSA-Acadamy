@@ -36,7 +36,7 @@ export function CreateStudentForm({
             <Label htmlFor="full_name">الاسم الكامل</Label>
             <Input id="full_name" name="full_name" autoComplete="name" required />
             <p className="text-xs text-muted-foreground">
-              الإيميل وكلمة السر بيتولّدوا تلقائيًا — مش محتاج تدخلهم
+              يُنشأ البريد الإلكتروني وكلمة السر تلقائيًا — لست بحاجة إلى إدخالهما
             </p>
           </div>
           <div className="space-y-2">
@@ -105,7 +105,7 @@ export function CreateStudentForm({
                     Student Code: <b>{result.credentials.studentCode}</b>
                   </p>
                   <p dir="rtl" className="text-muted-foreground">
-                    ⚠️ انسخ البيانات دي دلوقتي وسلّمها للطالب — مش هتظهر تاني
+                    ⚠️ انسخ هذه البيانات الآن وسلّمها إلى الطالب، فلن تظهر مرة أخرى
                   </p>
                 </div>
               )}

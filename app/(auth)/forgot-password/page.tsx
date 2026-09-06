@@ -30,7 +30,7 @@ export default function ForgotPasswordPage() {
     });
     setLoading(false);
     if (error) {
-      setError("حصل خطأ — تأكد من البريد الإلكتروني");
+      setError("حدث خطأ — يرجى التأكد من البريد الإلكتروني");
       return;
     }
     setSent(true);
@@ -41,14 +41,14 @@ export default function ForgotPasswordPage() {
       <CardHeader>
         <CardTitle>نسيت كلمة السر؟</CardTitle>
         <CardDescription>
-          هنبعتلك رابط لإعادة تعيين كلمة السر على بريدك الإلكتروني
+          سنرسل إليك رابطًا لإعادة تعيين كلمة السر على بريدك الإلكتروني
         </CardDescription>
       </CardHeader>
       <CardContent>
         {sent ? (
           <div className="space-y-3 text-sm" aria-live="polite">
             <p className="text-green-600">
-              لو الإيميل ده مسجّل عندنا، هيوصلك رابط إعادة التعيين ✅
+              إذا كان هذا البريد الإلكتروني مسجلاً لدينا، فسيصلك رابط إعادة التعيين ✅
             </p>
             <Link href="/login" className="text-primary underline underline-offset-4">
               الرجوع لتسجيل الدخول

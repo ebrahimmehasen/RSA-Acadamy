@@ -20,10 +20,10 @@ export async function POST(request: Request) {
       .eq("profile_id", session.profile.id)
       .maybeSingle();
     if (!record?.is_enabled) {
-      return NextResponse.json({ error: "2FA مش مفعّل" }, { status: 400 });
+      return NextResponse.json({ error: "2FA غير مفعّل" }, { status: 400 });
     }
     if (!verifyTotp(record.secret, token)) {
-      return NextResponse.json({ error: "الكود غلط" }, { status: 400 });
+      return NextResponse.json({ error: "الرمز غير صحيح" }, { status: 400 });
     }
 
     await supabase.from("user_2fa").delete().eq("profile_id", session.profile.id);

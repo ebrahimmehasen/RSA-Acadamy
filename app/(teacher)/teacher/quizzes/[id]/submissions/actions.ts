@@ -14,7 +14,7 @@ export async function gradeQuizAnswer(formData: FormData) {
   const points = z.coerce.number().int().min(0).parse(formData.get("points"));
   const maxPoints = z.coerce.number().int().min(0).parse(formData.get("max_points"));
 
-  if (points > maxPoints) throw new Error(`الدرجة القصوى ${maxPoints}`);
+  if (points > maxPoints) throw new Error(`الدرجة القصوى هي ${maxPoints}`);
 
   const supabase = createAdminClient();
 
@@ -23,7 +23,7 @@ export async function gradeQuizAnswer(formData: FormData) {
     .select("teacher_id")
     .eq("id", quizId)
     .single();
-  if (quiz?.teacher_id !== session.profile.id) throw new Error("مش الكويز بتاعك");
+  if (quiz?.teacher_id !== session.profile.id) throw new Error("هذا الاختبار ليس اختبارك");
 
   const { error } = await supabase
     .from("quiz_question_answers")

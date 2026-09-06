@@ -98,7 +98,9 @@ export default async function StudentQuizzesPage() {
           );
         })}
         {(quizzes ?? []).length === 0 && (
-          <p className="text-muted-foreground">مفيش اختبارات لسه</p>
+          <p className="text-muted-foreground">
+            لا توجد اختبارات متاحة حتى الآن — تابع الجديد قريبًا!
+          </p>
         )}
       </div>
     </div>

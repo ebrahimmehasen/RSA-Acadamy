@@ -39,7 +39,7 @@ export async function addAvailability(formData: FormData) {
     end_time: formData.get("end_time"),
   });
   if (parsed.end_time <= parsed.start_time) {
-    throw new Error("وقت النهاية لازم يكون بعد وقت البداية");
+    throw new Error("يجب أن يكون وقت النهاية بعد وقت البداية");
   }
 
   const supabase = createAdminClient();

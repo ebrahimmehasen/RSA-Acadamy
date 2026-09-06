@@ -76,7 +76,7 @@ export default async function StudentSessionDetailPage({
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">قيّم الحصة</CardTitle>
+          <CardTitle className="text-lg">شاركنا رأيك في الحصة</CardTitle>
         </CardHeader>
         <CardContent>
           <RatingForm

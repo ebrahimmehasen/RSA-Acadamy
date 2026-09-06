@@ -47,7 +47,7 @@ export async function createQuiz(
     });
 
     if (new Date(parsed.end_time) <= new Date(parsed.start_time)) {
-      return { ok: false, message: "وقت النهاية لازم يكون بعد وقت البداية" };
+      return { ok: false, message: "يجب أن يكون وقت النهاية بعد وقت البداية" };
     }
 
     const supabase = createAdminClient();
@@ -74,7 +74,7 @@ export async function createQuiz(
   } catch (error) {
     return {
       ok: false,
-      message: error instanceof Error ? error.message : "حصل خطأ",
+      message: error instanceof Error ? error.message : "حدث خطأ",
     };
   }
 
@@ -119,7 +119,7 @@ async function assertEditable(
     .select("teacher_id, start_time")
     .eq("id", quizId)
     .single();
-  if (quiz?.teacher_id !== teacherId) throw new Error("مش الكويز بتاعك");
+  if (quiz?.teacher_id !== teacherId) throw new Error("هذا الاختبار ليس اختبارك");
   if (new Date(quiz.start_time) <= new Date()) return null;
   return quiz;
 }
@@ -135,7 +135,7 @@ export async function addQuestion(
     const supabase = createAdminClient();
     if (!(await assertEditable(supabase, quizId, session.profile.id))) {
       revalidatePath(`/teacher/quizzes/${quizId}`);
-      return { ok: false, message: "الاختبار بدأ بالفعل — التعديل مقفول" };
+      return { ok: false, message: "الاختبار بدأ بالفعل — التعديل مغلق" };
     }
 
     const parsed = questionSchema.parse({
@@ -161,7 +161,7 @@ export async function addQuestion(
       if (parsed.option_c) options.C = parsed.option_c;
       if (parsed.option_d) options.D = parsed.option_d;
     } else if (parsed.question_type === "true_false") {
-      options = { true: "صح", false: "خطأ" };
+      options = { true: "صحيح", false: "خطأ" };
     }
 
     const { count } = await supabase
@@ -219,7 +219,7 @@ export async function addQuestion(
   } catch (error) {
     return {
       ok: false,
-      message: error instanceof Error ? error.message : "حصل خطأ",
+      message: error instanceof Error ? error.message : "حدث خطأ",
     };
   }
 }
@@ -282,7 +282,7 @@ export async function updateQuestion(formData: FormData) {
     .eq("id", parsed.question_id)
     .eq("quiz_id", quizId)
     .single();
-  if (!existing) throw new Error("السؤال مش موجود");
+  if (!existing) throw new Error("السؤال غير موجود");
 
   let options: Record<string, string> | null = null;
   if (
@@ -296,7 +296,7 @@ export async function updateQuestion(formData: FormData) {
     if (parsed.option_c) options.C = parsed.option_c;
     if (parsed.option_d) options.D = parsed.option_d;
   } else if (existing.question_type === "true_false") {
-    options = { true: "صح", false: "خطأ" };
+    options = { true: "صحيح", false: "خطأ" };
   }
 
   const correctAnswer =
@@ -348,7 +348,7 @@ export async function updateQuiz(
     const supabase = createAdminClient();
     if (!(await assertEditable(supabase, quizId, session.profile.id))) {
       revalidatePath(`/teacher/quizzes/${quizId}`);
-      return { ok: false, message: "الاختبار بدأ بالفعل — التعديل مقفول" };
+      return { ok: false, message: "الاختبار بدأ بالفعل — التعديل مغلق" };
     }
 
     const parsed = updateQuizSchema.parse({
@@ -361,10 +361,10 @@ export async function updateQuiz(
     });
 
     if (new Date(parsed.end_time) <= new Date(parsed.start_time)) {
-      throw new Error("وقت النهاية لازم يكون بعد وقت البداية");
+      throw new Error("يجب أن يكون وقت النهاية بعد وقت البداية");
     }
     if (new Date(parsed.start_time) <= new Date()) {
-      throw new Error("وقت البداية الجديد لازم يكون في المستقبل");
+      throw new Error("يجب أن يكون وقت البداية الجديد في المستقبل");
     }
 
     const { error } = await supabase
@@ -386,7 +386,7 @@ export async function updateQuiz(
   } catch (error) {
     return {
       ok: false,
-      message: error instanceof Error ? error.message : "حصل خطأ",
+      message: error instanceof Error ? error.message : "حدث خطأ",
     };
   }
 }
@@ -401,14 +401,14 @@ export async function publishQuiz(formData: FormData) {
     .select("teacher_id, is_published, class_id, title, start_time, subjects(subject_name)")
     .eq("id", quizId)
     .single();
-  if (quiz?.teacher_id !== session.profile.id) throw new Error("مش الكويز بتاعك");
+  if (quiz?.teacher_id !== session.profile.id) throw new Error("هذا الاختبار ليس اختبارك");
   if (quiz.is_published) return; // already published — avoid re-notifying
 
   const { count } = await supabase
     .from("quiz_questions")
     .select("id", { count: "exact", head: true })
     .eq("quiz_id", quizId);
-  if (!count) throw new Error("لازم تضيف سؤال واحد على الأقل قبل النشر");
+  if (!count) throw new Error("يجب إضافة سؤال واحد على الأقل قبل النشر");
 
   const { error } = await supabase
     .from("quizzes")
@@ -429,8 +429,8 @@ export async function publishQuiz(formData: FormData) {
   const hasStarted = new Date(quiz.start_time) <= new Date();
   const title = hasStarted ? "بدأ الاختبار الآن 🔴" : "اختبار جديد مجدول";
   const message = hasStarted
-    ? `اختبار "${quiz.title}" في مادة ${subjectName} بقى متاح دلوقتي.`
-    : `اختبار "${quiz.title}" في مادة ${subjectName} هيبدأ يوم ${new Date(
+    ? `اختبار "${quiz.title}" في مادة ${subjectName} أصبح متاحًا الآن.`
+    : `اختبار "${quiz.title}" في مادة ${subjectName} سيبدأ يوم ${new Date(
         quiz.start_time,
       ).toLocaleString("ar-EG")}.`;
 

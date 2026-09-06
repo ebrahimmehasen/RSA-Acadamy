@@ -24,7 +24,7 @@ export function LinkChildForm() {
       <CardHeader>
         <CardTitle className="text-lg">ربط ابن/ابنة</CardTitle>
         <CardDescription>
-          اكتب كود الطالب المكوّن من 6 أرقام (موجود مع الطالب أو من الإدارة)
+          اكتب كود الطالب المكوَّن من 6 أرقام (متوافر لدى الطالب أو من الإدارة)
         </CardDescription>
       </CardHeader>
       <CardContent>

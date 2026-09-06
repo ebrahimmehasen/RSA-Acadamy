@@ -72,13 +72,13 @@ export default async function AdminAnnouncementsPage() {
               )}
               <p className="text-xs text-muted-foreground">
                 <span dir="ltr">{new Date(a.published_at).toLocaleString("ar-EG")}</span>
-                {" · "}👁️ اتقرا من {(a.read_by as number[])?.length ?? 0} شخص
+                {" · "}👁️ قرأه {(a.read_by as number[])?.length ?? 0} شخص
               </p>
             </CardContent>
           </Card>
         ))}
         {(announcements ?? []).length === 0 && (
-          <p className="text-muted-foreground">مفيش إعلانات لسه</p>
+          <p className="text-muted-foreground">لا توجد إعلانات بعد</p>
         )}
       </div>
     </div>

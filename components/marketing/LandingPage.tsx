@@ -122,7 +122,7 @@ const TRUST_POINTS = [
   {
     icon: BarChart3,
     title: "متابعة لحظية",
-    description: "تقارير وإشعارات فورية بدل انتظار نهاية الفصل الدراسي.",
+    description: "تقارير وإشعارات فورية بدلاً من انتظار نهاية الفصل الدراسي.",
     color: "brand-terracotta",
   },
 ];

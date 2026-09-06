@@ -53,7 +53,7 @@ export function UploadSessionForm({
               required
               className="h-8 w-full rounded-lg border border-input bg-background px-2 text-sm"
             >
-              <option value="">اختر...</option>
+              <option value="">اختر…</option>
               {slots.map((s) => (
                 <option
                   key={`${s.classId}-${s.subjectId}`}
@@ -84,7 +84,7 @@ export function UploadSessionForm({
           </div>
 
           <div className="space-y-2">
-            <Label>مين يقدر يشوف الحصة؟</Label>
+            <Label>من يمكنه مشاهدة الحصة؟</Label>
             <div className="flex gap-4 text-sm">
               <label className="flex items-center gap-2">
                 <input
@@ -139,7 +139,7 @@ export function UploadSessionForm({
           )}
 
           <Button type="submit" disabled={isPending}>
-            {isPending ? "جاري الرفع… قد يستغرق وقت حسب حجم الفيديو" : "رفع الحصة"}
+            {isPending ? "جاري الرفع… قد يستغرق ذلك وقتًا حسب حجم الفيديو" : "رفع الحصة"}
           </Button>
         </form>
       </CardContent>

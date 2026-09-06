@@ -61,10 +61,11 @@ export function PendingActivation({
       dir="rtl"
     >
       <div className="text-5xl">⏳</div>
-      <h1 className="text-2xl font-bold">أهلاً {fullName}</h1>
+      <h1 className="text-2xl font-bold">أهلاً بك، {fullName}</h1>
       <p className="max-w-sm text-muted-foreground">
-        حسابك اتعمل بنجاح، بس لسه محتاج تفعيل من إدارة RSA Academy. الصفحة
-        هتشتغل عندك تلقائيًا فور ما يتفعّل حسابك — مش محتاج تعمل حاجة.
+        تم إنشاء حسابك بنجاح، لكنه لا يزال بحاجة إلى تفعيل من إدارة RSA
+        Academy. ستعمل هذه الصفحة تلقائيًا فور تفعيل حسابك — لست بحاجة إلى
+        اتخاذ أي إجراء.
       </p>
       <Button variant="outline" size="sm" onClick={signOut}>
         تسجيل الخروج

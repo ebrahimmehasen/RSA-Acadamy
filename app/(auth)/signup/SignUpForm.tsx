@@ -170,7 +170,7 @@ export function SignUpForm({
       <CardHeader>
         <CardTitle>إنشاء حساب جديد</CardTitle>
         <CardDescription>
-          حسابك هيفضل مقفول لحد ما إدارة RSA Academy تفعّله
+          سيظل حسابك مغلقًا إلى أن تقوم إدارة RSA Academy بتفعيله
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -277,7 +277,7 @@ export function SignUpForm({
                 minLength={8}
               />
               <p className="text-xs text-muted-foreground">
-                كلمة السر ما بتتحفظش لو عملت ريفريش، لازم تكتبها تاني للأمان
+                لا تُحفظ كلمة السر إذا تم تحديث الصفحة، لذا يجب إدخالها من جديد حفاظًا على الأمان
               </p>
             </div>
             <div className="space-y-2">
@@ -393,7 +393,7 @@ export function SignUpForm({
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>المواد اللي تقدر تدرّسها (اختياري)</Label>
+                  <Label>المواد التي يمكنك تدريسها (اختياري)</Label>
                   <div className="max-h-48 space-y-3 overflow-y-auto rounded-lg border p-3">
                     {subjectsByClass.map(([className, subs]) => (
                       <div key={className} className="space-y-1">
@@ -438,7 +438,7 @@ export function SignUpForm({
               href="/login"
               className="block text-center text-sm text-muted-foreground underline underline-offset-4"
             >
-              عندك حساب بالفعل؟ سجّل الدخول
+              لديك حساب بالفعل؟ سجّل الدخول
             </Link>
           </form>
         )}

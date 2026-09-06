@@ -48,7 +48,9 @@ export default async function StudentHomeworkPage() {
       />
       <h1 className="text-2xl font-bold">الواجبات</h1>
       {(assignments ?? []).length === 0 && (
-        <p className="text-muted-foreground">مفيش واجبات لحد دلوقتي.</p>
+        <p className="text-muted-foreground">
+          لا توجد واجبات حتى الآن — استمتع بوقتك الحر!
+        </p>
       )}
       <div className="grid gap-3">
         {(assignments ?? []).map((a) => {

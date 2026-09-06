@@ -15,9 +15,9 @@ import { addQuestion, type ActionResult } from "../actions";
 
 const TYPE_LABELS: Record<string, string> = {
   multiple_choice: "اختيار من متعدد",
-  checkboxes: "مربعات اختيار (أكتر من إجابة)",
+  checkboxes: "مربعات اختيار (أكثر من إجابة)",
   dropdown: "قائمة منسدلة",
-  true_false: "صح / خطأ",
+  true_false: "صحيح / خطأ",
   short_answer: "إجابة قصيرة",
   essay: "مقالي",
 };
@@ -135,7 +135,7 @@ export function AddQuestionForm({ quizId }: { quizId: number }) {
                 name="correct_answer"
                 className="h-8 w-full rounded-lg border border-input bg-background px-2 text-sm text-foreground"
               >
-                <option value="true">صح</option>
+                <option value="true">صحيح</option>
                 <option value="false">خطأ</option>
               </select>
             </div>
@@ -150,7 +150,7 @@ export function AddQuestionForm({ quizId }: { quizId: number }) {
 
           {type === "essay" && (
             <p className="text-sm text-muted-foreground">
-              هيتم تصحيح السؤال ده يدويًا بعد التسليم
+              سيتم تصحيح هذا السؤال يدويًا بعد التسليم
             </p>
           )}
 

@@ -232,7 +232,7 @@ export function GradebookTable({
                   colSpan={3 + assignmentHeaders.length + quizHeaders.length}
                   className="text-center text-muted-foreground"
                 >
-                  مفيش طلاب مطابقين للبحث
+                  لا يوجد طلاب مطابقون للبحث
                 </TableCell>
               </TableRow>
             )}

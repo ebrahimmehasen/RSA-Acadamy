@@ -112,7 +112,7 @@ export function StudentsTable({ students }: { students: StudentRow[] }) {
                   <ConfirmDeleteButton
                     action={deleteStudent}
                     hiddenFields={{ student_id: s.user_id }}
-                    confirmMessage={`متأكد إنك عايز تحذف الطالب "${s.full_name}"؟ الإجراء ده نهائي ومش هيتراجع — هيتحذف كل بياناته (تسليمات، درجات).`}
+                    confirmMessage={`هل أنت متأكد من رغبتك في حذف الطالب "${s.full_name}"؟ هذا الإجراء نهائي ولا يمكن التراجع عنه — وسيؤدي إلى حذف جميع بياناته (التسليمات، الدرجات).`}
                   />
                 </div>
               </TableCell>
@@ -121,7 +121,7 @@ export function StudentsTable({ students }: { students: StudentRow[] }) {
           {filtered.length === 0 && (
             <TableRow>
               <TableCell colSpan={7} className="text-center text-muted-foreground">
-                مفيش نتائج
+                لا توجد نتائج
               </TableCell>
             </TableRow>
           )}

@@ -64,7 +64,7 @@ export function QuizTakingForm({
       <div className="sticky top-14 z-10 -mx-4 space-y-1 border-b bg-background/95 px-4 py-2 backdrop-blur supports-backdrop-filter:bg-background/70 md:-mx-6 md:px-6">
         <div className="flex items-center justify-between text-xs text-muted-foreground">
           <span>
-            {answered.size} من {total} سؤال متجاوب
+            تمت الإجابة عن {answered.size} من {total} سؤال
           </span>
           <span>{progress}%</span>
         </div>
@@ -113,7 +113,7 @@ export function QuizTakingForm({
                   </label>
                 ))}
                 <p className="text-xs text-muted-foreground">
-                  ممكن تختار أكتر من إجابة
+                  يمكنك اختيار أكثر من إجابة واحدة
                 </p>
               </div>
             )}
@@ -142,7 +142,7 @@ export function QuizTakingForm({
               <div className="flex gap-4 text-sm">
                 <label className="flex items-center gap-2">
                   <input type="radio" name={`answer_${q.id}`} value="true" required />
-                  صح
+                  صحيح
                 </label>
                 <label className="flex items-center gap-2">
                   <input type="radio" name={`answer_${q.id}`} value="false" required />

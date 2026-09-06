@@ -103,8 +103,8 @@ export async function GET(request: Request) {
       await createNotification({
         profileId,
         type: "schedule",
-        title: "حصتك هتبدأ قريب ⏰",
-        message: `الحصة هتبدأ الساعة ${slot.start_time.slice(0, 5)}`,
+        title: "ستبدأ حصتك قريبًا ⏰",
+        message: `ستبدأ الحصة الساعة ${slot.start_time.slice(0, 5)}`,
         relatedId,
       });
       notified++;

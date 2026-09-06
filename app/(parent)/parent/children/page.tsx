@@ -53,7 +53,7 @@ export default async function ParentChildrenPage() {
         {(children ?? []).length === 0 && (
           <Card>
             <CardContent className="py-8 text-center text-muted-foreground">
-              مفيش أبناء مربوطين لسه — استخدم كود الطالب فوق
+              لا يوجد أبناء مرتبطون بعد — استخدم كود الطالب أعلاه
             </CardContent>
           </Card>
         )}

@@ -83,7 +83,7 @@ export async function editParentAction(
       adminName: session.profile.full_name,
       targetType: "parent",
       targetId: parentId,
-      description: "تعديل بيانات الحساب (الاسم/الإيميل/الهاتف/العنوان)",
+      description: "تعديل بيانات الحساب (الاسم/البريد الإلكتروني/الهاتف/العنوان)",
     });
 
     revalidatePath(`/admin/parents/${parentId}`);
@@ -92,7 +92,7 @@ export async function editParentAction(
   } catch (error) {
     return {
       ok: false,
-      message: error instanceof Error ? error.message : "حصل خطأ",
+      message: error instanceof Error ? error.message : "حدث خطأ",
     };
   }
 }
@@ -126,7 +126,7 @@ export async function resetParentPasswordAction(
   } catch (error) {
     return {
       ok: false,
-      message: error instanceof Error ? error.message : "حصل خطأ",
+      message: error instanceof Error ? error.message : "حدث خطأ",
     };
   }
 }
@@ -172,7 +172,7 @@ export async function createParentAction(
   } catch (error) {
     return {
       ok: false,
-      message: error instanceof Error ? error.message : "حصل خطأ",
+      message: error instanceof Error ? error.message : "حدث خطأ",
     };
   }
 }

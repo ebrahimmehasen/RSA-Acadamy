@@ -30,7 +30,7 @@ export async function AdminEditLogCard({
       </CardHeader>
       <CardContent className="space-y-2">
         {(logs ?? []).length === 0 && (
-          <p className="text-sm text-muted-foreground">مفيش تعديلات مسجلة لسه</p>
+          <p className="text-sm text-muted-foreground">لا توجد تعديلات مسجلة بعد</p>
         )}
         {(logs ?? []).map((l, i) => (
           <div key={i} className="rounded-lg border p-2 text-sm">

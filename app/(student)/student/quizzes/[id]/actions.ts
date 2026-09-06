@@ -26,13 +26,13 @@ export async function submitQuiz(formData: FormData) {
     .select("class_id")
     .eq("user_id", session.profile.id)
     .single();
-  if (student?.class_id !== quiz.class_id) throw new Error("الاختبار ده مش لفصلك");
+  if (student?.class_id !== quiz.class_id) throw new Error("هذا الاختبار غير مخصص لفصلك");
 
   const { data: questions } = await supabase
     .from("quiz_questions")
     .select("*")
     .eq("quiz_id", quizId);
-  if (!questions?.length) throw new Error("الاختبار مفيش فيه أسئلة");
+  if (!questions?.length) throw new Error("لا يحتوي هذا الاختبار على أي أسئلة");
 
   const { data: existing } = await supabase
     .from("quiz_submissions")

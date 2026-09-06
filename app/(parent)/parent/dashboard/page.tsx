@@ -24,7 +24,7 @@ export default async function ParentDashboard() {
         <Card>
           <CardHeader>
             <CardTitle>الرسوم المستحقة</CardTitle>
-            <CardDescription>هتظهر هنا لما الإدارة تحدد الرسوم</CardDescription>
+            <CardDescription>ستظهر هنا عندما تحدد الإدارة الرسوم</CardDescription>
           </CardHeader>
         </Card>
       </div>

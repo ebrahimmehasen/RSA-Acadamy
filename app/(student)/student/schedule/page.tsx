@@ -40,7 +40,7 @@ export default async function StudentSchedulePage() {
       <div className="space-y-4">
         <h1 className="text-2xl font-bold">الجدول الدراسي</h1>
         <p className="text-muted-foreground">
-          لسه متسجلتش في فصل — كلم الإدارة.
+          لم يتم تسجيلك في أي فصل بعد — يُرجى التواصل مع الإدارة.
         </p>
       </div>
     );
@@ -51,7 +51,7 @@ export default async function StudentSchedulePage() {
       <h1 className="text-2xl font-bold">الجدول الدراسي</h1>
       {typedSlots.length === 0 && (
         <p className="text-muted-foreground">
-          مفيش حصص في الجدول لحد دلوقتي.
+          لا توجد حصص في الجدول حتى الآن.
         </p>
       )}
       {DAYS.map((day) => {

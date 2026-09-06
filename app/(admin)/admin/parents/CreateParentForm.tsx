@@ -80,7 +80,7 @@ export function CreateParentForm() {
                     Password: <b>{result.credentials.password}</b>
                   </p>
                   <p dir="rtl" className="text-muted-foreground">
-                    ⚠️ انسخ البيانات دي دلوقتي وسلّمها لولي الأمر — مش هتظهر تاني
+                    ⚠️ انسخ هذه البيانات الآن وسلّمها لولي الأمر، فلن تظهر مرة أخرى
                   </p>
                 </div>
               )}

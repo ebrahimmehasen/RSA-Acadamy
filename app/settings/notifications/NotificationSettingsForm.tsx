@@ -37,7 +37,7 @@ export function NotificationSettingsForm({
       </label>
       <div className="space-y-1">
         <label className="text-sm" htmlFor="class_reminder_minutes">
-          كام دقيقة قبل الحصة؟
+          كم دقيقة قبل الحصة؟
         </label>
         <select
           id="class_reminder_minutes"
@@ -45,8 +45,8 @@ export function NotificationSettingsForm({
           defaultValue={settings.class_reminder_minutes}
           className="h-8 w-full rounded-lg border border-input bg-background px-2 text-sm"
         >
-          <option value={5}>5 دقايق</option>
-          <option value={10}>10 دقايق</option>
+          <option value={5}>5 دقائق</option>
+          <option value={10}>10 دقائق</option>
           <option value={15}>15 دقيقة</option>
           <option value={30}>30 دقيقة</option>
         </select>

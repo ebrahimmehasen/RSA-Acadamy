@@ -32,7 +32,7 @@ function Verify2faForm() {
     setLoading(false);
     if (!res.ok) {
       const body = await res.json().catch(() => ({}));
-      setError(body.error ?? "الكود غلط");
+      setError(body.error ?? "الكود غير صحيح");
       return;
     }
     router.replace(params.get("next") ?? "/");
