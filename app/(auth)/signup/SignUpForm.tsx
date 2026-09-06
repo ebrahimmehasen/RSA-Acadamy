@@ -14,6 +14,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { signUpAction, type SignUpResult } from "./actions";
+import { branchLabel } from "@/lib/subjects";
 
 const ROLE_LABELS: Record<string, string> = {
   student: "طالب",
@@ -414,7 +415,7 @@ export function SignUpForm({
                                 }
                               />
                               {s.subject_name}{" "}
-                              {s.branch === "Arabic" ? "(عربي)" : "(لغات)"}
+                              {branchLabel(s.subject_name, s.branch)}
                             </label>
                           ))}
                         </div>

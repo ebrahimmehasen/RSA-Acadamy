@@ -23,6 +23,7 @@ import { updateTeacherSubjects } from "../actions";
 import { EditTeacherForm } from "./EditTeacherForm";
 import { BackLink } from "@/components/shared/BackLink";
 import { AdminEditLogCard } from "@/components/shared/AdminEditLogCard";
+import { branchLabel } from "@/lib/subjects";
 
 export default async function AdminTeacherDetailPage({
   params,
@@ -310,7 +311,7 @@ export default async function AdminTeacherDetailPage({
                         value={s.subject_id}
                         defaultChecked={preferredSubjects.has(s.subject_id)}
                       />
-                      {s.subject_name} ({s.branch === "Arabic" ? "عربي" : "لغات"})
+                      {s.subject_name} {branchLabel(s.subject_name, s.branch)}
                     </label>
                   ))}
                 </div>

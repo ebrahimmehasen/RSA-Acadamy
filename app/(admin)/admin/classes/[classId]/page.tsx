@@ -27,6 +27,7 @@ import { createSlot, deleteSlot } from "./actions";
 import { AddSlotForm } from "./AddSlotForm";
 import { BackLink } from "@/components/shared/BackLink";
 import { ConfirmDeleteButton } from "@/components/shared/ConfirmDeleteButton";
+import { branchLabel } from "@/lib/subjects";
 
 export default async function AdminClassSchedulePage({
   params,
@@ -71,7 +72,10 @@ export default async function AdminClassSchedulePage({
   }));
   const teacherNameById = new Map(teacherOptions.map((t) => [t.id, t.name]));
   const subjectNameById = new Map(
-    (subjects ?? []).map((s) => [s.subject_id, `${s.subject_name} (${s.branch === "Arabic" ? "عربي" : "لغات"})`]),
+    (subjects ?? []).map((s) => {
+      const label = branchLabel(s.subject_name, s.branch);
+      return [s.subject_id, label ? `${s.subject_name} ${label}` : s.subject_name];
+    }),
   );
 
   const typedSlots = (slots ?? []) as ScheduleSlot[];
