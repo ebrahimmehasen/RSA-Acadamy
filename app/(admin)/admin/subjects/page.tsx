@@ -2,6 +2,8 @@ import Link from "next/link";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Card,
   CardContent,
@@ -20,17 +22,71 @@ import { AddSubjectForm } from "./AddSubjectForm";
 import { EditSubjectName } from "./EditSubjectName";
 import { toggleSubject } from "./actions";
 
-export default async function AdminSubjectsPage() {
+const PAGE_SIZE = 30;
+
+interface Filters {
+  class_id?: string;
+  branch?: string;
+  status?: string;
+  q?: string;
+  page?: string;
+}
+
+function buildHref(filters: Filters, page: number): string {
+  const params = new URLSearchParams();
+  if (filters.class_id) params.set("class_id", filters.class_id);
+  if (filters.branch) params.set("branch", filters.branch);
+  if (filters.status) params.set("status", filters.status);
+  if (filters.q) params.set("q", filters.q);
+  if (page > 1) params.set("page", String(page));
+  const qs = params.toString();
+  return qs ? `/admin/subjects?${qs}` : "/admin/subjects";
+}
+
+export default async function AdminSubjectsPage({
+  searchParams,
+}: {
+  searchParams: Promise<Filters>;
+}) {
+  const filters = await searchParams;
   const supabase = createAdminClient();
 
-  const [{ data: classes }, { data: subjects }] = await Promise.all([
+  const classId = filters.class_id ? Number(filters.class_id) : null;
+  const branch =
+    filters.branch === "Arabic" || filters.branch === "Languages"
+      ? filters.branch
+      : null;
+  const status =
+    filters.status === "active" || filters.status === "inactive"
+      ? filters.status
+      : null;
+  const q = filters.q?.trim() || null;
+  const page = Math.max(1, Number(filters.page) || 1);
+
+  const [{ data: classes }, subjectsResult] = await Promise.all([
     supabase.from("classes").select("id, class_name").order("id"),
-    supabase
-      .from("subjects")
-      .select("subject_id, subject_name, branch, is_active, classes(class_name)")
-      .order("class_id")
-      .limit(100),
+    (() => {
+      let query = supabase
+        .from("subjects")
+        .select("subject_id, subject_name, branch, is_active, classes(class_name)", {
+          count: "exact",
+        })
+        .order("class_id")
+        .order("subject_name");
+
+      if (classId) query = query.eq("class_id", classId);
+      if (branch) query = query.eq("branch", branch);
+      if (status) query = query.eq("is_active", status === "active");
+      if (q) query = query.ilike("subject_name", `%${q}%`);
+
+      const from = (page - 1) * PAGE_SIZE;
+      return query.range(from, from + PAGE_SIZE - 1);
+    })(),
   ]);
+
+  const subjects = subjectsResult.data ?? [];
+  const total = subjectsResult.count ?? 0;
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   return (
     <div className="space-y-6">
@@ -38,8 +94,8 @@ export default async function AdminSubjectsPage() {
         <div>
           <h1 className="text-2xl font-bold">إدارة المواد الدراسية</h1>
           <p className="text-muted-foreground">
-            {(subjects ?? []).length} مادة في الكتالوج — يُسجَّل طلاب الفصل الجدد
-            تلقائيًا في مواد فصلهم وشعبتهم
+            {total} مادة في الكتالوج — يُسجَّل طلاب الفصل الجدد تلقائيًا في
+            مواد فصلهم وشعبتهم
           </p>
         </div>
         <Button
@@ -62,7 +118,66 @@ export default async function AdminSubjectsPage() {
         <CardHeader>
           <CardTitle className="text-lg">كتالوج المواد</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
+          <form className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5" method="get">
+            <div className="space-y-1 lg:col-span-2">
+              <Label htmlFor="q">بحث بالاسم</Label>
+              <Input id="q" name="q" defaultValue={filters.q ?? ""} placeholder="اسم المادة…" />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="class_id">الصف</Label>
+              <select
+                id="class_id"
+                name="class_id"
+                defaultValue={filters.class_id ?? ""}
+                className="h-8 w-full rounded-lg border border-input bg-background px-2 text-sm text-foreground"
+              >
+                <option value="">كل الصفوف</option>
+                {(classes ?? []).map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.class_name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="branch">الشعبة</Label>
+              <select
+                id="branch"
+                name="branch"
+                defaultValue={filters.branch ?? ""}
+                className="h-8 w-full rounded-lg border border-input bg-background px-2 text-sm text-foreground"
+              >
+                <option value="">كل الشعب</option>
+                <option value="Arabic">عربي</option>
+                <option value="Languages">لغات</option>
+              </select>
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="status">الحالة</Label>
+              <select
+                id="status"
+                name="status"
+                defaultValue={filters.status ?? ""}
+                className="h-8 w-full rounded-lg border border-input bg-background px-2 text-sm text-foreground"
+              >
+                <option value="">الكل</option>
+                <option value="active">نشط</option>
+                <option value="inactive">موقوف</option>
+              </select>
+            </div>
+            <div className="flex items-end gap-2 lg:col-span-5">
+              <Button type="submit" size="sm">
+                تصفية
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                render={<Link href="/admin/subjects">مسح الفلاتر</Link>}
+              />
+            </div>
+          </form>
+
           <Table>
             <TableHeader>
               <TableRow>
@@ -75,7 +190,7 @@ export default async function AdminSubjectsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {(subjects ?? []).map((s) => (
+              {subjects.map((s) => (
                 <TableRow key={s.subject_id}>
                   <TableCell>
                     <EditSubjectName
@@ -112,8 +227,33 @@ export default async function AdminSubjectsPage() {
                   </TableCell>
                 </TableRow>
               ))}
+              {subjects.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center text-muted-foreground">
+                    لا توجد نتائج مطابقة
+                  </TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
+
+          {totalPages > 1 && (
+            <div className="flex flex-wrap items-center justify-between gap-2 pt-2">
+              <p className="text-sm text-muted-foreground">
+                صفحة {page} من {totalPages}
+              </p>
+              <div className="flex flex-wrap gap-1">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                  <Button
+                    key={p}
+                    variant={p === page ? "default" : "outline"}
+                    size="xs"
+                    render={<Link href={buildHref(filters, p)}>{p}</Link>}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
