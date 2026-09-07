@@ -10,6 +10,7 @@ const NAV = [
   { href: "/admin/classes", label: "الفصول والجدول" },
   { href: "/admin/subjects", label: "المواد" },
   { href: "/admin/announcements", label: "الإعلانات" },
+  { href: "/admin/zoom-accounts", label: "حسابات زووم" },
   { href: "/admin/sessions", label: "الحصص المسجلة" },
   { href: "/admin/reports", label: "التقارير" },
   { href: "/admin/security-logs", label: "سجل الأمان" },

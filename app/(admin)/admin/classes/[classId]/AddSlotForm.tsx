@@ -3,18 +3,19 @@
 import { useRef, useTransition } from "react";
 import { DAYS, DAY_LABELS, PERIODS, formatTime, periodValue } from "@/lib/schedule";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 export function AddSlotForm({
   classId,
   subjects,
   teachers,
+  zoomAccounts,
   action,
 }: {
   classId: number;
   subjects: { id: string; label: string }[];
   teachers: { id: number; name: string }[];
+  zoomAccounts: { id: number; label: string }[];
   action: (formData: FormData) => Promise<void>;
 }) {
   const formRef = useRef<HTMLFormElement>(null);
@@ -99,24 +100,19 @@ export function AddSlotForm({
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="zoom_link">رابط Zoom (اختياري)</Label>
-        <Input
-          id="zoom_link"
-          name="zoom_link"
-          type="url"
-          dir="ltr"
-          placeholder="https://zoom.us/j/..."
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="zoom_meeting_id">Meeting ID (اختياري)</Label>
-        <Input id="zoom_meeting_id" name="zoom_meeting_id" dir="ltr" />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="zoom_passcode">Passcode (اختياري)</Label>
-        <Input id="zoom_passcode" name="zoom_passcode" dir="ltr" />
+        <Label htmlFor="zoom_account_id">حساب Zoom (اختياري)</Label>
+        <select
+          id="zoom_account_id"
+          name="zoom_account_id"
+          className="h-8 w-full rounded-lg border border-input bg-background text-foreground px-2 text-sm"
+        >
+          <option value="">بدون رابط</option>
+          {zoomAccounts.map((z) => (
+            <option key={z.id} value={z.id}>
+              {z.label}
+            </option>
+          ))}
+        </select>
       </div>
 
       <div className="flex items-end">

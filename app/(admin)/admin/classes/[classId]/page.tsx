@@ -40,27 +40,33 @@ export default async function AdminClassSchedulePage({
 
   const supabase = createAdminClient();
 
-  const [{ data: cls }, { data: slots }, { data: subjects }, { data: teachers }] =
-    await Promise.all([
-      supabase.from("classes").select("*").eq("id", id).single(),
-      supabase
-        .from("class_assignments")
-        .select("*")
-        .eq("class_id", id)
-        .order("day_of_week")
-        .order("start_time"),
-      supabase
-        .from("subjects")
-        .select("subject_id, subject_name, branch")
-        .eq("class_id", id)
-        .eq("is_active", true)
-        .order("branch")
-        .order("subject_name"),
-      supabase
-        .from("teachers")
-        .select("user_id, profiles!inner(full_name)")
-        .eq("is_active", true),
-    ]);
+  const [
+    { data: cls },
+    { data: slots },
+    { data: subjects },
+    { data: teachers },
+    { data: zoomAccounts },
+  ] = await Promise.all([
+    supabase.from("classes").select("*").eq("id", id).single(),
+    supabase
+      .from("class_assignments")
+      .select("*")
+      .eq("class_id", id)
+      .order("day_of_week")
+      .order("start_time"),
+    supabase
+      .from("subjects")
+      .select("subject_id, subject_name, branch")
+      .eq("class_id", id)
+      .eq("is_active", true)
+      .order("branch")
+      .order("subject_name"),
+    supabase
+      .from("teachers")
+      .select("user_id, profiles!inner(full_name)")
+      .eq("is_active", true),
+    supabase.from("zoom_accounts").select("id, label").order("id"),
+  ]);
 
   if (!cls) notFound();
 
@@ -165,6 +171,7 @@ export default async function AdminClassSchedulePage({
                 subjectNameById.get(s.subject_id) ?? s.subject_id,
             }))}
             teachers={teacherOptions}
+            zoomAccounts={zoomAccounts ?? []}
             action={createSlot}
           />
         </CardContent>
