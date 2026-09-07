@@ -19,7 +19,7 @@ export default async function SecuritySettingsPage() {
   ]);
 
   return (
-    <div className="mx-auto max-w-xl space-y-6 p-4 md:p-6" dir="rtl">
+    <div className="mx-auto max-w-xl space-y-6">
       <h1 className="text-2xl font-bold">إعدادات الأمان</h1>
       <ChangePasswordForm email={userData.user?.email ?? ""} />
       <TwoFactorSettings initiallyEnabled={!!twoFa?.is_enabled} />

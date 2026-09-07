@@ -11,7 +11,7 @@ export default async function ProfileSettingsPage() {
   const { data: userData } = await supabase.auth.getUser();
 
   return (
-    <div className="mx-auto max-w-xl space-y-6 p-4 md:p-6" dir="rtl">
+    <div className="mx-auto max-w-xl space-y-6">
       <h1 className="text-2xl font-bold">الملف الشخصي</h1>
       <ProfileForm
         fullName={session.profile.full_name}

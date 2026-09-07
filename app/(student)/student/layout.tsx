@@ -2,19 +2,7 @@ import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth/session";
 import { RoleShell } from "@/components/shared/RoleShell";
 import { PendingActivation } from "@/components/shared/PendingActivation";
-
-const NAV = [
-  { href: "/student/dashboard", label: "الرئيسية" },
-  { href: "/student/schedule", label: "الجدول" },
-  { href: "/student/homework", label: "الواجبات" },
-  { href: "/student/grades", label: "الدرجات" },
-  { href: "/student/sessions", label: "الحصص المسجلة" },
-  { href: "/student/quizzes", label: "الاختبارات" },
-  { href: "/student/profile", label: "الملف الشخصي" },
-  { href: "/announcements", label: "الإعلانات" },
-  { href: "/settings/notifications", label: "الإشعارات" },
-  { href: "/settings/security", label: "الأمان" },
-];
+import { ROLE_NAV } from "@/lib/roleNav";
 
 export default async function StudentLayout({
   children,
@@ -34,12 +22,14 @@ export default async function StudentLayout({
     );
   }
 
+  const { title, nav } = ROLE_NAV.student;
+
   return (
     <RoleShell
-      title="بوابة الطالب"
+      title={title}
       fullName={session.profile.full_name}
       profileId={session.profile.id}
-      nav={NAV}
+      nav={nav}
     >
       {children}
     </RoleShell>

@@ -2,16 +2,7 @@ import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth/session";
 import { RoleShell } from "@/components/shared/RoleShell";
 import { PendingActivation } from "@/components/shared/PendingActivation";
-
-const NAV = [
-  { href: "/parent/dashboard", label: "الرئيسية" },
-  { href: "/parent/children", label: "الأبناء" },
-  { href: "/parent/reports", label: "التقارير" },
-  { href: "/announcements", label: "الإعلانات" },
-  { href: "/settings/profile", label: "الملف الشخصي" },
-  { href: "/settings/notifications", label: "الإشعارات" },
-  { href: "/settings/security", label: "الأمان" },
-];
+import { ROLE_NAV } from "@/lib/roleNav";
 
 export default async function ParentLayout({
   children,
@@ -31,12 +22,14 @@ export default async function ParentLayout({
     );
   }
 
+  const { title, nav } = ROLE_NAV.parent;
+
   return (
     <RoleShell
-      title="بوابة ولي الأمر"
+      title={title}
       fullName={session.profile.full_name}
       profileId={session.profile.id}
-      nav={NAV}
+      nav={nav}
     >
       {children}
     </RoleShell>

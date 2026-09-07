@@ -4,25 +4,27 @@ import { RoleShell } from "@/components/shared/RoleShell";
 import { PendingActivation } from "@/components/shared/PendingActivation";
 import { ROLE_NAV } from "@/lib/roleNav";
 
-export default async function TeacherLayout({
+export default async function SettingsLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   const session = await getSession();
   if (!session) redirect("/login");
-  if (session.profile.role !== "teacher") redirect("/");
-  if (!session.isActive) {
+
+  const { role } = session.profile;
+
+  if (role !== "admin" && !session.isActive) {
     return (
       <PendingActivation
         profileId={session.profile.id}
-        role="teacher"
+        role={role}
         fullName={session.profile.full_name}
       />
     );
   }
 
-  const { title, nav } = ROLE_NAV.teacher;
+  const { title, nav } = ROLE_NAV[role];
 
   return (
     <RoleShell

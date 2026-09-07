@@ -18,7 +18,7 @@ export default async function NotificationSettingsPage() {
   const isParent = session.profile.role === "parent";
 
   return (
-    <div className="mx-auto max-w-xl space-y-6 p-4 md:p-6" dir="rtl">
+    <div className="mx-auto max-w-xl space-y-6">
       <h1 className="text-2xl font-bold">إعدادات الإشعارات</h1>
       <Card>
         <CardHeader>
