@@ -1,8 +1,9 @@
 "use client";
 
-import { useRef, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { DAYS, DAY_LABELS, PERIODS, formatTime, periodValue } from "@/lib/schedule";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 export function AddSlotForm({
@@ -20,6 +21,7 @@ export function AddSlotForm({
 }) {
   const formRef = useRef<HTMLFormElement>(null);
   const [isPending, startTransition] = useTransition();
+  const [timingMode, setTimingMode] = useState<"period" | "custom">("period");
 
   return (
     <form
@@ -28,6 +30,7 @@ export function AddSlotForm({
         startTransition(async () => {
           await action(formData);
           formRef.current?.reset();
+          setTimingMode("period");
         })
       }
       className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
@@ -83,21 +86,72 @@ export function AddSlotForm({
         </select>
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="period">الحصة</Label>
-        <select
-          id="period"
-          name="period"
-          required
-          className="h-8 w-full rounded-lg border border-input bg-background text-foreground px-2 text-sm"
-        >
-          {PERIODS.map((p) => (
-            <option key={periodValue(p)} value={periodValue(p)}>
-              {p.label} ({formatTime(p.start)}–{formatTime(p.end)})
-            </option>
-          ))}
-        </select>
+      <div className="space-y-2 sm:col-span-2 lg:col-span-3">
+        <Label>موعد الحصة</Label>
+        <div className="flex flex-wrap gap-4 text-sm">
+          <label className="flex items-center gap-1.5">
+            <input
+              type="radio"
+              name="timing_mode"
+              value="period"
+              checked={timingMode === "period"}
+              onChange={() => setTimingMode("period")}
+            />
+            حصة ضمن الجدول الثابت
+          </label>
+          <label className="flex items-center gap-1.5">
+            <input
+              type="radio"
+              name="timing_mode"
+              value="custom"
+              checked={timingMode === "custom"}
+              onChange={() => setTimingMode("custom")}
+            />
+            موعد مختلف (حصة خاصة / إضافية)
+          </label>
+        </div>
       </div>
+
+      {timingMode === "period" ? (
+        <div className="space-y-2">
+          <Label htmlFor="period">الحصة</Label>
+          <select
+            id="period"
+            name="period"
+            required
+            className="h-8 w-full rounded-lg border border-input bg-background text-foreground px-2 text-sm"
+          >
+            {PERIODS.map((p) => (
+              <option key={periodValue(p)} value={periodValue(p)}>
+                {p.label} ({formatTime(p.start)}–{formatTime(p.end)})
+              </option>
+            ))}
+          </select>
+        </div>
+      ) : (
+        <>
+          <div className="space-y-2">
+            <Label htmlFor="custom_start_time">من</Label>
+            <Input
+              id="custom_start_time"
+              name="custom_start_time"
+              type="time"
+              dir="ltr"
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="custom_end_time">إلى</Label>
+            <Input
+              id="custom_end_time"
+              name="custom_end_time"
+              type="time"
+              dir="ltr"
+              required
+            />
+          </div>
+        </>
+      )}
 
       <div className="space-y-2">
         <Label htmlFor="zoom_account_id">حساب Zoom (اختياري)</Label>

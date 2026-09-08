@@ -11,7 +11,10 @@ const slotSchema = z.object({
   subject_id: z.string().min(1),
   teacher_id: z.coerce.number().int().positive().nullable(),
   day_of_week: z.enum(DAYS),
-  period: z.string(),
+  timing_mode: z.enum(["period", "custom"]).default("period"),
+  period: z.string().optional(),
+  custom_start_time: z.string().regex(/^\d{2}:\d{2}$/).optional(),
+  custom_end_time: z.string().regex(/^\d{2}:\d{2}$/).optional(),
   zoom_account_id: z.coerce.number().int().positive().nullable(),
 });
 
@@ -23,12 +26,27 @@ export async function createSlot(formData: FormData) {
     subject_id: formData.get("subject_id"),
     teacher_id: formData.get("teacher_id") || null,
     day_of_week: formData.get("day_of_week"),
-    period: formData.get("period"),
+    timing_mode: formData.get("timing_mode") || "period",
+    period: formData.get("period") || undefined,
+    custom_start_time: formData.get("custom_start_time") || undefined,
+    custom_end_time: formData.get("custom_end_time") || undefined,
     zoom_account_id: formData.get("zoom_account_id") || null,
   });
 
-  const slot = parsePeriod(parsed.period);
-  if (!slot) throw new Error("الحصة المختارة غير صحيحة");
+  let slot: { start: string; end: string };
+  if (parsed.timing_mode === "custom") {
+    if (!parsed.custom_start_time || !parsed.custom_end_time) {
+      throw new Error("حدِّد وقت البداية والنهاية للموعد المختلف");
+    }
+    if (parsed.custom_end_time <= parsed.custom_start_time) {
+      throw new Error("يجب أن يكون وقت النهاية بعد وقت البداية");
+    }
+    slot = { start: parsed.custom_start_time, end: parsed.custom_end_time };
+  } else {
+    const period = parsed.period ? parsePeriod(parsed.period) : null;
+    if (!period) throw new Error("الحصة المختارة غير صحيحة");
+    slot = period;
+  }
 
   const supabase = createAdminClient();
 
