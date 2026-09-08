@@ -54,13 +54,20 @@ export async function signUpAction(
 
     if (parsed.role === "student") {
       const classId = formData.get("class_id");
-      const branch = formData.get("branch");
+      const branch = formData.get("branch") as "Arabic" | "Languages" | null;
       const dateOfBirth = formData.get("date_of_birth") as string | null;
+      const secondLanguage = formData.get("second_language") as
+        | "French"
+        | "German"
+        | null;
       if (!classId) {
         return { ok: false, message: "الصف الدراسي مطلوب" };
       }
       if (!dateOfBirth) {
         return { ok: false, message: "تاريخ الميلاد مطلوب" };
+      }
+      if (branch === "Languages" && secondLanguage !== "French" && secondLanguage !== "German") {
+        return { ok: false, message: "اختيار اللغة الأجنبية الثانية مطلوب" };
       }
       await selfSignUp({
         email: parsed.email,
@@ -69,8 +76,9 @@ export async function signUpAction(
         phone: phoneRaw || null,
         role: "student",
         classId: Number(classId),
-        branch: (branch as "Arabic" | "Languages" | null) || null,
+        branch: branch || null,
         dateOfBirth,
+        secondLanguage: branch === "Languages" ? secondLanguage : null,
         profilePicture,
       });
     } else if (parsed.role === "parent") {

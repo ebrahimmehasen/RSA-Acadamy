@@ -290,6 +290,7 @@ export async function selfSignUp(options: CreateUserBase & {
   dateOfBirth?: string | null;
   classId?: number | null;
   branch?: Branch | null;
+  secondLanguage?: "French" | "German" | null;
   address?: string | null;
   specialization?: string | null;
   qualification?: string | null;
@@ -311,6 +312,24 @@ export async function selfSignUp(options: CreateUserBase & {
       is_active: false,
     });
     if (error) throw new Error(error.message);
+
+    // Enroll in the one second-foreign-language subject the student
+    // picked (French XOR German) — these are two separate, mutually
+    // exclusive subjects per class, so this can't go through the
+    // generic "enroll in every active subject" path.
+    if (options.branch === "Languages" && options.secondLanguage && options.classId) {
+      const { data: cls } = await supabase
+        .from("classes")
+        .select("class_short")
+        .eq("id", options.classId)
+        .maybeSingle();
+      if (cls) {
+        const subjectId = `${cls.class_short}_EN_${options.secondLanguage.toUpperCase()}`;
+        await supabase
+          .from("student_subjects")
+          .insert({ student_id: profileId, subject_id: subjectId });
+      }
+    }
   } else if (options.role === "teacher") {
     const { error } = await supabase.from("teachers").insert({
       user_id: profileId,

@@ -70,6 +70,7 @@ interface SignUpDraft {
   date_of_birth: string;
   class_id: string;
   branch: string;
+  second_language: string;
   address: string;
   qualification: string;
   specialization: string;
@@ -85,6 +86,7 @@ const EMPTY_DRAFT: SignUpDraft = {
   date_of_birth: "",
   class_id: "",
   branch: "",
+  second_language: "",
   address: "",
   qualification: "",
   specialization: "",
@@ -338,6 +340,25 @@ export function SignUpForm({
                     <option value="Languages">لغات</option>
                   </select>
                 </div>
+                {draft.branch === "Languages" && (
+                  <div className="space-y-2">
+                    <Label htmlFor="second_language">اللغة الأجنبية الثانية</Label>
+                    <select
+                      id="second_language"
+                      name="second_language"
+                      required
+                      value={draft.second_language}
+                      onChange={(e) => update("second_language", e.target.value)}
+                      className="h-8 w-full rounded-lg border border-input bg-background text-foreground px-2 text-sm"
+                    >
+                      <option value="" disabled>
+                        اختر اللغة
+                      </option>
+                      <option value="French">الفرنسية</option>
+                      <option value="German">الألمانية</option>
+                    </select>
+                  </div>
+                )}
               </>
             )}
 
