@@ -92,7 +92,9 @@ export default async function AdminClassSchedulePage({
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
           <h1 className="text-2xl font-bold">{cls.class_name}</h1>
-          <p className="text-muted-foreground">الجدول الأسبوعي وروابط Zoom</p>
+          <p className="text-muted-foreground">
+            الجدول الأسبوعي وروابط Zoom — كل الأوقات هنا بتوقيت القاهرة
+          </p>
         </div>
         <Button
           variant="outline"

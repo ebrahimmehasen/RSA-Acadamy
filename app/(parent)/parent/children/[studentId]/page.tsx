@@ -5,7 +5,6 @@ import { summarizeGrades, type GradedRow } from "@/lib/grades";
 import {
   DAYS,
   DAY_LABELS,
-  formatTime,
   type ScheduleSlot,
 } from "@/lib/schedule";
 import { Badge } from "@/components/ui/badge";
@@ -17,6 +16,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { BackLink } from "@/components/shared/BackLink";
+import { ScheduleTime } from "@/components/shared/ScheduleTime";
 
 export default async function ParentChildDetailPage({
   params,
@@ -171,10 +171,13 @@ export default async function ParentChildDetailPage({
                   {daySlots.map((slot) => (
                     <li key={slot.id}>
                       {slot.subjects?.subject_name ?? slot.subject_id}{" "}
-                      <span dir="ltr">
-                        ({formatTime(slot.start_time)} –{" "}
-                        {formatTime(slot.end_time)})
-                      </span>
+                      (
+                      <ScheduleTime
+                        dayOfWeek={day}
+                        startTime={slot.start_time}
+                        endTime={slot.end_time}
+                      />
+                      )
                     </li>
                   ))}
                 </ul>

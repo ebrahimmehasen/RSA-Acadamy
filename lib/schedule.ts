@@ -34,12 +34,17 @@ export interface ScheduleSlot {
   is_active: boolean;
 }
 
-/** "14:30:00" → "2:30 م" */
-export function formatTime(time: string): string {
-  const [h, m] = time.split(":").map(Number);
+/** 14, 30 → "2:30 م" */
+export function formatHourMinute(h: number, m: number): string {
   const period = h >= 12 ? "م" : "ص";
   const hour12 = h % 12 === 0 ? 12 : h % 12;
   return `${hour12}:${String(m).padStart(2, "0")} ${period}`;
+}
+
+/** "14:30:00" → "2:30 م" */
+export function formatTime(time: string): string {
+  const [h, m] = time.split(":").map(Number);
+  return formatHourMinute(h, m);
 }
 
 /**

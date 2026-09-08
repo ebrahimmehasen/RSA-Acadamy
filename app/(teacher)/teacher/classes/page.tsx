@@ -2,7 +2,6 @@ import { createClient } from "@/lib/supabase/server";
 import {
   DAYS,
   DAY_LABELS,
-  formatTime,
   type ScheduleSlot,
 } from "@/lib/schedule";
 import {
@@ -12,6 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { ScheduleTime } from "@/components/shared/ScheduleTime";
 
 export default async function TeacherClassesPage() {
   const supabase = await createClient();
@@ -58,8 +58,12 @@ export default async function TeacherClassesPage() {
                         {slot.classes?.class_name}
                       </span>
                     </p>
-                    <p className="text-sm text-muted-foreground" dir="ltr">
-                      {formatTime(slot.start_time)} – {formatTime(slot.end_time)}
+                    <p className="text-sm text-muted-foreground">
+                      <ScheduleTime
+                        dayOfWeek={day}
+                        startTime={slot.start_time}
+                        endTime={slot.end_time}
+                      />
                     </p>
                   </div>
                   {slot.zoom_link && (

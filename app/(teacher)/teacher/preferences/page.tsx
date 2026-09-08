@@ -69,7 +69,9 @@ export default async function TeacherPreferencesPage() {
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">أوقات التواجد</CardTitle>
-          <CardDescription>الأوقات التي تستطيع التدريس فيها أسبوعيًا</CardDescription>
+          <CardDescription>
+            الأوقات التي تستطيع التدريس فيها أسبوعيًا — كل الحصص بتوقيت القاهرة
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {DAYS.map((day) => {

@@ -3,7 +3,6 @@ import { getSession } from "@/lib/auth/session";
 import {
   DAYS,
   DAY_LABELS,
-  formatTime,
   type ScheduleSlot,
 } from "@/lib/schedule";
 import {
@@ -13,6 +12,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { ScheduleTime } from "@/components/shared/ScheduleTime";
 
 export default async function StudentSchedulePage() {
   const session = await getSession();
@@ -72,8 +72,12 @@ export default async function StudentSchedulePage() {
                     <p className="font-medium">
                       {slot.subjects?.subject_name ?? slot.subject_id}
                     </p>
-                    <p className="text-sm text-muted-foreground" dir="ltr">
-                      {formatTime(slot.start_time)} – {formatTime(slot.end_time)}
+                    <p className="text-sm text-muted-foreground">
+                      <ScheduleTime
+                        dayOfWeek={day}
+                        startTime={slot.start_time}
+                        endTime={slot.end_time}
+                      />
                     </p>
                     {slot.zoom_passcode && (
                       <p className="text-xs text-muted-foreground" dir="ltr">
