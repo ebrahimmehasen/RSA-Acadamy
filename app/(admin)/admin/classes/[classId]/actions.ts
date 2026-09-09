@@ -82,6 +82,84 @@ export async function createSlot(formData: FormData) {
   revalidatePath(`/admin/classes/${parsed.class_id}`);
 }
 
+const updateSlotSchema = slotSchema.extend({
+  id: z.coerce.number().int().positive(),
+  // "" = keep the slot's current Zoom info untouched, "none" = clear it,
+  // otherwise a zoom_accounts id to copy from — same tri-state the edit
+  // form exposes, since a blank <select> can't distinguish "unchanged"
+  // from "explicitly cleared" the way createSlot's plain nullable does.
+  zoom_account_id: z.union([z.literal("keep"), z.literal("none"), z.coerce.number().int().positive()]),
+});
+
+export async function updateSlot(formData: FormData) {
+  const session = await requireRole("admin");
+
+  const rawZoom = formData.get("zoom_account_id");
+  const parsed = updateSlotSchema.parse({
+    id: formData.get("id"),
+    class_id: formData.get("class_id"),
+    subject_id: formData.get("subject_id"),
+    teacher_id: formData.get("teacher_id") || null,
+    day_of_week: formData.get("day_of_week"),
+    timing_mode: formData.get("timing_mode") || "period",
+    period: formData.get("period") || undefined,
+    custom_start_time: formData.get("custom_start_time") || undefined,
+    custom_end_time: formData.get("custom_end_time") || undefined,
+    zoom_account_id: rawZoom === "keep" || rawZoom === "none" ? rawZoom : rawZoom || "keep",
+  });
+
+  let slot: { start: string; end: string };
+  if (parsed.timing_mode === "custom") {
+    if (!parsed.custom_start_time || !parsed.custom_end_time) {
+      throw new Error("حدِّد وقت البداية والنهاية للموعد المختلف");
+    }
+    if (parsed.custom_end_time <= parsed.custom_start_time) {
+      throw new Error("يجب أن يكون وقت النهاية بعد وقت البداية");
+    }
+    slot = { start: parsed.custom_start_time, end: parsed.custom_end_time };
+  } else {
+    const period = parsed.period ? parsePeriod(parsed.period) : null;
+    if (!period) throw new Error("الحصة المختارة غير صحيحة");
+    slot = period;
+  }
+
+  const supabase = createAdminClient();
+
+  const update: Record<string, unknown> = {
+    class_id: parsed.class_id,
+    subject_id: parsed.subject_id,
+    teacher_id: parsed.teacher_id,
+    day_of_week: parsed.day_of_week,
+    start_time: slot.start,
+    end_time: slot.end,
+    assigned_by: session.profile.id,
+  };
+
+  if (parsed.zoom_account_id === "none") {
+    update.zoom_link = null;
+    update.zoom_meeting_id = null;
+    update.zoom_passcode = null;
+  } else if (parsed.zoom_account_id !== "keep") {
+    const { data: account } = await supabase
+      .from("zoom_accounts")
+      .select("link, meeting_id, passcode")
+      .eq("id", parsed.zoom_account_id)
+      .maybeSingle();
+    if (!account) throw new Error("حساب Zoom غير موجود");
+    update.zoom_link = account.link;
+    update.zoom_meeting_id = account.meeting_id;
+    update.zoom_passcode = account.passcode;
+  }
+
+  const { error } = await supabase
+    .from("class_assignments")
+    .update(update)
+    .eq("id", parsed.id);
+  if (error) throw new Error(error.message);
+
+  revalidatePath(`/admin/classes/${parsed.class_id}`);
+}
+
 export async function deleteSlot(formData: FormData) {
   await requireRole("admin");
   const id = z.coerce.number().int().positive().parse(formData.get("slot_id"));
@@ -91,32 +169,6 @@ export async function deleteSlot(formData: FormData) {
   const { error } = await supabase
     .from("class_assignments")
     .delete()
-    .eq("id", id);
-  if (error) throw new Error(error.message);
-
-  revalidatePath(`/admin/classes/${classId}`);
-}
-
-export async function updateZoom(formData: FormData) {
-  await requireRole("admin");
-  const id = z.coerce.number().int().positive().parse(formData.get("slot_id"));
-  const classId = z.coerce.number().int().positive().parse(formData.get("class_id"));
-  const zoomLink = String(formData.get("zoom_link") ?? "");
-  const zoomMeetingId = String(formData.get("zoom_meeting_id") ?? "");
-  const zoomPasscode = String(formData.get("zoom_passcode") ?? "");
-
-  if (zoomLink && !z.url().safeParse(zoomLink).success) {
-    throw new Error("رابط Zoom غير صالح");
-  }
-
-  const supabase = createAdminClient();
-  const { error } = await supabase
-    .from("class_assignments")
-    .update({
-      zoom_link: zoomLink || null,
-      zoom_meeting_id: zoomMeetingId || null,
-      zoom_passcode: zoomPasscode || null,
-    })
     .eq("id", id);
   if (error) throw new Error(error.message);
 

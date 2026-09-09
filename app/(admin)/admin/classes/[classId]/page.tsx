@@ -23,8 +23,9 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import Link from "next/link";
-import { createSlot, deleteSlot } from "./actions";
+import { createSlot, deleteSlot, updateSlot } from "./actions";
 import { AddSlotForm } from "./AddSlotForm";
+import { EditSlotForm } from "./EditSlotForm";
 import { BackLink } from "@/components/shared/BackLink";
 import { ConfirmDeleteButton } from "@/components/shared/ConfirmDeleteButton";
 import { branchLabel } from "@/lib/subjects";
@@ -85,6 +86,10 @@ export default async function AdminClassSchedulePage({
   );
 
   const typedSlots = (slots ?? []) as ScheduleSlot[];
+  const subjectOptions = (subjects ?? []).map((s) => ({
+    id: s.subject_id,
+    label: subjectNameById.get(s.subject_id) ?? s.subject_id,
+  }));
 
   return (
     <div className="space-y-6">
@@ -145,11 +150,21 @@ export default async function AdminClassSchedulePage({
                         )}
                       </TableCell>
                       <TableCell>
-                        <ConfirmDeleteButton
-                          action={deleteSlot}
-                          hiddenFields={{ slot_id: slot.id, class_id: id }}
-                          confirmMessage="هل أنت متأكد من رغبتك في حذف هذه الحصة؟ هذا الإجراء نهائي ولا يمكن التراجع عنه."
-                        />
+                        <div className="flex justify-end gap-2">
+                          <EditSlotForm
+                            slot={slot}
+                            classId={id}
+                            subjects={subjectOptions}
+                            teachers={teacherOptions}
+                            zoomAccounts={zoomAccounts ?? []}
+                            action={updateSlot}
+                          />
+                          <ConfirmDeleteButton
+                            action={deleteSlot}
+                            hiddenFields={{ slot_id: slot.id, class_id: id }}
+                            confirmMessage="هل أنت متأكد من رغبتك في حذف هذه الحصة؟ هذا الإجراء نهائي ولا يمكن التراجع عنه."
+                          />
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -167,11 +182,7 @@ export default async function AdminClassSchedulePage({
         <CardContent>
           <AddSlotForm
             classId={id}
-            subjects={(subjects ?? []).map((s) => ({
-              id: s.subject_id,
-              label:
-                subjectNameById.get(s.subject_id) ?? s.subject_id,
-            }))}
+            subjects={subjectOptions}
             teachers={teacherOptions}
             zoomAccounts={zoomAccounts ?? []}
             action={createSlot}
