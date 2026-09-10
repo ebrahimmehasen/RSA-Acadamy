@@ -1,33 +1,32 @@
+import { UsersRound, BarChart3 } from "lucide-react";
 import { getSession } from "@/lib/auth/session";
-import {
-  Card,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { PageShell } from "@/components/shared/PageShell";
+import { PageHeader } from "@/components/shared/PageHeader";
+import { StatGrid } from "@/components/shared/StatGrid";
+import { StatCard } from "@/components/shared/StatCard";
 
 export default async function ParentDashboard() {
   const session = await getSession();
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold">
-        أهلاً {session?.profile.full_name} 👋
-      </h1>
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>الأبناء</CardTitle>
-            <CardDescription>اربط أبناءك بكود الطالب من صفحة الأبناء</CardDescription>
-          </CardHeader>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>الرسوم المستحقة</CardTitle>
-            <CardDescription>ستظهر هنا عندما تحدد الإدارة الرسوم</CardDescription>
-          </CardHeader>
-        </Card>
-      </div>
-    </div>
+    <PageShell>
+      <PageHeader title={`أهلاً ${session?.profile.full_name} 👋`} />
+      <StatGrid cols={2}>
+        <StatCard
+          label="الأبناء"
+          value="—"
+          icon={UsersRound}
+          hint="اربط أبناءك بكود الطالب من صفحة الأبناء"
+          href="/parent/children"
+        />
+        <StatCard
+          label="التقارير"
+          value="—"
+          icon={BarChart3}
+          hint="تابع درجات ومستوى أبنائك"
+          href="/parent/reports"
+        />
+      </StatGrid>
+    </PageShell>
   );
 }

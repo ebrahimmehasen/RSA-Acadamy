@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Video } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getSession } from "@/lib/auth/session";
 import { Badge } from "@/components/ui/badge";
@@ -8,6 +9,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { PageShell } from "@/components/shared/PageShell";
+import { PageHeader } from "@/components/shared/PageHeader";
+import { EmptyState } from "@/components/shared/EmptyState";
 
 export default async function StudentSessionsPage() {
   const session = await getSession();
@@ -28,14 +32,18 @@ export default async function StudentSessionsPage() {
   const watchByeSession = new Map((views ?? []).map((v) => [v.session_id, v.watch_percentage]));
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold">الحصص المسجلة</h1>
-      <div className="grid gap-3 sm:grid-cols-2">
+    <PageShell>
+      <PageHeader title="الحصص المسجلة" />
+      <div className="grid gap-[var(--card-gap)] sm:grid-cols-2">
         {(sessions ?? []).map((s) => {
           const watched = watchByeSession.get(s.id);
           return (
-            <Link key={s.id} href={`/student/sessions/${s.id}`}>
-              <Card className="transition-colors hover:bg-accent">
+            <Link
+              key={s.id}
+              href={`/student/sessions/${s.id}`}
+              className="block rounded-xl outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+            >
+              <Card className="h-full transition-colors hover:bg-muted/40">
                 <CardHeader>
                   <CardTitle className="truncate text-base">{s.title}</CardTitle>
                 </CardHeader>
@@ -47,7 +55,7 @@ export default async function StudentSessionsPage() {
                     <Badge variant="outline">⭐ {s.total_rating}</Badge>
                   )}
                   {watched !== undefined && (
-                    <Badge variant={watched >= 90 ? "default" : "secondary"}>
+                    <Badge variant={watched >= 90 ? "success" : "secondary"}>
                       {watched >= 90 ? "شاهدتها" : `${Math.round(watched)}%`}
                     </Badge>
                   )}
@@ -57,11 +65,14 @@ export default async function StudentSessionsPage() {
           );
         })}
         {(sessions ?? []).length === 0 && (
-          <p className="text-muted-foreground">
-            لا توجد حصص متاحة حتى الآن — تابع الجديد قريبًا!
-          </p>
+          <EmptyState
+            icon={Video}
+            title="لا توجد حصص متاحة حتى الآن"
+            description="تابع الجديد قريبًا!"
+            className="sm:col-span-2"
+          />
         )}
       </div>
-    </div>
+    </PageShell>
   );
 }

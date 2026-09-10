@@ -1,13 +1,11 @@
+import { BarChart3 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getSession } from "@/lib/auth/session";
 import { summarizeGrades, type GradedRow } from "@/lib/grades";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { PageShell } from "@/components/shared/PageShell";
+import { PageHeader } from "@/components/shared/PageHeader";
+import { SectionCard } from "@/components/shared/SectionCard";
+import { EmptyState } from "@/components/shared/EmptyState";
 
 export default async function ParentReportsPage() {
   const session = await getSession();
@@ -65,22 +63,24 @@ export default async function ParentReportsPage() {
   );
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold">التقارير</h1>
+    <PageShell>
+      <PageHeader title="التقارير" />
 
       {reports.length === 0 && (
-        <p className="text-muted-foreground">
-          اربط أبناءك أولًا من صفحة الأبناء لتتمكن من مشاهدة تقاريرهم
-        </p>
+        <EmptyState
+          icon={BarChart3}
+          title="لا توجد تقارير بعد"
+          description="اربط أبناءك أولًا من صفحة الأبناء لتتمكن من مشاهدة تقاريرهم"
+        />
       )}
 
       {reports.map((r) => (
-        <Card key={r.childId}>
-          <CardHeader>
-            <CardTitle className="text-lg">{r.name}</CardTitle>
-            <CardDescription>{r.className}</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
+        <SectionCard
+          key={r.childId}
+          title={r.name}
+          description={r.className}
+          contentClassName="space-y-4"
+        >
             <div className="grid gap-3 sm:grid-cols-3">
               <div>
                 <p className="text-sm text-muted-foreground">متوسط الدرجات</p>
@@ -112,9 +112,8 @@ export default async function ParentReportsPage() {
                 ))}
               </div>
             )}
-          </CardContent>
-        </Card>
+        </SectionCard>
       ))}
-    </div>
+    </PageShell>
   );
 }

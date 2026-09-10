@@ -1,8 +1,12 @@
 import Link from "next/link";
+import { FileQuestion } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getSession } from "@/lib/auth/session";
 import { Badge } from "@/components/ui/badge";
 import { RealtimeRefresh } from "@/components/shared/RealtimeRefresh";
+import { PageShell } from "@/components/shared/PageShell";
+import { PageHeader } from "@/components/shared/PageHeader";
+import { EmptyState } from "@/components/shared/EmptyState";
 import {
   Card,
   CardContent,
@@ -36,7 +40,7 @@ export default async function StudentQuizzesPage() {
   const now = new Date();
 
   return (
-    <div className="space-y-6">
+    <PageShell>
       <RealtimeRefresh
         channelName={`quizzes:${session!.profile.id}`}
         watches={[
@@ -46,8 +50,8 @@ export default async function StudentQuizzesPage() {
           { table: "quiz_submissions", filter: `student_id=eq.${session!.profile.id}` },
         ]}
       />
-      <h1 className="text-2xl font-bold">الاختبارات</h1>
-      <div className="grid gap-3">
+      <PageHeader title="الاختبارات" />
+      <div className="grid gap-[var(--card-gap)]">
         {(quizzes ?? []).map((q) => {
           const submission = submissionByQuiz.get(q.id);
           const start = new Date(q.start_time);
@@ -58,14 +62,14 @@ export default async function StudentQuizzesPage() {
           let statusBadge: React.ReactNode;
           if (submission?.status === "graded" || submission?.status === "submitted") {
             statusBadge = (
-              <Badge>
+              <Badge variant="success">
                 {submission.total_score ?? "—"}/{submission.max_score}
               </Badge>
             );
           } else if (isLive) {
-            statusBadge = <Badge variant="secondary">جارٍ الآن 🔴</Badge>;
+            statusBadge = <Badge variant="warning">جارٍ الآن 🔴</Badge>;
           } else if (isUpcoming) {
-            statusBadge = <Badge variant="outline">قادم</Badge>;
+            statusBadge = <Badge variant="info">قادم</Badge>;
           } else {
             statusBadge = <Badge variant="destructive">انتهى</Badge>;
           }
@@ -78,8 +82,9 @@ export default async function StudentQuizzesPage() {
                   ? `/student/quizzes/${q.id}/results`
                   : `/student/quizzes/${q.id}`
               }
+              className="block rounded-xl outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
             >
-              <Card className="transition-colors hover:bg-accent">
+              <Card className="transition-colors hover:bg-muted/40">
                 <CardHeader>
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <CardTitle className="min-w-0 truncate text-base">{q.title}</CardTitle>
@@ -98,11 +103,13 @@ export default async function StudentQuizzesPage() {
           );
         })}
         {(quizzes ?? []).length === 0 && (
-          <p className="text-muted-foreground">
-            لا توجد اختبارات متاحة حتى الآن — تابع الجديد قريبًا!
-          </p>
+          <EmptyState
+            icon={FileQuestion}
+            title="لا توجد اختبارات متاحة حتى الآن"
+            description="تابع الجديد قريبًا!"
+          />
         )}
       </div>
-    </div>
+    </PageShell>
   );
 }

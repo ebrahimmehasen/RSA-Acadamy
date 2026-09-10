@@ -3,13 +3,10 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getSession } from "@/lib/auth/session";
 import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { BackLink } from "@/components/shared/BackLink";
+import { Card, CardContent } from "@/components/ui/card";
+import { PageShell } from "@/components/shared/PageShell";
+import { PageHeader } from "@/components/shared/PageHeader";
+import { SectionCard } from "@/components/shared/SectionCard";
 import { RealtimeRefresh } from "@/components/shared/RealtimeRefresh";
 
 export default async function QuizResultsPage({
@@ -79,30 +76,31 @@ export default async function QuizResultsPage({
     : { data: null };
 
   return (
-    <div className="space-y-6">
+    <PageShell>
       <RealtimeRefresh
         channelName={`quiz-results:${quizId}:${session!.profile.id}`}
         watches={[{ table: "quiz_submissions", filter: `id=eq.${submission.id}` }]}
       />
-      <BackLink href="/student/quizzes" label="رجوع للاختبارات" />
-      <div>
-        <h1 className="text-2xl font-bold">{quiz.title} — النتيجة</h1>
-        {submission.status === "graded" ? (
-          <p className="text-lg">
-            <Badge className="text-base">
+      <PageHeader
+        title={`${quiz.title} — النتيجة`}
+        backHref="/student/quizzes"
+        backLabel="رجوع للاختبارات"
+        description={
+          submission.status === "graded" ? (
+            <Badge variant="success" className="text-sm">
               {submission.total_score}/{submission.max_score} (
               {Math.round(
                 ((submission.total_score ?? 0) / submission.max_score) * 100,
               )}
               %)
             </Badge>
-          </p>
-        ) : (
-          <Badge variant="secondary">
-            في انتظار تصحيح الأسئلة المقالية يدويًا
-          </Badge>
-        )}
-      </div>
+          ) : (
+            <Badge variant="warning">
+              في انتظار تصحيح الأسئلة المقالية يدويًا
+            </Badge>
+          )
+        }
+      />
 
       {classAverage !== null && (
         <Card>
@@ -120,7 +118,7 @@ export default async function QuizResultsPage({
       )}
 
       {answers && (
-        <div className="space-y-3">
+        <div className="space-y-[var(--card-gap)]">
           {answers.map((a) => {
             const question = a.quiz_questions as unknown as {
               question_text: string;
@@ -128,32 +126,29 @@ export default async function QuizResultsPage({
               correct_answer: string | null;
             };
             return (
-              <Card key={a.id}>
-                <CardHeader>
-                  <CardTitle className="text-base">
-                    {question.question_text}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-1 text-sm">
-                  <p>إجابتك: {a.student_answer ?? "—"}</p>
-                  {a.is_correct !== null && (
-                    <p>
-                      {a.is_correct ? "✅ صحيحة" : "❌ غير صحيحة"}
-                      {" · "}
-                      {a.points_awarded}/{question.points}
-                    </p>
-                  )}
-                  {a.is_correct === false && question.correct_answer && (
-                    <p className="text-green-600">
-                      الإجابة الصحيحة: {question.correct_answer}
-                    </p>
-                  )}
-                </CardContent>
-              </Card>
+              <SectionCard
+                key={a.id}
+                title={question.question_text}
+                contentClassName="space-y-1 text-sm"
+              >
+                <p>إجابتك: {a.student_answer ?? "—"}</p>
+                {a.is_correct !== null && (
+                  <p>
+                    {a.is_correct ? "✅ صحيحة" : "❌ غير صحيحة"}
+                    {" · "}
+                    {a.points_awarded}/{question.points}
+                  </p>
+                )}
+                {a.is_correct === false && question.correct_answer && (
+                  <p className="text-success">
+                    الإجابة الصحيحة: {question.correct_answer}
+                  </p>
+                )}
+              </SectionCard>
             );
           })}
         </div>
       )}
-    </div>
+    </PageShell>
   );
 }

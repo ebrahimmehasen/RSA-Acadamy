@@ -1,13 +1,8 @@
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth/session";
 import { getNotificationSettings } from "@/lib/notifications/create";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { PageHeader } from "@/components/shared/PageHeader";
+import { SectionCard } from "@/components/shared/SectionCard";
 import { NotificationSettingsForm } from "./NotificationSettingsForm";
 
 export default async function NotificationSettingsPage() {
@@ -18,17 +13,14 @@ export default async function NotificationSettingsPage() {
   const isParent = session.profile.role === "parent";
 
   return (
-    <div className="mx-auto max-w-xl space-y-6">
-      <h1 className="text-2xl font-bold">إعدادات الإشعارات</h1>
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">أنواع الإشعارات</CardTitle>
-          <CardDescription>تحكّم في الإشعارات التي ترغب في استقبالها</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <NotificationSettingsForm isParent={isParent} settings={settings} />
-        </CardContent>
-      </Card>
+    <div className="mx-auto flex max-w-xl flex-col gap-[var(--section-gap)]">
+      <PageHeader title="إعدادات الإشعارات" />
+      <SectionCard
+        title="أنواع الإشعارات"
+        description="تحكّم في الإشعارات التي ترغب في استقبالها"
+      >
+        <NotificationSettingsForm isParent={isParent} settings={settings} />
+      </SectionCard>
     </div>
   );
 }

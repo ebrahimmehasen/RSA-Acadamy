@@ -7,16 +7,14 @@ import {
   DAY_LABELS,
   type ScheduleSlot,
 } from "@/lib/schedule";
+import { GraduationCap, ClipboardCheck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { BackLink } from "@/components/shared/BackLink";
 import { ScheduleTime } from "@/components/shared/ScheduleTime";
+import { PageShell } from "@/components/shared/PageShell";
+import { PageHeader } from "@/components/shared/PageHeader";
+import { SectionCard } from "@/components/shared/SectionCard";
+import { StatGrid } from "@/components/shared/StatGrid";
+import { StatCard } from "@/components/shared/StatCard";
 
 export default async function ParentChildDetailPage({
   params,
@@ -91,38 +89,29 @@ export default async function ParentChildDetailPage({
   })[];
 
   return (
-    <div className="space-y-6">
-      <BackLink href="/parent/children" label="رجوع للأبناء" />
-      <div className="min-w-0">
-        <h1 className="truncate text-2xl font-bold">{profile?.full_name}</h1>
-        <p className="text-muted-foreground">
-          {(child.classes as unknown as { class_name: string })?.class_name} ·{" "}
-          {child.branch === "Arabic" ? "عربي" : "لغات"}
-        </p>
-      </div>
+    <PageShell>
+      <PageHeader
+        title={profile?.full_name}
+        backHref="/parent/children"
+        backLabel="رجوع للأبناء"
+        description={`${(child.classes as unknown as { class_name: string })?.class_name} · ${child.branch === "Arabic" ? "عربي" : "لغات"}`}
+      />
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardDescription>متوسط الدرجات</CardDescription>
-            <CardTitle className="text-3xl">
-              {summary.average !== null ? `${summary.average}%` : "—"}
-            </CardTitle>
-          </CardHeader>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardDescription>واجبات مصححة</CardDescription>
-            <CardTitle className="text-3xl">{gradedRows.length}</CardTitle>
-          </CardHeader>
-        </Card>
-      </div>
+      <StatGrid cols={2}>
+        <StatCard
+          label="متوسط الدرجات"
+          value={summary.average !== null ? `${summary.average}%` : "—"}
+          icon={GraduationCap}
+          tone={summary.average !== null && summary.average >= 50 ? "success" : "default"}
+        />
+        <StatCard
+          label="واجبات مصححة"
+          value={gradedRows.length}
+          icon={ClipboardCheck}
+        />
+      </StatGrid>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">آخر الواجبات</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2">
+      <SectionCard title="آخر الواجبات" contentClassName="space-y-2">
           {(assignments ?? []).length === 0 && (
             <p className="text-sm text-muted-foreground">لا توجد واجبات بعد</p>
           )}
@@ -135,7 +124,7 @@ export default async function ParentChildDetailPage({
               >
                 <span>{a.title}</span>
                 {sub?.status === "graded" ? (
-                  <Badge>
+                  <Badge variant="success">
                     {sub.grade}/{a.max_grade}
                   </Badge>
                 ) : sub ? (
@@ -150,14 +139,9 @@ export default async function ParentChildDetailPage({
               </div>
             );
           })}
-        </CardContent>
-      </Card>
+      </SectionCard>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">الجدول الأسبوعي</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
+      <SectionCard title="الجدول الأسبوعي" contentClassName="space-y-3">
           {typedSlots.length === 0 && (
             <p className="text-sm text-muted-foreground">لا يوجد جدول بعد</p>
           )}
@@ -184,8 +168,7 @@ export default async function ParentChildDetailPage({
               </div>
             );
           })}
-        </CardContent>
-      </Card>
-    </div>
+      </SectionCard>
+    </PageShell>
   );
 }

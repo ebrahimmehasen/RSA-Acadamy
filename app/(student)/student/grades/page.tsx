@@ -1,12 +1,18 @@
+import { GraduationCap, Star, ClipboardCheck } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getSession } from "@/lib/auth/session";
 import { summarizeGrades, type GradedRow } from "@/lib/grades";
 import { GradeTrendChart } from "@/components/charts/GradeTrendChart";
 import { RealtimeRefresh } from "@/components/shared/RealtimeRefresh";
+import { PageShell } from "@/components/shared/PageShell";
+import { PageHeader } from "@/components/shared/PageHeader";
+import { SectionCard } from "@/components/shared/SectionCard";
+import { EmptyState } from "@/components/shared/EmptyState";
+import { StatGrid } from "@/components/shared/StatGrid";
+import { StatCard } from "@/components/shared/StatCard";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -42,7 +48,7 @@ export default async function StudentGradesPage() {
   const summary = summarizeGrades(rows);
 
   return (
-    <div className="space-y-6">
+    <PageShell>
       <RealtimeRefresh
         channelName={`grades:${session!.profile.id}`}
         watches={[
@@ -50,51 +56,44 @@ export default async function StudentGradesPage() {
           { table: "quiz_submissions", filter: `student_id=eq.${session!.profile.id}` },
         ]}
       />
-      <h1 className="text-2xl font-bold">الدرجات</h1>
+      <PageHeader title="الدرجات" />
 
       {summary.average === null ? (
-        <p className="text-muted-foreground">
-          لا توجد درجات بعد — ستظهر هنا حالما يصحّح المدرس واجباتك. واصل
-          اجتهادك!
-        </p>
+        <EmptyState
+          icon={GraduationCap}
+          title="لا توجد درجات بعد"
+          description="ستظهر هنا حالما يصحّح المدرس واجباتك. واصل اجتهادك!"
+        />
       ) : (
         <>
-          <div className="grid gap-4 sm:grid-cols-3">
-            <Card>
-              <CardHeader>
-                <CardDescription>المتوسط العام</CardDescription>
-                <CardTitle className="text-3xl">{summary.average}%</CardTitle>
-              </CardHeader>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardDescription>أفضل مادة</CardDescription>
-                <CardTitle className="text-xl">
-                  {summary.bySubject[0]?.subject} (
-                  {summary.bySubject[0]?.average}%)
-                </CardTitle>
-              </CardHeader>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardDescription>عدد الواجبات المصححة</CardDescription>
-                <CardTitle className="text-3xl">{rows.length}</CardTitle>
-              </CardHeader>
-            </Card>
-          </div>
+          <StatGrid cols={3}>
+            <StatCard
+              label="المتوسط العام"
+              value={`${summary.average}%`}
+              icon={GraduationCap}
+              tone={summary.average >= 50 ? "success" : "warning"}
+            />
+            <StatCard
+              label="أفضل مادة"
+              value={`${summary.bySubject[0]?.average}%`}
+              hint={summary.bySubject[0]?.subject}
+              icon={Star}
+              tone="info"
+            />
+            <StatCard
+              label="عدد الواجبات المصححة"
+              value={rows.length}
+              icon={ClipboardCheck}
+            />
+          </StatGrid>
 
           {summary.trend.length >= 2 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">تطور المستوى</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <GradeTrendChart data={summary.trend} />
-              </CardContent>
-            </Card>
+            <SectionCard title="تطور المستوى">
+              <GradeTrendChart data={summary.trend} />
+            </SectionCard>
           )}
 
-          <div className="space-y-4">
+          <div className="space-y-[var(--card-gap)]">
             {summary.bySubject.map((subject) => (
               <Card key={subject.subject}>
                 <CardHeader>
@@ -122,6 +121,6 @@ export default async function StudentGradesPage() {
           </div>
         </>
       )}
-    </div>
+    </PageShell>
   );
 }

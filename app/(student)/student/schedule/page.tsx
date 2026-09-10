@@ -5,6 +5,7 @@ import {
   DAY_LABELS,
   type ScheduleSlot,
 } from "@/lib/schedule";
+import { CalendarX } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -13,6 +14,9 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ScheduleTime } from "@/components/shared/ScheduleTime";
+import { PageShell } from "@/components/shared/PageShell";
+import { PageHeader } from "@/components/shared/PageHeader";
+import { EmptyState } from "@/components/shared/EmptyState";
 
 export default async function StudentSchedulePage() {
   const session = await getSession();
@@ -37,22 +41,22 @@ export default async function StudentSchedulePage() {
 
   if (!student?.class_id) {
     return (
-      <div className="space-y-4">
-        <h1 className="text-2xl font-bold">الجدول الدراسي</h1>
-        <p className="text-muted-foreground">
-          لم يتم تسجيلك في أي فصل بعد — يُرجى التواصل مع الإدارة.
-        </p>
-      </div>
+      <PageShell>
+        <PageHeader title="الجدول الدراسي" />
+        <EmptyState
+          icon={CalendarX}
+          title="لم يتم تسجيلك في أي فصل بعد"
+          description="يُرجى التواصل مع الإدارة."
+        />
+      </PageShell>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold">الجدول الدراسي</h1>
+    <PageShell>
+      <PageHeader title="الجدول الدراسي" />
       {typedSlots.length === 0 && (
-        <p className="text-muted-foreground">
-          لا توجد حصص في الجدول حتى الآن.
-        </p>
+        <EmptyState icon={CalendarX} title="لا توجد حصص في الجدول حتى الآن." />
       )}
       {DAYS.map((day) => {
         const daySlots = typedSlots.filter((s) => s.day_of_week === day);
@@ -105,6 +109,6 @@ export default async function StudentSchedulePage() {
           </Card>
         );
       })}
-    </div>
+    </PageShell>
   );
 }

@@ -4,14 +4,10 @@ import { createClient } from "@/lib/supabase/server";
 import { getSession } from "@/lib/auth/session";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { SubmitForm } from "./SubmitForm";
-import { BackLink } from "@/components/shared/BackLink";
+import { PageShell } from "@/components/shared/PageShell";
+import { PageHeader } from "@/components/shared/PageHeader";
+import { SectionCard } from "@/components/shared/SectionCard";
 import { RealtimeRefresh } from "@/components/shared/RealtimeRefresh";
 
 export default async function AssignmentDetailPage({
@@ -52,7 +48,7 @@ export default async function AssignmentDetailPage({
   const graded = submission?.status === "graded";
 
   return (
-    <div className="space-y-6">
+    <PageShell>
       <RealtimeRefresh
         channelName={`homework-detail:${assignmentId}:${session!.profile.id}`}
         watches={[
@@ -62,102 +58,77 @@ export default async function AssignmentDetailPage({
           },
         ]}
       />
-      <BackLink href="/student/homework" label="رجوع للواجبات" />
-      <div className="min-w-0">
-        <h1 className="truncate text-2xl font-bold">{assignment.title}</h1>
-        <p className="text-muted-foreground">
-          {(assignment.subjects as unknown as { subject_name: string })?.subject_name}
-          {" · "}
-          آخر موعد:{" "}
-          {new Date(assignment.due_date).toLocaleDateString("ar-EG", {
-            weekday: "long",
-            day: "numeric",
-            month: "long",
-            hour: "2-digit",
-            minute: "2-digit",
-          })}
-          {" · "}
-          الدرجة العظمى: {assignment.max_grade}
-        </p>
-      </div>
+      <PageHeader
+        title={assignment.title}
+        backHref="/student/homework"
+        backLabel="رجوع للواجبات"
+        description={`${(assignment.subjects as unknown as { subject_name: string })?.subject_name} · آخر موعد: ${new Date(
+          assignment.due_date,
+        ).toLocaleDateString("ar-EG", {
+          weekday: "long",
+          day: "numeric",
+          month: "long",
+          hour: "2-digit",
+          minute: "2-digit",
+        })} · الدرجة العظمى: ${assignment.max_grade}`}
+      />
 
       {linkedQuiz && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">اختبار مرتبط بهذا الواجب</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Button
-              size="sm"
-              render={
-                <Link href={`/student/quizzes/${linkedQuiz.id}`}>
-                  ابدأ الاختبار: {linkedQuiz.title}
-                </Link>
-              }
-            />
-          </CardContent>
-        </Card>
+        <SectionCard title="اختبار مرتبط بهذا الواجب">
+          <Button
+            size="sm"
+            render={
+              <Link href={`/student/quizzes/${linkedQuiz.id}`}>
+                ابدأ الاختبار: {linkedQuiz.title}
+              </Link>
+            }
+          />
+        </SectionCard>
       )}
 
       {assignment.description && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">الوصف</CardTitle>
-          </CardHeader>
-          <CardContent className="whitespace-pre-wrap text-sm">
-            {assignment.description}
-          </CardContent>
-        </Card>
+        <SectionCard title="الوصف" contentClassName="whitespace-pre-wrap text-sm">
+          {assignment.description}
+        </SectionCard>
       )}
 
       {assignment.instructions && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">التعليمات</CardTitle>
-          </CardHeader>
-          <CardContent className="whitespace-pre-wrap text-sm">
-            {assignment.instructions}
-          </CardContent>
-        </Card>
+        <SectionCard title="التعليمات" contentClassName="whitespace-pre-wrap text-sm">
+          {assignment.instructions}
+        </SectionCard>
       )}
 
       {(assignment.attachment_drive_ids as string[])?.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">مرفقات المدرس</CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-wrap gap-2">
-            {(assignment.attachment_drive_ids as string[]).map(
-              (driveId, index) => (
-                <a
-                  key={driveId}
-                  href={`/api/files/${driveId}`}
-                  target="_blank"
-                  className="text-sm text-primary underline underline-offset-4"
-                >
-                  مرفق {index + 1}
-                </a>
-              ),
-            )}
-          </CardContent>
-        </Card>
+        <SectionCard title="مرفقات المدرس" contentClassName="flex flex-wrap gap-2">
+          {(assignment.attachment_drive_ids as string[]).map((driveId, index) => (
+            <a
+              key={driveId}
+              href={`/api/files/${driveId}`}
+              target="_blank"
+              className="text-sm text-primary underline underline-offset-4"
+            >
+              مرفق {index + 1}
+            </a>
+          ))}
+        </SectionCard>
       )}
 
-      <Card>
-        <CardHeader>
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <CardTitle className="text-lg">تسليمك</CardTitle>
+      <SectionCard
+        title="تسليمك"
+        action={
+          <>
             {graded && (
-              <Badge>
+              <Badge variant="success">
                 الدرجة: {submission!.grade}/{assignment.max_grade}
               </Badge>
             )}
             {submission?.is_late && (
               <Badge variant="destructive">تسليم متأخر</Badge>
             )}
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
+          </>
+        }
+        contentClassName="space-y-4"
+      >
           {submission && (
             <div className="space-y-2 rounded-lg border p-3 text-sm">
               <p className="text-muted-foreground">
@@ -195,8 +166,7 @@ export default async function AssignmentDetailPage({
               allowText={assignment.allow_text}
             />
           )}
-        </CardContent>
-      </Card>
-    </div>
+      </SectionCard>
+    </PageShell>
   );
 }

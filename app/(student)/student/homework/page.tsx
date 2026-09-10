@@ -1,8 +1,12 @@
 import Link from "next/link";
+import { BookOpen } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getSession } from "@/lib/auth/session";
 import { Badge } from "@/components/ui/badge";
 import { RealtimeRefresh } from "@/components/shared/RealtimeRefresh";
+import { PageShell } from "@/components/shared/PageShell";
+import { PageHeader } from "@/components/shared/PageHeader";
+import { EmptyState } from "@/components/shared/EmptyState";
 import {
   Card,
   CardContent,
@@ -36,7 +40,7 @@ export default async function StudentHomeworkPage() {
   );
 
   return (
-    <div className="space-y-6">
+    <PageShell>
       <RealtimeRefresh
         channelName={`homework:${session!.profile.id}`}
         watches={[
@@ -46,24 +50,30 @@ export default async function StudentHomeworkPage() {
           { table: "assignment_submissions", filter: `student_id=eq.${session!.profile.id}` },
         ]}
       />
-      <h1 className="text-2xl font-bold">الواجبات</h1>
+      <PageHeader title="الواجبات" />
       {(assignments ?? []).length === 0 && (
-        <p className="text-muted-foreground">
-          لا توجد واجبات حتى الآن — استمتع بوقتك الحر!
-        </p>
+        <EmptyState
+          icon={BookOpen}
+          title="لا توجد واجبات حتى الآن"
+          description="استمتع بوقتك الحر!"
+        />
       )}
-      <div className="grid gap-3">
+      <div className="grid gap-[var(--card-gap)]">
         {(assignments ?? []).map((a) => {
           const submission = submissionByAssignment.get(a.id);
           const overdue = !submission && new Date(a.due_date) < new Date();
           return (
-            <Link key={a.id} href={`/student/homework/${a.id}`}>
-              <Card className="transition-colors hover:bg-accent">
+            <Link
+              key={a.id}
+              href={`/student/homework/${a.id}`}
+              className="block rounded-xl outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+            >
+              <Card className="transition-colors hover:bg-muted/40">
                 <CardHeader>
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <CardTitle className="min-w-0 truncate text-base">{a.title}</CardTitle>
                     {submission?.status === "graded" ? (
-                      <Badge>
+                      <Badge variant="success">
                         الدرجة: {submission.grade}/{a.max_grade}
                       </Badge>
                     ) : submission ? (
@@ -94,6 +104,6 @@ export default async function StudentHomeworkPage() {
           );
         })}
       </div>
-    </div>
+    </PageShell>
   );
 }

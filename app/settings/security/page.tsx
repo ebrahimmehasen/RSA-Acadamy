@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
+import { PageHeader } from "@/components/shared/PageHeader";
 import { TwoFactorSettings } from "./TwoFactorSettings";
 import { ChangePasswordForm } from "./ChangePasswordForm";
 
@@ -19,8 +20,8 @@ export default async function SecuritySettingsPage() {
   ]);
 
   return (
-    <div className="mx-auto max-w-xl space-y-6">
-      <h1 className="text-2xl font-bold">إعدادات الأمان</h1>
+    <div className="mx-auto flex max-w-xl flex-col gap-[var(--section-gap)]">
+      <PageHeader title="إعدادات الأمان" />
       <ChangePasswordForm email={userData.user?.email ?? ""} />
       <TwoFactorSettings initiallyEnabled={!!twoFa?.is_enabled} />
     </div>

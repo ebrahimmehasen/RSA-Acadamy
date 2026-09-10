@@ -1,16 +1,12 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getSession } from "@/lib/auth/session";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { VideoTracker } from "./VideoTracker";
 import { RatingForm } from "./RatingForm";
-import { BackLink } from "@/components/shared/BackLink";
+import { PageShell } from "@/components/shared/PageShell";
+import { PageHeader } from "@/components/shared/PageHeader";
+import { SectionCard } from "@/components/shared/SectionCard";
 
 export default async function StudentSessionDetailPage({
   params,
@@ -40,20 +36,20 @@ export default async function StudentSessionDetailPage({
     .maybeSingle();
 
   return (
-    <div className="space-y-6">
-      <BackLink href="/student/sessions" label="رجوع للحصص المسجلة" />
-      <div className="min-w-0">
-        <h1 className="truncate text-2xl font-bold">{recordedSession.title}</h1>
-        <p className="text-muted-foreground">
-          {(recordedSession.subjects as unknown as { subject_name: string })
-            ?.subject_name}
-          {" · "}
-          {new Date(recordedSession.session_date).toLocaleDateString("ar-EG")}
-          {recordedSession.rating_count > 0 && (
-            <> · ⭐ {recordedSession.total_rating} ({recordedSession.rating_count})</>
-          )}
-        </p>
-      </div>
+    <PageShell>
+      <PageHeader
+        title={recordedSession.title}
+        backHref="/student/sessions"
+        backLabel="رجوع للحصص المسجلة"
+        description={`${
+          (recordedSession.subjects as unknown as { subject_name: string })
+            ?.subject_name
+        } · ${new Date(recordedSession.session_date).toLocaleDateString("ar-EG")}${
+          recordedSession.rating_count > 0
+            ? ` · ⭐ ${recordedSession.total_rating} (${recordedSession.rating_count})`
+            : ""
+        }`}
+      />
 
       <VideoTracker sessionId={sessionId} driveId={recordedSession.video_drive_id} />
 
@@ -74,18 +70,13 @@ export default async function StudentSessionDetailPage({
         <p className="whitespace-pre-wrap text-sm">{recordedSession.description}</p>
       )}
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">شاركنا رأيك في الحصة</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <RatingForm
-            sessionId={sessionId}
-            currentRating={myRating?.rating ?? null}
-            currentReview={myRating?.review ?? null}
-          />
-        </CardContent>
-      </Card>
-    </div>
+      <SectionCard title="شاركنا رأيك في الحصة">
+        <RatingForm
+          sessionId={sessionId}
+          currentRating={myRating?.rating ?? null}
+          currentReview={myRating?.review ?? null}
+        />
+      </SectionCard>
+    </PageShell>
   );
 }

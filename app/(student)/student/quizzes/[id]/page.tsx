@@ -2,7 +2,9 @@ import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getSession } from "@/lib/auth/session";
 import { QuizTakingForm } from "./QuizTakingForm";
-import { BackLink } from "@/components/shared/BackLink";
+import { PageShell } from "@/components/shared/PageShell";
+import { PageHeader } from "@/components/shared/PageHeader";
+import { EmptyState } from "@/components/shared/EmptyState";
 
 // Deterministic per (quiz, student) shuffle: keeps the render pure (no
 // Math.random() during render) and keeps the question order stable across
@@ -54,20 +56,21 @@ export default async function TakeQuizPage({
   const end = new Date(quiz.end_time);
   if (now < start) {
     return (
-      <div className="space-y-4">
-        <BackLink href="/student/quizzes" label="رجوع للاختبارات" />
-        <p className="text-muted-foreground">
-          لم يبدأ الاختبار بعد — سيبدأ {start.toLocaleString("ar-EG")}. بالتوفيق!
-        </p>
-      </div>
+      <PageShell>
+        <PageHeader title={quiz.title} backHref="/student/quizzes" backLabel="رجوع للاختبارات" />
+        <EmptyState
+          title="لم يبدأ الاختبار بعد"
+          description={`سيبدأ ${start.toLocaleString("ar-EG")}. بالتوفيق!`}
+        />
+      </PageShell>
     );
   }
   if (now > end) {
     return (
-      <div className="space-y-4">
-        <BackLink href="/student/quizzes" label="رجوع للاختبارات" />
-        <p className="text-muted-foreground">انتهى وقت الاختبار.</p>
-      </div>
+      <PageShell>
+        <PageHeader title={quiz.title} backHref="/student/quizzes" backLabel="رجوع للاختبارات" />
+        <EmptyState title="انتهى وقت الاختبار." />
+      </PageShell>
     );
   }
 
@@ -82,16 +85,11 @@ export default async function TakeQuizPage({
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">{quiz.title}</h1>
-        <p className="text-muted-foreground">
-          {(quiz.subjects as unknown as { subject_name: string })?.subject_name}
-          {" · "}
-          {quiz.duration_minutes} دقيقة · {quiz.total_points} درجة · ينتهي
-          الوقت {end.toLocaleTimeString("ar-EG")}
-        </p>
-      </div>
+    <PageShell>
+      <PageHeader
+        title={quiz.title}
+        description={`${(quiz.subjects as unknown as { subject_name: string })?.subject_name} · ${quiz.duration_minutes} دقيقة · ${quiz.total_points} درجة · ينتهي الوقت ${end.toLocaleTimeString("ar-EG")}`}
+      />
 
       <QuizTakingForm
         quizId={quizId}
@@ -104,6 +102,6 @@ export default async function TakeQuizPage({
           options: Record<string, string> | null;
         }[]}
       />
-    </div>
+    </PageShell>
   );
 }

@@ -1,7 +1,10 @@
 import { redirect } from "next/navigation";
+import { Megaphone } from "lucide-react";
 import { getSession } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { PageHeader } from "@/components/shared/PageHeader";
+import { EmptyState } from "@/components/shared/EmptyState";
 import { AnnouncementCard } from "./AnnouncementCard";
 
 export default async function AnnouncementsPage() {
@@ -50,9 +53,12 @@ export default async function AnnouncementsPage() {
   });
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6 p-4 md:p-6" dir="rtl">
-      <h1 className="text-2xl font-bold">الإعلانات</h1>
-      <div className="grid gap-3">
+    <div
+      className="mx-auto flex max-w-2xl flex-col gap-[var(--section-gap)] p-4 md:p-6"
+      dir="rtl"
+    >
+      <PageHeader title="الإعلانات" />
+      <div className="grid gap-[var(--card-gap)]">
         {relevant.map((a) => (
           <AnnouncementCard
             key={a.id}
@@ -64,7 +70,7 @@ export default async function AnnouncementsPage() {
           />
         ))}
         {relevant.length === 0 && (
-          <p className="text-muted-foreground">لا توجد إعلانات بعد</p>
+          <EmptyState icon={Megaphone} title="لا توجد إعلانات بعد" />
         )}
       </div>
     </div>

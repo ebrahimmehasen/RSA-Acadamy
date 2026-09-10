@@ -1,13 +1,16 @@
 import Link from "next/link";
+import { UsersRound } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getSession } from "@/lib/auth/session";
 import {
   Card,
-  CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { PageShell } from "@/components/shared/PageShell";
+import { PageHeader } from "@/components/shared/PageHeader";
+import { EmptyState } from "@/components/shared/EmptyState";
 import { LinkChildForm } from "./LinkChildForm";
 
 export default async function ParentChildrenPage() {
@@ -22,18 +25,22 @@ export default async function ParentChildrenPage() {
     .eq("parent_id", session!.profile.id);
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold">الأبناء</h1>
+    <PageShell>
+      <PageHeader title="الأبناء" />
 
       <LinkChildForm />
 
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="grid gap-[var(--card-gap)] sm:grid-cols-2">
         {(children ?? []).map((child) => {
           const profile = child.profiles as unknown as { full_name: string };
           const cls = child.classes as unknown as { class_name: string };
           return (
-            <Link key={child.user_id} href={`/parent/children/${child.user_id}`}>
-              <Card className="transition-colors hover:bg-accent">
+            <Link
+              key={child.user_id}
+              href={`/parent/children/${child.user_id}`}
+              className="block rounded-xl outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+            >
+              <Card className="h-full transition-colors hover:bg-muted/40">
                 <CardHeader>
                   <CardTitle className="truncate text-base">
                     {profile?.full_name}
@@ -51,13 +58,14 @@ export default async function ParentChildrenPage() {
           );
         })}
         {(children ?? []).length === 0 && (
-          <Card>
-            <CardContent className="py-8 text-center text-muted-foreground">
-              لا يوجد أبناء مرتبطون بعد — استخدم كود الطالب أعلاه
-            </CardContent>
-          </Card>
+          <EmptyState
+            icon={UsersRound}
+            title="لا يوجد أبناء مرتبطون بعد"
+            description="استخدم كود الطالب أعلاه لربط ابنك"
+            className="sm:col-span-2"
+          />
         )}
       </div>
-    </div>
+    </PageShell>
   );
 }
