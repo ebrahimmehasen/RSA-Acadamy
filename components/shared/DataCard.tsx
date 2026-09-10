@@ -39,7 +39,9 @@ export function DataCard({
               </span>
             )}
           </div>
-          {action && <div className="flex items-center gap-2">{action}</div>}
+          {action && (
+            <div className="flex shrink-0 items-center gap-2">{action}</div>
+          )}
         </div>
       )}
       <div className={cn("w-full overflow-x-auto", bodyClassName)}>{children}</div>

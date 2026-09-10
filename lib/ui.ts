@@ -33,6 +33,14 @@ export const GLASS_HOVER =
 /** Standard page body wrapper — vertical rhythm follows the density token. */
 export const PAGE_WRAP = "flex flex-col gap-[var(--section-gap)]";
 
+/**
+ * A `<Link>` that wraps a `<Card>` to make the whole card a click target
+ * (dashboard tiles, list rows). Put this on the Link and a
+ * `hover:bg-muted/40` on the Card inside it.
+ */
+export const CARD_LINK_CLASS =
+  "block rounded-xl outline-none transition-colors focus-visible:ring-3 focus-visible:ring-ring/50";
+
 export type Tone = "default" | "success" | "warning" | "info" | "destructive";
 
 /** Map a semantic status tone to a Badge variant. */

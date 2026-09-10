@@ -3,6 +3,7 @@ import { Megaphone } from "lucide-react";
 import { getSession } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { PageShell } from "@/components/shared/PageShell";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { AnnouncementCard } from "./AnnouncementCard";
@@ -53,10 +54,7 @@ export default async function AnnouncementsPage() {
   });
 
   return (
-    <div
-      className="mx-auto flex max-w-2xl flex-col gap-[var(--section-gap)] p-4 md:p-6"
-      dir="rtl"
-    >
+    <PageShell className="mx-auto max-w-2xl p-4 md:p-6" dir="rtl">
       <PageHeader title="الإعلانات" />
       <div className="grid gap-[var(--card-gap)]">
         {relevant.map((a) => (
@@ -73,6 +71,6 @@ export default async function AnnouncementsPage() {
           <EmptyState icon={Megaphone} title="لا توجد إعلانات بعد" />
         )}
       </div>
-    </div>
+    </PageShell>
   );
 }

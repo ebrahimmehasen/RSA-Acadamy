@@ -5,6 +5,7 @@ import { getSession } from "@/lib/auth/session";
 import { Badge } from "@/components/ui/badge";
 import { RealtimeRefresh } from "@/components/shared/RealtimeRefresh";
 import { PageShell } from "@/components/shared/PageShell";
+import { CARD_LINK_CLASS } from "@/lib/ui";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { EmptyState } from "@/components/shared/EmptyState";
 import {
@@ -82,7 +83,7 @@ export default async function StudentQuizzesPage() {
                   ? `/student/quizzes/${q.id}/results`
                   : `/student/quizzes/${q.id}`
               }
-              className="block rounded-xl outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+              className={CARD_LINK_CLASS}
             >
               <Card className="transition-colors hover:bg-muted/40">
                 <CardHeader>

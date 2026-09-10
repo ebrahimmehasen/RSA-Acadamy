@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
+import { PageShell } from "@/components/shared/PageShell";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { SectionCard } from "@/components/shared/SectionCard";
 import { SignOutButton } from "@/components/shared/SignOutButton";
@@ -14,7 +15,7 @@ export default async function ProfileSettingsPage() {
   const { data: userData } = await supabase.auth.getUser();
 
   return (
-    <div className="mx-auto flex max-w-xl flex-col gap-[var(--section-gap)]">
+    <PageShell className="mx-auto max-w-xl">
       <PageHeader title="الملف الشخصي" />
       <ProfileForm
         fullName={session.profile.full_name}
@@ -28,6 +29,6 @@ export default async function ProfileSettingsPage() {
       >
         <SignOutButton variant="outline" size="touch" />
       </SectionCard>
-    </div>
+    </PageShell>
   );
 }

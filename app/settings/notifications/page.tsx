@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth/session";
 import { getNotificationSettings } from "@/lib/notifications/create";
+import { PageShell } from "@/components/shared/PageShell";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { SectionCard } from "@/components/shared/SectionCard";
 import { NotificationSettingsForm } from "./NotificationSettingsForm";
@@ -13,7 +14,7 @@ export default async function NotificationSettingsPage() {
   const isParent = session.profile.role === "parent";
 
   return (
-    <div className="mx-auto flex max-w-xl flex-col gap-[var(--section-gap)]">
+    <PageShell className="mx-auto max-w-xl">
       <PageHeader title="إعدادات الإشعارات" />
       <SectionCard
         title="أنواع الإشعارات"
@@ -21,6 +22,6 @@ export default async function NotificationSettingsPage() {
       >
         <NotificationSettingsForm isParent={isParent} settings={settings} />
       </SectionCard>
-    </div>
+    </PageShell>
   );
 }

@@ -3,7 +3,7 @@ import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { toneIconWrap, type Tone } from "@/lib/ui";
+import { toneIconWrap, CARD_LINK_CLASS, type Tone } from "@/lib/ui";
 
 /**
  * One dashboard metric. Replaces the two different stat-card shapes the
@@ -39,7 +39,7 @@ export function StatCard({
               toneIconWrap[tone],
             )}
           >
-            <Icon className="size-4.5" aria-hidden="true" />
+            <Icon className="size-5" aria-hidden="true" />
           </span>
         )}
       </div>
@@ -54,10 +54,7 @@ export function StatCard({
 
   if (href) {
     return (
-      <Link
-        href={href}
-        className="block rounded-xl outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
-      >
+      <Link href={href} className={CARD_LINK_CLASS}>
         <Card className={cn(cardClass, "hover:bg-muted/40")}>{body}</Card>
       </Link>
     );

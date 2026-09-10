@@ -10,6 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { PageShell } from "@/components/shared/PageShell";
+import { CARD_LINK_CLASS } from "@/lib/ui";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { CreateAssignmentForm } from "./CreateAssignmentForm";
@@ -72,7 +73,7 @@ export default async function TeacherAssignmentsPage() {
           <Link
             key={a.id}
             href={`/teacher/assignments/${a.id}`}
-            className="block rounded-xl outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+            className={CARD_LINK_CLASS}
           >
             <Card className="transition-colors hover:bg-muted/40">
               <CardHeader>
