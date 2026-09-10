@@ -1,22 +1,11 @@
 import { createClient } from "@/lib/supabase/server";
 import { getSession } from "@/lib/auth/session";
-import {
-  DAYS,
-  DAY_LABELS,
-  type ScheduleSlot,
-} from "@/lib/schedule";
+import { type ScheduleSlot } from "@/lib/schedule";
 import { CalendarX } from "lucide-react";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { ScheduleTime } from "@/components/shared/ScheduleTime";
 import { PageShell } from "@/components/shared/PageShell";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { EmptyState } from "@/components/shared/EmptyState";
+import { ScheduleGrid } from "@/components/shared/ScheduleGrid";
 
 export default async function StudentSchedulePage() {
   const session = await getSession();
@@ -55,60 +44,24 @@ export default async function StudentSchedulePage() {
   return (
     <PageShell>
       <PageHeader title="الجدول الدراسي" />
-      {typedSlots.length === 0 && (
+      {typedSlots.length === 0 ? (
         <EmptyState icon={CalendarX} title="لا توجد حصص في الجدول حتى الآن." />
+      ) : (
+        <ScheduleGrid
+          zoomLabel="دخول الحصة"
+          entries={typedSlots.map((slot) => ({
+            id: slot.id,
+            day: slot.day_of_week,
+            start: slot.start_time,
+            end: slot.end_time,
+            subject: slot.subjects?.subject_name ?? slot.subject_id,
+            sub: slot.zoom_passcode ? (
+              <span dir="ltr">Passcode: {slot.zoom_passcode}</span>
+            ) : undefined,
+            zoomLink: slot.zoom_link,
+          }))}
+        />
       )}
-      {DAYS.map((day) => {
-        const daySlots = typedSlots.filter((s) => s.day_of_week === day);
-        if (daySlots.length === 0) return null;
-        return (
-          <Card key={day}>
-            <CardHeader>
-              <CardTitle className="text-lg">{DAY_LABELS[day]}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {daySlots.map((slot) => (
-                <div
-                  key={slot.id}
-                  className="flex flex-wrap items-center justify-between gap-3 rounded-lg border p-3"
-                >
-                  <div>
-                    <p className="font-medium">
-                      {slot.subjects?.subject_name ?? slot.subject_id}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      <ScheduleTime
-                        dayOfWeek={day}
-                        startTime={slot.start_time}
-                        endTime={slot.end_time}
-                      />
-                    </p>
-                    {slot.zoom_passcode && (
-                      <p className="text-xs text-muted-foreground" dir="ltr">
-                        Passcode: {slot.zoom_passcode}
-                      </p>
-                    )}
-                  </div>
-                  {slot.zoom_link && (
-                    <Button
-                      size="sm"
-                      render={
-                        <a
-                          href={slot.zoom_link}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          دخول الحصة 🔗
-                        </a>
-                      }
-                    />
-                  )}
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        );
-      })}
     </PageShell>
   );
 }

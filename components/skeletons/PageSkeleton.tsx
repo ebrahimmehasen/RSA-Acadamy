@@ -206,27 +206,34 @@ export function CardGridSkeleton({
   );
 }
 
-/** Day-grouped schedule cards. */
-export function ScheduleSkeleton({ days = 3 }: { days?: number }) {
+/** The weekly timetable matrix (mirrors <ScheduleGrid>). */
+export function ScheduleSkeleton({
+  cols = 5,
+  rows = 6,
+}: {
+  cols?: number;
+  rows?: number;
+}) {
   return (
-    <div className="flex flex-col gap-[var(--section-gap)]">
-      {Array.from({ length: days }).map((_, d) => (
-        <CardFrame key={d} className="space-y-3">
-          <Skeleton className="h-5 w-24" />
-          {Array.from({ length: 3 }).map((_, r) => (
-            <div
-              key={r}
-              className="flex items-center justify-between gap-3 rounded-lg border p-3"
-            >
-              <div className="space-y-1.5">
-                <Skeleton className="h-4 w-40" />
-                <Skeleton className="h-3 w-24" />
-              </div>
-              <Skeleton className="h-8 w-20" />
+    <div className="overflow-hidden rounded-xl bg-card ring-1 ring-foreground/10">
+      <div className="overflow-x-auto p-3">
+        <div className="min-w-[44rem] space-y-2">
+          <div className="flex gap-2">
+            <Skeleton className="h-8 w-28 shrink-0" />
+            {Array.from({ length: cols }).map((_, i) => (
+              <Skeleton key={i} className="h-8 flex-1" />
+            ))}
+          </div>
+          {Array.from({ length: rows }).map((_, r) => (
+            <div key={r} className="flex gap-2">
+              <Skeleton className="h-16 w-28 shrink-0" />
+              {Array.from({ length: cols }).map((_, c) => (
+                <Skeleton key={c} className="h-16 flex-1" />
+              ))}
             </div>
           ))}
-        </CardFrame>
-      ))}
+        </div>
+      </div>
     </div>
   );
 }

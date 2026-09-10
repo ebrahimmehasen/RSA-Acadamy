@@ -1,27 +1,8 @@
 import { notFound } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin";
-import {
-  DAYS,
-  DAY_LABELS,
-  formatTime,
-  type ScheduleSlot,
-} from "@/lib/schedule";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
+import { type ScheduleSlot } from "@/lib/schedule";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
 import { createSlot, deleteSlot, updateSlot } from "./actions";
 import { AddSlotForm } from "./AddSlotForm";
@@ -29,6 +10,7 @@ import { EditSlotForm } from "./EditSlotForm";
 import { ConfirmDeleteButton } from "@/components/shared/ConfirmDeleteButton";
 import { PageShell } from "@/components/shared/PageShell";
 import { PageHeader } from "@/components/shared/PageHeader";
+import { ScheduleGrid } from "@/components/shared/ScheduleGrid";
 import { branchLabel } from "@/lib/subjects";
 
 export default async function AdminClassSchedulePage({
@@ -92,6 +74,21 @@ export default async function AdminClassSchedulePage({
     label: subjectNameById.get(s.subject_id) ?? s.subject_id,
   }));
 
+  const gridEntries = typedSlots.map((slot) => ({
+    id: slot.id,
+    day: slot.day_of_week,
+    start: slot.start_time,
+    end: slot.end_time,
+    subject: subjectNameById.get(slot.subject_id) ?? slot.subject_id,
+    sub: slot.teacher_id ? (
+      teacherNameById.get(slot.teacher_id) ?? "—"
+    ) : (
+      <span className="text-warning">غير محدد</span>
+    ),
+    zoomLink: slot.zoom_link,
+    slot,
+  }));
+
   return (
     <PageShell>
       <PageHeader
@@ -110,72 +107,27 @@ export default async function AdminClassSchedulePage({
         }
       />
 
-      {DAYS.map((day) => {
-        const daySlots = typedSlots.filter((s) => s.day_of_week === day);
-        if (daySlots.length === 0) return null;
-        return (
-          <Card key={day}>
-            <CardHeader>
-              <CardTitle className="text-lg">{DAY_LABELS[day]}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="text-right">المادة</TableHead>
-                    <TableHead className="text-right">المدرس</TableHead>
-                    <TableHead className="text-right">الوقت</TableHead>
-                    <TableHead className="text-right">Zoom</TableHead>
-                    <TableHead />
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {daySlots.map((slot) => (
-                    <TableRow key={slot.id}>
-                      <TableCell>
-                        {subjectNameById.get(slot.subject_id) ?? slot.subject_id}
-                      </TableCell>
-                      <TableCell>
-                        {slot.teacher_id
-                          ? teacherNameById.get(slot.teacher_id) ?? "—"
-                          : "غير محدد"}
-                      </TableCell>
-                      <TableCell dir="ltr" className="text-right">
-                        {formatTime(slot.start_time)} –{" "}
-                        {formatTime(slot.end_time)}
-                      </TableCell>
-                      <TableCell>
-                        {slot.zoom_link ? (
-                          <Badge>موجود</Badge>
-                        ) : (
-                          <Badge variant="outline">لا يوجد</Badge>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex justify-end gap-2">
-                          <EditSlotForm
-                            slot={slot}
-                            classId={id}
-                            subjects={subjectOptions}
-                            teachers={teacherOptions}
-                            zoomAccounts={zoomAccounts ?? []}
-                            action={updateSlot}
-                          />
-                          <ConfirmDeleteButton
-                            action={deleteSlot}
-                            hiddenFields={{ slot_id: slot.id, class_id: id }}
-                            confirmMessage="هل أنت متأكد من رغبتك في حذف هذه الحصة؟ هذا الإجراء نهائي ولا يمكن التراجع عنه."
-                          />
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        );
-      })}
+      <ScheduleGrid
+        entries={gridEntries}
+        caption="اضغط ✏️ لتعديل حصة أو 🗑️ لحذفها — كل الأوقات بتوقيت القاهرة"
+        renderEntryActions={(entry) => (
+          <>
+            <EditSlotForm
+              slot={entry.slot}
+              classId={id}
+              subjects={subjectOptions}
+              teachers={teacherOptions}
+              zoomAccounts={zoomAccounts ?? []}
+              action={updateSlot}
+            />
+            <ConfirmDeleteButton
+              action={deleteSlot}
+              hiddenFields={{ slot_id: entry.id, class_id: id }}
+              confirmMessage="هل أنت متأكد من رغبتك في حذف هذه الحصة؟ هذا الإجراء نهائي ولا يمكن التراجع عنه."
+            />
+          </>
+        )}
+      />
 
       <Card>
         <CardHeader>

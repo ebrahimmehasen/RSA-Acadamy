@@ -2,19 +2,15 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getSession } from "@/lib/auth/session";
 import { summarizeGrades, type GradedRow } from "@/lib/grades";
-import {
-  DAYS,
-  DAY_LABELS,
-  type ScheduleSlot,
-} from "@/lib/schedule";
+import { type ScheduleSlot } from "@/lib/schedule";
 import { GraduationCap, ClipboardCheck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { ScheduleTime } from "@/components/shared/ScheduleTime";
 import { PageShell } from "@/components/shared/PageShell";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { SectionCard } from "@/components/shared/SectionCard";
 import { StatGrid } from "@/components/shared/StatGrid";
 import { StatCard } from "@/components/shared/StatCard";
+import { ScheduleGrid } from "@/components/shared/ScheduleGrid";
 
 export default async function ParentChildDetailPage({
   params,
@@ -141,34 +137,22 @@ export default async function ParentChildDetailPage({
           })}
       </SectionCard>
 
-      <SectionCard title="الجدول الأسبوعي" contentClassName="space-y-3">
-          {typedSlots.length === 0 && (
-            <p className="text-sm text-muted-foreground">لا يوجد جدول بعد</p>
-          )}
-          {DAYS.map((day) => {
-            const daySlots = typedSlots.filter((s) => s.day_of_week === day);
-            if (daySlots.length === 0) return null;
-            return (
-              <div key={day}>
-                <p className="mb-1 font-medium">{DAY_LABELS[day]}</p>
-                <ul className="space-y-1 text-sm text-muted-foreground">
-                  {daySlots.map((slot) => (
-                    <li key={slot.id}>
-                      {slot.subjects?.subject_name ?? slot.subject_id}{" "}
-                      (
-                      <ScheduleTime
-                        dayOfWeek={day}
-                        startTime={slot.start_time}
-                        endTime={slot.end_time}
-                      />
-                      )
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            );
-          })}
-      </SectionCard>
+      <div className="space-y-2">
+        <h2 className="font-heading text-base font-medium">الجدول الأسبوعي</h2>
+        {typedSlots.length === 0 ? (
+          <p className="text-sm text-muted-foreground">لا يوجد جدول بعد</p>
+        ) : (
+          <ScheduleGrid
+            entries={typedSlots.map((slot) => ({
+              id: slot.id,
+              day: slot.day_of_week,
+              start: slot.start_time,
+              end: slot.end_time,
+              subject: slot.subjects?.subject_name ?? slot.subject_id,
+            }))}
+          />
+        )}
+      </div>
     </PageShell>
   );
 }
