@@ -22,7 +22,7 @@ export default async function ParentLayout({
     );
   }
 
-  const { title, nav } = ROLE_NAV.parent;
+  const { title, nav, density } = ROLE_NAV.parent;
 
   return (
     <RoleShell
@@ -30,6 +30,7 @@ export default async function ParentLayout({
       fullName={session.profile.full_name}
       profileId={session.profile.id}
       nav={nav}
+      density={density}
     >
       {children}
     </RoleShell>

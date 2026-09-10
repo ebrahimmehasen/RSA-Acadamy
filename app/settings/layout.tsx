@@ -24,7 +24,7 @@ export default async function SettingsLayout({
     );
   }
 
-  const { title, nav } = ROLE_NAV[role];
+  const { title, nav, density } = ROLE_NAV[role];
 
   return (
     <RoleShell
@@ -32,6 +32,7 @@ export default async function SettingsLayout({
       fullName={session.profile.full_name}
       profileId={session.profile.id}
       nav={nav}
+      density={density}
     >
       {children}
     </RoleShell>

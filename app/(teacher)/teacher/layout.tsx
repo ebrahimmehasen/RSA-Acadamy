@@ -22,7 +22,7 @@ export default async function TeacherLayout({
     );
   }
 
-  const { title, nav } = ROLE_NAV.teacher;
+  const { title, nav, density } = ROLE_NAV.teacher;
 
   return (
     <RoleShell
@@ -30,6 +30,7 @@ export default async function TeacherLayout({
       fullName={session.profile.full_name}
       profileId={session.profile.id}
       nav={nav}
+      density={density}
     >
       {children}
     </RoleShell>

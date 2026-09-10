@@ -22,7 +22,7 @@ export default async function StudentLayout({
     );
   }
 
-  const { title, nav } = ROLE_NAV.student;
+  const { title, nav, density } = ROLE_NAV.student;
 
   return (
     <RoleShell
@@ -30,6 +30,7 @@ export default async function StudentLayout({
       fullName={session.profile.full_name}
       profileId={session.profile.id}
       nav={nav}
+      density={density}
     >
       {children}
     </RoleShell>

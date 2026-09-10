@@ -9,9 +9,13 @@ export type AppRole = "admin" | "teacher" | "student" | "parent";
  * (same sidebar, same "back" navigation) no matter which role opened
  * them, instead of as bare, disconnected pages.
  */
-export const ROLE_NAV: Record<AppRole, { title: string; nav: NavItem[] }> = {
+export const ROLE_NAV: Record<
+  AppRole,
+  { title: string; density: "comfortable" | "compact"; nav: NavItem[] }
+> = {
   admin: {
     title: "لوحة الإدارة",
+    density: "compact",
     nav: [
       { href: "/admin/dashboard", label: "الرئيسية" },
       { href: "/admin/students", label: "الطلاب" },
@@ -33,6 +37,7 @@ export const ROLE_NAV: Record<AppRole, { title: string; nav: NavItem[] }> = {
   },
   teacher: {
     title: "بوابة المدرس",
+    density: "comfortable",
     nav: [
       { href: "/teacher/dashboard", label: "الرئيسية" },
       { href: "/teacher/classes", label: "الفصول" },
@@ -49,6 +54,7 @@ export const ROLE_NAV: Record<AppRole, { title: string; nav: NavItem[] }> = {
   },
   student: {
     title: "بوابة الطالب",
+    density: "comfortable",
     nav: [
       { href: "/student/dashboard", label: "الرئيسية" },
       { href: "/student/schedule", label: "الجدول" },
@@ -64,6 +70,7 @@ export const ROLE_NAV: Record<AppRole, { title: string; nav: NavItem[] }> = {
   },
   parent: {
     title: "بوابة ولي الأمر",
+    density: "comfortable",
     nav: [
       { href: "/parent/dashboard", label: "الرئيسية" },
       { href: "/parent/children", label: "الأبناء" },

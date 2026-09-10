@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -24,10 +25,18 @@ import {
   ShieldPlus,
   ClipboardCheck,
   LogOut,
+  MoreHorizontal,
   type LucideIcon,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { NotificationBell } from "@/components/shared/NotificationBell";
 import { Logo } from "@/components/shared/Logo";
@@ -62,6 +71,7 @@ const ICON_BY_SEGMENT: Record<string, LucideIcon> = {
   admins: ShieldPlus,
   gradebook: ClipboardCheck,
   platform: Settings,
+  "zoom-accounts": Video,
 };
 
 function iconForHref(href: string): LucideIcon {
@@ -69,21 +79,44 @@ function iconForHref(href: string): LucideIcon {
   return ICON_BY_SEGMENT[segment] ?? LayoutDashboard;
 }
 
+/** Longest nav href that is a path-segment prefix of the current URL. */
+function activeHref(pathname: string, nav: NavItem[]): string | null {
+  let best: string | null = null;
+  for (const item of nav) {
+    if (pathname === item.href || pathname.startsWith(item.href + "/")) {
+      if (!best || item.href.length > best.length) best = item.href;
+    }
+  }
+  return best;
+}
+
 export function RoleShell({
   title,
   fullName,
   profileId,
   nav,
+  density = "comfortable",
   children,
 }: {
   title: string;
   fullName: string;
   profileId: number;
   nav: NavItem[];
+  density?: "comfortable" | "compact";
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
   const router = useRouter();
+  const [moreOpen, setMoreOpen] = useState(false);
+
+  const current = activeHref(pathname, nav);
+  // Trailing shared-settings items get their own group below a divider.
+  const tailStart = nav.findIndex((n) => n.href.startsWith("/settings"));
+  const mainNav = tailStart === -1 ? nav : nav.slice(0, tailStart);
+  const tailNav = tailStart === -1 ? [] : nav.slice(tailStart);
+
+  const bottomNav = nav.slice(0, 4);
+  const bottomHasActive = bottomNav.some((n) => n.href === current);
 
   async function signOut() {
     const supabase = createClient();
@@ -92,34 +125,48 @@ export function RoleShell({
     router.refresh();
   }
 
+  function renderNavLink(item: NavItem, opts?: { onClick?: () => void }) {
+    const Icon = iconForHref(item.href);
+    const active = item.href === current;
+    return (
+      <Link
+        key={item.href}
+        href={item.href}
+        onClick={opts?.onClick}
+        aria-current={active ? "page" : undefined}
+        className={cn(
+          "flex min-h-11 min-w-0 items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-sidebar-foreground/80 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground md:min-h-0",
+          active &&
+            "bg-sidebar-primary text-sidebar-primary-foreground shadow-sm hover:bg-sidebar-primary hover:text-sidebar-primary-foreground",
+        )}
+      >
+        <Icon className="size-4 shrink-0" aria-hidden="true" />
+        <span className="truncate">{item.label}</span>
+      </Link>
+    );
+  }
+
   return (
-    <div className="flex min-h-screen bg-muted/20" dir="rtl">
+    <div
+      className="flex min-h-screen bg-muted/20"
+      dir="rtl"
+      data-density={density === "compact" ? "compact" : undefined}
+    >
       <aside className="hidden w-64 shrink-0 flex-col border-l bg-sidebar p-4 md:flex">
         <div className="mb-6 flex items-center justify-between px-1">
           <Logo markClassName="h-8 w-8" className="gap-1.5" />
         </div>
-        <p className="mb-4 px-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+        <p className="mb-3 px-3 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
           {title}
         </p>
         <nav className="flex flex-1 flex-col gap-1 overflow-y-auto">
-          {nav.map((item) => {
-            const Icon = iconForHref(item.href);
-            const active = pathname.startsWith(item.href);
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  "flex min-w-0 items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-sidebar-foreground/80 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-                  active &&
-                    "bg-sidebar-primary text-sidebar-primary-foreground shadow-sm hover:bg-sidebar-primary hover:text-sidebar-primary-foreground",
-                )}
-              >
-                <Icon className="size-4 shrink-0" />
-                <span className="truncate">{item.label}</span>
-              </Link>
-            );
-          })}
+          {mainNav.map((item) => renderNavLink(item))}
+          {tailNav.length > 0 && (
+            <>
+              <div className="my-2 border-t" />
+              {tailNav.map((item) => renderNavLink(item))}
+            </>
+          )}
         </nav>
         <div className="mt-auto space-y-3 border-t pt-4">
           <div className="flex items-center gap-2 px-1">
@@ -142,7 +189,7 @@ export function RoleShell({
           </Button>
         </div>
       </aside>
-      <div className="flex flex-1 flex-col">
+      <div className="flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-10 flex h-14 items-center justify-between border-b bg-background/95 px-4 backdrop-blur supports-backdrop-filter:bg-background/70 md:px-6">
           <div className="md:hidden">
             <Logo markClassName="h-7 w-7" showWordmark={false} />
@@ -152,42 +199,78 @@ export function RoleShell({
               {title}
             </h1>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
             <ThemeToggle />
             <NotificationBell profileId={profileId} />
             <Button
               variant="ghost"
-              size="sm"
+              size="icon"
               onClick={signOut}
-              className="md:hidden"
+              className="size-11 md:hidden"
               aria-label="تسجيل الخروج"
             >
               <LogOut className="size-4" aria-hidden="true" />
             </Button>
           </div>
         </header>
-        <main className="flex-1 p-4 pb-20 md:p-6 md:pb-6">{children}</main>
+        <main className="flex-1 p-4 pb-24 md:p-6 md:pb-6">{children}</main>
+
         <nav
-          className="fixed inset-x-0 bottom-0 z-20 flex justify-around border-t bg-background/95 py-1 backdrop-blur supports-backdrop-filter:bg-background/70 md:hidden"
+          className="fixed inset-x-0 bottom-0 z-20 flex justify-around border-t bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/70 md:hidden"
           style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
         >
-          {nav.slice(0, 5).map((item) => {
+          {bottomNav.map((item) => {
             const Icon = iconForHref(item.href);
-            const active = pathname.startsWith(item.href);
+            const active = item.href === current;
             return (
               <Link
                 key={item.href}
                 href={item.href}
+                aria-current={active ? "page" : undefined}
                 className={cn(
-                  "flex flex-col items-center gap-0.5 rounded-md px-2 py-1.5 text-[11px] text-muted-foreground",
+                  "flex min-h-14 flex-1 flex-col items-center justify-center gap-0.5 px-1 text-[11px] text-muted-foreground",
                   active && "font-semibold text-primary",
                 )}
               >
-                <Icon className="size-5" />
-                <span className="max-w-14 truncate">{item.label}</span>
+                <Icon className="size-5" aria-hidden="true" />
+                <span className="max-w-16 truncate">{item.label}</span>
               </Link>
             );
           })}
+          <Dialog open={moreOpen} onOpenChange={setMoreOpen}>
+            <DialogTrigger
+              render={
+                <button
+                  type="button"
+                  className={cn(
+                    "flex min-h-14 flex-1 flex-col items-center justify-center gap-0.5 px-1 text-[11px] text-muted-foreground",
+                    !bottomHasActive && current && "font-semibold text-primary",
+                  )}
+                />
+              }
+            >
+              <MoreHorizontal className="size-5" aria-hidden="true" />
+              <span>المزيد</span>
+            </DialogTrigger>
+            <DialogContent className="max-h-[80vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>{title}</DialogTitle>
+              </DialogHeader>
+              <nav className="grid grid-cols-2 gap-2">
+                {nav.map((item) =>
+                  renderNavLink(item, { onClick: () => setMoreOpen(false) }),
+                )}
+              </nav>
+              <Button
+                variant="outline"
+                className="w-full justify-center gap-1.5"
+                onClick={signOut}
+              >
+                <LogOut className="size-4" />
+                تسجيل الخروج
+              </Button>
+            </DialogContent>
+          </Dialog>
         </nav>
       </div>
     </div>

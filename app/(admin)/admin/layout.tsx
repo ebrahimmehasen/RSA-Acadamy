@@ -12,7 +12,7 @@ export default async function AdminLayout({
   if (!session) redirect("/login");
   if (session.profile.role !== "admin") redirect("/");
 
-  const { title, nav } = ROLE_NAV.admin;
+  const { title, nav, density } = ROLE_NAV.admin;
 
   return (
     <RoleShell
@@ -20,6 +20,7 @@ export default async function AdminLayout({
       fullName={session.profile.full_name}
       profileId={session.profile.id}
       nav={nav}
+      density={density}
     >
       {children}
     </RoleShell>
