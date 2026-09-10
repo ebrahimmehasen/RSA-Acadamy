@@ -55,10 +55,8 @@ export default async function StudentSchedulePage() {
             start: slot.start_time,
             end: slot.end_time,
             subject: slot.subjects?.subject_name ?? slot.subject_id,
-            sub: slot.zoom_passcode ? (
-              <span dir="ltr">Passcode: {slot.zoom_passcode}</span>
-            ) : undefined,
             zoomLink: slot.zoom_link,
+            zoomPasscode: slot.zoom_passcode,
           }))}
         />
       )}

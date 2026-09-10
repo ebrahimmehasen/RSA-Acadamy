@@ -24,9 +24,11 @@ export interface ScheduleGridEntry {
   end: string;
   /** primary line — the subject / lesson */
   subject: string;
-  /** secondary muted line — teacher name, class name, passcode, … */
+  /** secondary muted line — teacher name, class name, … */
   sub?: ReactNode;
   zoomLink?: string | null;
+  /** shown next to the class name in the "today" box, with the join link */
+  zoomPasscode?: string | null;
 }
 
 const hhmm = (t: string) => t.slice(0, 5);
@@ -176,6 +178,12 @@ export function ScheduleGrid({
   );
   const nextEntry = todayEntries.find((e) => toMin(e.start) > clock.minutes);
   const spotlight = activeEntry ?? nextEntry;
+  const minsUntilSpotlight = spotlight
+    ? toMin(spotlight.start) - clock.minutes
+    : Infinity;
+  // The join link opens 15 minutes before the class starts.
+  const showJoinLink =
+    !!spotlight?.zoomLink && (!!activeEntry || minsUntilSpotlight <= 15);
   const dateLabel = clock.ready
     ? new Intl.DateTimeFormat("ar-EG", {
         timeZone: SCHOOL_TIMEZONE,
@@ -207,12 +215,17 @@ export function ScheduleGrid({
                   {activeEntry ? "الآن" : "القادمة"}
                 </span>
                 <span className="font-semibold">{spotlight.subject}</span>
+                {zoomLabel && showJoinLink && spotlight.zoomPasscode && (
+                  <span dir="ltr" className="text-xs text-muted-foreground">
+                    كلمة السر: {spotlight.zoomPasscode}
+                  </span>
+                )}
                 <span dir="ltr" className="text-xs text-muted-foreground">
                   {localRange(spotlight.day, spotlight.start, spotlight.end)}
                 </span>
-                {zoomLabel && spotlight.zoomLink && (
+                {zoomLabel && showJoinLink && (
                   <a
-                    href={spotlight.zoomLink}
+                    href={spotlight.zoomLink!}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground"
