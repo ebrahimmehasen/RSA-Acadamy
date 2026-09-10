@@ -86,8 +86,28 @@ export default async function AdminClassSchedulePage({
       <span className="text-warning">غير محدد</span>
     ),
     zoomLink: slot.zoom_link,
-    slot,
   }));
+
+  const entryActions = Object.fromEntries(
+    typedSlots.map((slot) => [
+      slot.id,
+      <div key={slot.id} className="flex flex-wrap gap-1">
+        <EditSlotForm
+          slot={slot}
+          classId={id}
+          subjects={subjectOptions}
+          teachers={teacherOptions}
+          zoomAccounts={zoomAccounts ?? []}
+          action={updateSlot}
+        />
+        <ConfirmDeleteButton
+          action={deleteSlot}
+          hiddenFields={{ slot_id: slot.id, class_id: id }}
+          confirmMessage="هل أنت متأكد من رغبتك في حذف هذه الحصة؟ هذا الإجراء نهائي ولا يمكن التراجع عنه."
+        />
+      </div>,
+    ]),
+  );
 
   return (
     <PageShell>
@@ -109,24 +129,8 @@ export default async function AdminClassSchedulePage({
 
       <ScheduleGrid
         entries={gridEntries}
-        caption="اضغط ✏️ لتعديل حصة أو 🗑️ لحذفها — كل الأوقات بتوقيت القاهرة"
-        renderEntryActions={(entry) => (
-          <>
-            <EditSlotForm
-              slot={entry.slot}
-              classId={id}
-              subjects={subjectOptions}
-              teachers={teacherOptions}
-              zoomAccounts={zoomAccounts ?? []}
-              action={updateSlot}
-            />
-            <ConfirmDeleteButton
-              action={deleteSlot}
-              hiddenFields={{ slot_id: entry.id, class_id: id }}
-              confirmMessage="هل أنت متأكد من رغبتك في حذف هذه الحصة؟ هذا الإجراء نهائي ولا يمكن التراجع عنه."
-            />
-          </>
-        )}
+        entryActions={entryActions}
+        caption="اضغط ✏️ لتعديل حصة أو 🗑️ لحذفها"
       />
 
       <Card>
