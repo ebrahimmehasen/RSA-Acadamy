@@ -6,12 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { SectionCard } from "@/components/shared/SectionCard";
+import { SELECT_CLASS } from "@/lib/ui";
 import { createAssignment, type ActionResult } from "./actions";
 
 export function CreateAssignmentForm({
@@ -27,11 +23,7 @@ export function CreateAssignmentForm({
   const [dueLocal, setDueLocal] = useState("");
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-lg">إنشاء واجب جديد</CardTitle>
-      </CardHeader>
-      <CardContent>
+    <SectionCard title="إنشاء واجب جديد">
         <form action={formAction} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="slot">الفصل والمادة</Label>
@@ -40,7 +32,7 @@ export function CreateAssignmentForm({
               value={selection}
               onChange={(e) => setSelection(e.target.value)}
               required
-              className="h-8 w-full rounded-lg border border-input bg-background px-2 text-sm text-foreground"
+              className={SELECT_CLASS}
             >
               <option value="">اختر…</option>
               {slots.map((s) => (
@@ -70,7 +62,7 @@ export function CreateAssignmentForm({
               id="branch"
               name="branch"
               defaultValue=""
-              className="h-8 w-full rounded-lg border border-input bg-background px-2 text-sm text-foreground"
+              className={SELECT_CLASS}
             >
               <option value="">الفصل كله (الشعبتين)</option>
               <option value="Arabic">شعبة العربي فقط</option>
@@ -148,7 +140,7 @@ export function CreateAssignmentForm({
 
           {result && (
             <p
-              className={`text-sm ${result.ok ? "text-green-600" : "text-destructive"}`}
+              className={`text-sm ${result.ok ? "text-success" : "text-destructive"}`}
               aria-live="polite"
             >
               {result.message}
@@ -159,7 +151,6 @@ export function CreateAssignmentForm({
             {isPending ? "جاري الإنشاء…" : "إنشاء الواجب"}
           </Button>
         </form>
-      </CardContent>
-    </Card>
+    </SectionCard>
   );
 }

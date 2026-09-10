@@ -3,13 +3,10 @@ import { getSession } from "@/lib/auth/session";
 import { DAYS, DAY_LABELS, PERIODS, formatTime, periodValue } from "@/lib/schedule";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { PageShell } from "@/components/shared/PageShell";
+import { PageHeader } from "@/components/shared/PageHeader";
+import { SectionCard } from "@/components/shared/SectionCard";
+import { SELECT_CLASS } from "@/lib/ui";
 import { addAvailability, removeAvailability, savePreferences } from "./actions";
 
 export default async function TeacherPreferencesPage() {
@@ -35,17 +32,13 @@ export default async function TeacherPreferencesPage() {
   const preferredClasses = new Set<number>((prefs?.classes as number[]) ?? []);
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold">التفضيلات</h1>
+    <PageShell>
+      <PageHeader title="التفضيلات" />
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">الفصول المفضّلة</CardTitle>
-          <CardDescription>
-            تساعد الإدارة على توزيع الجدول بشكل أفضل، وهي غير إلزامية
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+      <SectionCard
+        title="الفصول المفضّلة"
+        description="تساعد الإدارة على توزيع الجدول بشكل أفضل، وهي غير إلزامية"
+      >
           <form action={savePreferences} className="space-y-4">
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
               {(classes ?? []).map((c) => (
@@ -63,17 +56,13 @@ export default async function TeacherPreferencesPage() {
               حفظ الفصول المفضّلة
             </Button>
           </form>
-        </CardContent>
-      </Card>
+      </SectionCard>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">أوقات التواجد</CardTitle>
-          <CardDescription>
-            الأوقات التي تستطيع التدريس فيها أسبوعيًا — كل الحصص بتوقيت القاهرة
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
+      <SectionCard
+        title="أوقات التواجد"
+        description="الأوقات التي تستطيع التدريس فيها أسبوعيًا — كل الحصص بتوقيت القاهرة"
+        contentClassName="space-y-4"
+      >
           {DAYS.map((day) => {
             const daySlots = (availability ?? []).filter(
               (a) => a.day_of_week === day,
@@ -109,7 +98,7 @@ export default async function TeacherPreferencesPage() {
               <select
                 id="day_of_week"
                 name="day_of_week"
-                className="h-8 rounded-lg border border-input bg-background px-2 text-sm text-foreground"
+                className={`${SELECT_CLASS} w-auto`}
               >
                 {DAYS.map((d) => (
                   <option key={d} value={d}>
@@ -126,7 +115,7 @@ export default async function TeacherPreferencesPage() {
                 id="period"
                 name="period"
                 required
-                className="h-8 rounded-lg border border-input bg-background px-2 text-sm text-foreground"
+                className={`${SELECT_CLASS} w-auto`}
               >
                 {PERIODS.map((p) => (
                   <option key={periodValue(p)} value={periodValue(p)}>
@@ -139,8 +128,7 @@ export default async function TeacherPreferencesPage() {
               إضافة
             </Button>
           </form>
-        </CardContent>
-      </Card>
-    </div>
+      </SectionCard>
+    </PageShell>
   );
 }

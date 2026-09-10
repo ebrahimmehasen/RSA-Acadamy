@@ -4,6 +4,7 @@ import {
   DAY_LABELS,
   type ScheduleSlot,
 } from "@/lib/schedule";
+import { CalendarX } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -12,6 +13,9 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ScheduleTime } from "@/components/shared/ScheduleTime";
+import { PageShell } from "@/components/shared/PageShell";
+import { PageHeader } from "@/components/shared/PageHeader";
+import { EmptyState } from "@/components/shared/EmptyState";
 
 export default async function TeacherClassesPage() {
   const supabase = await createClient();
@@ -29,12 +33,14 @@ export default async function TeacherClassesPage() {
   })[];
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold">فصولك وجدولك الأسبوعي</h1>
+    <PageShell>
+      <PageHeader title="فصولك وجدولك الأسبوعي" />
       {typedSlots.length === 0 && (
-        <p className="text-muted-foreground">
-          لم تُوزِّع الإدارة عليك حصصًا في الجدول بعد.
-        </p>
+        <EmptyState
+          icon={CalendarX}
+          title="لا توجد حصص بعد"
+          description="لم تُوزِّع الإدارة عليك حصصًا في الجدول بعد."
+        />
       )}
       {DAYS.map((day) => {
         const daySlots = typedSlots.filter((s) => s.day_of_week === day);
@@ -86,6 +92,6 @@ export default async function TeacherClassesPage() {
           </Card>
         );
       })}
-    </div>
+    </PageShell>
   );
 }

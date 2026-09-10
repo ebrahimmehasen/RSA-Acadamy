@@ -11,7 +11,9 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { gradeQuizAnswer } from "./actions";
-import { BackLink } from "@/components/shared/BackLink";
+import { PageShell } from "@/components/shared/PageShell";
+import { PageHeader } from "@/components/shared/PageHeader";
+import { EmptyState } from "@/components/shared/EmptyState";
 import { RealtimeRefresh } from "@/components/shared/RealtimeRefresh";
 import { GradeSaveButton } from "./GradeSaveButton";
 
@@ -68,16 +70,17 @@ export default async function QuizSubmissionsPage({
     : { data: [] };
 
   return (
-    <div className="space-y-6">
+    <PageShell>
       <RealtimeRefresh
         channelName={`quiz-submissions:${quizId}`}
         watches={[{ table: "quiz_submissions", filter: `quiz_id=eq.${quizId}` }]}
       />
-      <BackLink href={`/teacher/quizzes/${quizId}`} label={`رجوع لـ ${quiz.title}`} />
-      <div>
-        <h1 className="text-2xl font-bold">تصحيح التسليمات — {quiz.title}</h1>
-        <p className="text-muted-foreground">الدرجة الكلية: {quiz.total_points}</p>
-      </div>
+      <PageHeader
+        title={`تصحيح التسليمات — ${quiz.title}`}
+        backHref={`/teacher/quizzes/${quizId}`}
+        backLabel={`رجوع لـ ${quiz.title}`}
+        description={`الدرجة الكلية: ${quiz.total_points}`}
+      />
 
       {(submissions ?? []).map((submission) => {
         const student = submission.students as unknown as {
@@ -102,11 +105,11 @@ export default async function QuizSubmissionsPage({
                   </span>
                 </CardTitle>
                 {submission.status === "graded" ? (
-                  <Badge>
+                  <Badge variant="success">
                     {submission.total_score}/{submission.max_score}
                   </Badge>
                 ) : (
-                  <Badge variant="secondary">
+                  <Badge variant="warning">
                     {pendingManual.length} سؤال بانتظار التصحيح
                   </Badge>
                 )}
@@ -166,8 +169,8 @@ export default async function QuizSubmissionsPage({
         );
       })}
       {(submissions ?? []).length === 0 && (
-        <p className="text-muted-foreground">لا توجد تسليمات بعد</p>
+        <EmptyState title="لا توجد تسليمات بعد" />
       )}
-    </div>
+    </PageShell>
   );
 }

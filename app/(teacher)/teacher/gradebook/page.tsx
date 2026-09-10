@@ -1,7 +1,9 @@
-import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getSession } from "@/lib/auth/session";
-import { cn } from "@/lib/utils";
+import { PageShell } from "@/components/shared/PageShell";
+import { PageHeader } from "@/components/shared/PageHeader";
+import { EmptyState } from "@/components/shared/EmptyState";
+import { FilterChips } from "@/components/shared/FilterChips";
 import { GradebookTable, type StudentRow, type ColumnHeader } from "./GradebookTable";
 
 export default async function TeacherGradebookPage({
@@ -170,37 +172,28 @@ export default async function TeacherGradebookPage({
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">كشف الدرجات</h1>
-        <p className="text-muted-foreground">
-          درجات الواجبات والاختبارات لكل طلاب الصف، مع حالة التسليم وعدد مرات التأخير
-        </p>
-      </div>
+    <PageShell>
+      <PageHeader
+        title="كشف الدرجات"
+        description="درجات الواجبات والاختبارات لكل طلاب الصف، مع حالة التسليم وعدد مرات التأخير"
+      />
 
       {classes.length === 0 ? (
-        <p className="text-muted-foreground">
-          لم تُوزِّع الإدارة عليك حصصًا في الجدول بعد — سيظهر كشف الدرجات فور أن يصبح لديك فصول.
-        </p>
+        <EmptyState
+          title="لا توجد فصول بعد"
+          description="لم تُوزِّع الإدارة عليك حصصًا في الجدول بعد — سيظهر كشف الدرجات فور أن يصبح لديك فصول."
+        />
       ) : (
         <>
-          <div className="flex flex-wrap gap-2">
-            {classes.map((c) => (
-              <Link
-                key={c.id}
-                href={`/teacher/gradebook?classId=${c.id}`}
-                aria-current={c.id === classId ? "true" : undefined}
-                className={cn(
-                  "rounded-full border px-3 py-1.5 text-sm",
-                  c.id === classId
-                    ? "border-primary bg-primary text-primary-foreground"
-                    : "hover:bg-accent",
-                )}
-              >
-                {c.class_name}
-              </Link>
-            ))}
-          </div>
+          <FilterChips
+            aria-label="اختر الفصل"
+            activeId={classId}
+            items={classes.map((c) => ({
+              id: c.id,
+              label: c.class_name,
+              href: `/teacher/gradebook?classId=${c.id}`,
+            }))}
+          />
 
           <GradebookTable
             students={students}
@@ -209,6 +202,6 @@ export default async function TeacherGradebookPage({
           />
         </>
       )}
-    </div>
+    </PageShell>
   );
 }

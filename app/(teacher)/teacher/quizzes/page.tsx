@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { FileQuestion } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getSession } from "@/lib/auth/session";
 import { Badge } from "@/components/ui/badge";
@@ -8,6 +9,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { PageShell } from "@/components/shared/PageShell";
+import { PageHeader } from "@/components/shared/PageHeader";
+import { EmptyState } from "@/components/shared/EmptyState";
 import { CreateQuizForm } from "./CreateQuizForm";
 
 export default async function TeacherQuizzesPage() {
@@ -51,8 +55,8 @@ export default async function TeacherQuizzesPage() {
     }));
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold">الاختبارات</h1>
+    <PageShell>
+      <PageHeader title="الاختبارات" description={`${(quizzes ?? []).length} اختبار`} />
 
       <CreateQuizForm
         slots={uniqueSlots}
@@ -64,10 +68,14 @@ export default async function TeacherQuizzesPage() {
         }))}
       />
 
-      <div className="grid gap-3">
+      <div className="grid gap-[var(--card-gap)]">
         {(quizzes ?? []).map((q) => (
-          <Link key={q.id} href={`/teacher/quizzes/${q.id}`}>
-            <Card className="transition-colors hover:bg-accent">
+          <Link
+            key={q.id}
+            href={`/teacher/quizzes/${q.id}`}
+            className="block rounded-xl outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+          >
+            <Card className="transition-colors hover:bg-muted/40">
               <CardHeader>
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <CardTitle className="min-w-0 flex-1 truncate text-base">
@@ -78,7 +86,7 @@ export default async function TeacherQuizzesPage() {
                       <Badge variant="secondary">مرتبط بواجب</Badge>
                     )}
                     {q.is_published ? (
-                      <Badge>منشور</Badge>
+                      <Badge variant="success">منشور</Badge>
                     ) : (
                       <Badge variant="outline">مسودة</Badge>
                     )}
@@ -96,9 +104,9 @@ export default async function TeacherQuizzesPage() {
           </Link>
         ))}
         {(quizzes ?? []).length === 0 && (
-          <p className="text-muted-foreground">لا توجد اختبارات بعد</p>
+          <EmptyState icon={FileQuestion} title="لا توجد اختبارات بعد" />
         )}
       </div>
-    </div>
+    </PageShell>
   );
 }

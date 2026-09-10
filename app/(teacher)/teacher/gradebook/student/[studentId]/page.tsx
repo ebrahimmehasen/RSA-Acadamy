@@ -1,14 +1,8 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getSession } from "@/lib/auth/session";
+import { GraduationCap, FileQuestion, ClipboardCheck, Clock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -17,7 +11,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { BackLink } from "@/components/shared/BackLink";
+import { PageShell } from "@/components/shared/PageShell";
+import { PageHeader } from "@/components/shared/PageHeader";
+import { SectionCard } from "@/components/shared/SectionCard";
+import { StatGrid } from "@/components/shared/StatGrid";
+import { StatCard } from "@/components/shared/StatCard";
 
 export default async function TeacherStudentSheetPage({
   params,
@@ -93,73 +91,61 @@ export default async function TeacherStudentSheetPage({
     : null;
 
   return (
-    <div className="space-y-6">
-      <BackLink href="/teacher/gradebook" label="رجوع لكشف الدرجات" />
-      <div>
-        <h1 className="text-2xl font-bold">{profile?.full_name}</h1>
-        <p className="text-muted-foreground">
-          كود الطالب: <span className="font-mono" dir="ltr">{student.student_code}</span>
-          {" · "}
-          {className}
-          {" · "}
-          {student.branch === "Arabic" ? "عربي" : "لغات"}
-          {profile?.phone && (
-            <>
-              {" · "}
-              <span dir="ltr">{profile.phone}</span>
-            </>
-          )}
-        </p>
-      </div>
+    <PageShell>
+      <PageHeader
+        title={profile?.full_name}
+        backHref="/teacher/gradebook"
+        backLabel="رجوع لكشف الدرجات"
+        description={
+          <span>
+            كود الطالب:{" "}
+            <span className="font-mono" dir="ltr">
+              {student.student_code}
+            </span>{" "}
+            · {className} · {student.branch === "Arabic" ? "عربي" : "لغات"}
+            {profile?.phone && (
+              <>
+                {" · "}
+                <span dir="ltr">{profile.phone}</span>
+              </>
+            )}
+          </span>
+        }
+      />
 
-      <div className="grid gap-4 sm:grid-cols-4">
-        <Card>
-          <CardHeader>
-            <CardDescription>متوسط الواجبات</CardDescription>
-            <CardTitle className="text-2xl">
-              {avgAssignment !== null ? `${avgAssignment}%` : "—"}
-            </CardTitle>
-          </CardHeader>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardDescription>متوسط الاختبارات</CardDescription>
-            <CardTitle className="text-2xl">
-              {avgQuiz !== null ? `${avgQuiz}%` : "—"}
-            </CardTitle>
-          </CardHeader>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardDescription>واجبات تم تسليمها</CardDescription>
-            <CardTitle className="text-2xl">{(assignmentSubs ?? []).length}</CardTitle>
-          </CardHeader>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardDescription>مرات التأخير</CardDescription>
-            <CardTitle
-              className={`text-2xl ${lateSubs.length > 0 ? "text-destructive" : ""}`}
-            >
-              {lateSubs.length}
-            </CardTitle>
-          </CardHeader>
-        </Card>
-      </div>
+      <StatGrid cols={4}>
+        <StatCard
+          label="متوسط الواجبات"
+          value={avgAssignment !== null ? `${avgAssignment}%` : "—"}
+          icon={GraduationCap}
+        />
+        <StatCard
+          label="متوسط الاختبارات"
+          value={avgQuiz !== null ? `${avgQuiz}%` : "—"}
+          icon={FileQuestion}
+        />
+        <StatCard
+          label="واجبات تم تسليمها"
+          value={(assignmentSubs ?? []).length}
+          icon={ClipboardCheck}
+        />
+        <StatCard
+          label="مرات التأخير"
+          value={lateSubs.length}
+          icon={Clock}
+          tone={lateSubs.length > 0 ? "destructive" : "default"}
+        />
+      </StatGrid>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">سجل تسليم الواجبات</CardTitle>
-        </CardHeader>
-        <CardContent>
+      <SectionCard title="سجل تسليم الواجبات" contentClassName="-mx-4 overflow-x-auto sm:mx-0">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="text-right">الواجب</TableHead>
-                <TableHead className="text-right">المادة</TableHead>
-                <TableHead className="text-right">تاريخ التسليم</TableHead>
-                <TableHead className="text-right">الحالة</TableHead>
-                <TableHead className="text-right">الدرجة</TableHead>
+                <TableHead>الواجب</TableHead>
+                <TableHead>المادة</TableHead>
+                <TableHead>تاريخ التسليم</TableHead>
+                <TableHead>الحالة</TableHead>
+                <TableHead>الدرجة</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -178,7 +164,7 @@ export default async function TeacherStudentSheetPage({
                     </TableCell>
                     <TableCell>
                       {sub.status === "graded" ? (
-                        <Badge>مصحح</Badge>
+                        <Badge variant="success">مصحح</Badge>
                       ) : (
                         <Badge variant="secondary">تم التسليم</Badge>
                       )}
@@ -196,28 +182,23 @@ export default async function TeacherStudentSheetPage({
               })}
               {(assignmentSubs ?? []).length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center text-muted-foreground">
+                  <TableCell colSpan={5} className="py-8 text-center text-muted-foreground">
                     لا توجد تسليمات واجبات بعد
                   </TableCell>
                 </TableRow>
               )}
             </TableBody>
           </Table>
-        </CardContent>
-      </Card>
+      </SectionCard>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">درجات الاختبارات</CardTitle>
-        </CardHeader>
-        <CardContent>
+      <SectionCard title="درجات الاختبارات" contentClassName="-mx-4 overflow-x-auto sm:mx-0">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="text-right">الاختبار</TableHead>
-                <TableHead className="text-right">المادة</TableHead>
-                <TableHead className="text-right">الحالة</TableHead>
-                <TableHead className="text-right">الدرجة</TableHead>
+                <TableHead>الاختبار</TableHead>
+                <TableHead>المادة</TableHead>
+                <TableHead>الحالة</TableHead>
+                <TableHead>الدرجة</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -232,7 +213,7 @@ export default async function TeacherStudentSheetPage({
                     <TableCell>{quiz?.subjects?.subject_name}</TableCell>
                     <TableCell>
                       {sub.status === "graded" ? (
-                        <Badge>مصحح</Badge>
+                        <Badge variant="success">مصحح</Badge>
                       ) : sub.status === "submitted" ? (
                         <Badge variant="secondary">قيد التصحيح</Badge>
                       ) : (
@@ -247,19 +228,18 @@ export default async function TeacherStudentSheetPage({
               })}
               {(quizSubs ?? []).length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center text-muted-foreground">
+                  <TableCell colSpan={4} className="py-8 text-center text-muted-foreground">
                     لا توجد تسليمات اختبارات بعد
                   </TableCell>
                 </TableRow>
               )}
             </TableBody>
           </Table>
-        </CardContent>
-      </Card>
+      </SectionCard>
 
       <p className="text-xs text-muted-foreground">
         بيانات الحضور غير متاحة في المنصة حاليًا.
       </p>
-    </div>
+    </PageShell>
   );
 }

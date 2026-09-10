@@ -5,17 +5,13 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { getSession } from "@/lib/auth/session";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { publishQuiz } from "../actions";
 import { AddQuestionForm } from "./AddQuestionForm";
 import { EditQuizForm } from "./EditQuizForm";
 import { EditQuestionForm } from "./EditQuestionForm";
-import { BackLink } from "@/components/shared/BackLink";
+import { PageShell } from "@/components/shared/PageShell";
+import { PageHeader } from "@/components/shared/PageHeader";
+import { SectionCard } from "@/components/shared/SectionCard";
 import { PublishButton } from "./PublishButton";
 
 const TYPE_LABELS: Record<string, string> = {
@@ -74,28 +70,23 @@ export default async function TeacherQuizDetailPage({
   const canEdit = new Date(quiz.start_time) > new Date();
 
   return (
-    <div className="space-y-6">
-      <BackLink href="/teacher/quizzes" label="رجوع للاختبارات" />
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div>
-          <h1 className="text-2xl font-bold">{quiz.title}</h1>
-          <p className="text-muted-foreground">
-            {(quiz.classes as unknown as { class_name: string })?.class_name}
-            {" · "}
-            {(quiz.subjects as unknown as { subject_name: string })?.subject_name}
-            {" · "}
-            {quiz.duration_minutes} دقيقة · {quiz.total_points} درجة
-          </p>
-        </div>
-        {quiz.is_published ? (
-          <Badge>منشور</Badge>
-        ) : (
-          <form action={publishQuiz}>
-            <input type="hidden" name="quiz_id" value={quizId} />
-            <PublishButton />
-          </form>
-        )}
-      </div>
+    <PageShell>
+      <PageHeader
+        title={quiz.title}
+        backHref="/teacher/quizzes"
+        backLabel="رجوع للاختبارات"
+        description={`${(quiz.classes as unknown as { class_name: string })?.class_name} · ${(quiz.subjects as unknown as { subject_name: string })?.subject_name} · ${quiz.duration_minutes} دقيقة · ${quiz.total_points} درجة`}
+        action={
+          quiz.is_published ? (
+            <Badge variant="success">منشور</Badge>
+          ) : (
+            <form action={publishQuiz}>
+              <input type="hidden" name="quiz_id" value={quizId} />
+              <PublishButton />
+            </form>
+          )
+        }
+      />
 
       {!canEdit && (
         <p className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
@@ -116,11 +107,7 @@ export default async function TeacherQuizDetailPage({
       )}
 
       {(submissions ?? []).length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">النتائج</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
+        <SectionCard title="النتائج" contentClassName="space-y-3">
             <p className="text-sm text-muted-foreground">
               {(submissions ?? []).length} تسليم · {gradedCount} مصحح
             </p>
@@ -133,17 +120,13 @@ export default async function TeacherQuizDetailPage({
                 </Link>
               }
             />
-          </CardContent>
-        </Card>
+        </SectionCard>
       )}
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">
-            الأسئلة ({(questions ?? []).length})
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
+      <SectionCard
+        title={`الأسئلة (${(questions ?? []).length})`}
+        contentClassName="space-y-3"
+      >
           {(questions ?? []).map((q, i) => (
             <div
               key={q.id}
@@ -178,10 +161,9 @@ export default async function TeacherQuizDetailPage({
           {(questions ?? []).length === 0 && (
             <p className="text-sm text-muted-foreground">لا توجد أسئلة بعد</p>
           )}
-        </CardContent>
-      </Card>
+      </SectionCard>
 
       {canEdit && <AddQuestionForm quizId={quizId} />}
-    </div>
+    </PageShell>
   );
 }

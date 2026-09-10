@@ -1,3 +1,4 @@
+import { Video } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getSession } from "@/lib/auth/session";
 import { Badge } from "@/components/ui/badge";
@@ -7,6 +8,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { PageShell } from "@/components/shared/PageShell";
+import { PageHeader } from "@/components/shared/PageHeader";
+import { EmptyState } from "@/components/shared/EmptyState";
 import { UploadSessionForm } from "./UploadSessionForm";
 
 export default async function TeacherSessionsPage() {
@@ -63,12 +67,12 @@ export default async function TeacherSessionsPage() {
     }));
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold">الحصص المسجلة</h1>
+    <PageShell>
+      <PageHeader title="الحصص المسجلة" description={`${(sessions ?? []).length} حصة مرفوعة`} />
 
       <UploadSessionForm slots={uniqueSlots} studentsByClass={studentsByClass} />
 
-      <div className="grid gap-3">
+      <div className="grid gap-[var(--card-gap)]">
         {(sessions ?? []).map((s) => (
           <Card key={s.id}>
             <CardHeader>
@@ -88,9 +92,9 @@ export default async function TeacherSessionsPage() {
           </Card>
         ))}
         {(sessions ?? []).length === 0 && (
-          <p className="text-muted-foreground">لا توجد حصص مرفوعة بعد</p>
+          <EmptyState icon={Video} title="لا توجد حصص مرفوعة بعد" />
         )}
       </div>
-    </div>
+    </PageShell>
   );
 }

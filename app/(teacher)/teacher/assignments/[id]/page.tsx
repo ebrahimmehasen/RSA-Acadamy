@@ -2,14 +2,10 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getSession } from "@/lib/auth/session";
 import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { GradeForm } from "./GradeForm";
-import { BackLink } from "@/components/shared/BackLink";
+import { PageShell } from "@/components/shared/PageShell";
+import { PageHeader } from "@/components/shared/PageHeader";
+import { SectionCard } from "@/components/shared/SectionCard";
 import { RealtimeRefresh } from "@/components/shared/RealtimeRefresh";
 
 export default async function TeacherAssignmentDetailPage({
@@ -41,32 +37,24 @@ export default async function TeacherAssignmentDetailPage({
     .order("submitted_at", { ascending: false });
 
   return (
-    <div className="space-y-6">
+    <PageShell>
       <RealtimeRefresh
         channelName={`assignment-detail:${assignmentId}`}
         watches={[
           { table: "assignment_submissions", filter: `assignment_id=eq.${assignmentId}` },
         ]}
       />
-      <BackLink href="/teacher/assignments" label="رجوع للواجبات" />
-      <div>
-        <h1 className="text-2xl font-bold">{assignment.title}</h1>
-        <p className="text-muted-foreground">
-          {(assignment.classes as unknown as { class_name: string })?.class_name}
-          {" · "}
-          {(assignment.subjects as unknown as { subject_name: string })?.subject_name}
-          {" · الدرجة العظمى: "}
-          {assignment.max_grade}
-        </p>
-      </div>
+      <PageHeader
+        title={assignment.title}
+        backHref="/teacher/assignments"
+        backLabel="رجوع للواجبات"
+        description={`${(assignment.classes as unknown as { class_name: string })?.class_name} · ${(assignment.subjects as unknown as { subject_name: string })?.subject_name} · الدرجة العظمى: ${assignment.max_grade}`}
+      />
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">
-            التسليمات ({(submissions ?? []).length})
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
+      <SectionCard
+        title={`التسليمات (${(submissions ?? []).length})`}
+        contentClassName="space-y-4"
+      >
           {(submissions ?? []).length === 0 && (
             <p className="text-sm text-muted-foreground">
               لا توجد تسليمات بعد
@@ -89,9 +77,9 @@ export default async function TeacherAssignmentDetailPage({
                   <div className="flex items-center gap-2">
                     {s.is_late && <Badge variant="destructive">متأخر</Badge>}
                     {s.status === "graded" ? (
-                      <Badge>{s.grade}/{assignment.max_grade}</Badge>
+                      <Badge variant="success">{s.grade}/{assignment.max_grade}</Badge>
                     ) : (
-                      <Badge variant="secondary">بانتظار التصحيح</Badge>
+                      <Badge variant="warning">بانتظار التصحيح</Badge>
                     )}
                   </div>
                 </div>
@@ -119,8 +107,7 @@ export default async function TeacherAssignmentDetailPage({
               </div>
             );
           })}
-        </CardContent>
-      </Card>
-    </div>
+      </SectionCard>
+    </PageShell>
   );
 }

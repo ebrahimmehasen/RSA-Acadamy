@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ClipboardList } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getSession } from "@/lib/auth/session";
 import { Badge } from "@/components/ui/badge";
@@ -8,6 +9,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { PageShell } from "@/components/shared/PageShell";
+import { PageHeader } from "@/components/shared/PageHeader";
+import { EmptyState } from "@/components/shared/EmptyState";
 import { CreateAssignmentForm } from "./CreateAssignmentForm";
 
 export default async function TeacherAssignmentsPage() {
@@ -58,15 +62,19 @@ export default async function TeacherAssignmentsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold">الواجبات</h1>
+    <PageShell>
+      <PageHeader title="الواجبات" description={`${(assignments ?? []).length} واجب`} />
 
       <CreateAssignmentForm slots={uniqueSlots} />
 
-      <div className="grid gap-3">
+      <div className="grid gap-[var(--card-gap)]">
         {(assignments ?? []).map((a) => (
-          <Link key={a.id} href={`/teacher/assignments/${a.id}`}>
-            <Card className="transition-colors hover:bg-accent">
+          <Link
+            key={a.id}
+            href={`/teacher/assignments/${a.id}`}
+            className="block rounded-xl outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+          >
+            <Card className="transition-colors hover:bg-muted/40">
               <CardHeader>
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <CardTitle className="min-w-0 flex-1 truncate text-base">
@@ -74,12 +82,12 @@ export default async function TeacherAssignmentsPage() {
                   </CardTitle>
                   <div className="flex items-center gap-2">
                     {a.branch && (
-                      <Badge variant="outline">
+                      <Badge variant="info">
                         {a.branch === "Arabic" ? "شعبة العربي فقط" : "شعبة اللغات فقط"}
                       </Badge>
                     )}
                     {(pendingCountByAssignment.get(a.id) ?? 0) > 0 && (
-                      <Badge>
+                      <Badge variant="warning">
                         {pendingCountByAssignment.get(a.id)} بانتظار التصحيح
                       </Badge>
                     )}
@@ -97,9 +105,9 @@ export default async function TeacherAssignmentsPage() {
           </Link>
         ))}
         {(assignments ?? []).length === 0 && (
-          <p className="text-muted-foreground">لا توجد واجبات بعد</p>
+          <EmptyState icon={ClipboardList} title="لا توجد واجبات بعد" />
         )}
       </div>
-    </div>
+    </PageShell>
   );
 }

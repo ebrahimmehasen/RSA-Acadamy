@@ -1,11 +1,10 @@
+import { CalendarDays, ClipboardList, FileQuestion } from "lucide-react";
 import { getSession } from "@/lib/auth/session";
 import { createAdminClient } from "@/lib/supabase/admin";
-import {
-  Card,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { PageShell } from "@/components/shared/PageShell";
+import { PageHeader } from "@/components/shared/PageHeader";
+import { StatGrid } from "@/components/shared/StatGrid";
+import { StatCard } from "@/components/shared/StatCard";
 
 export default async function TeacherDashboard() {
   const session = await getSession();
@@ -55,36 +54,32 @@ export default async function TeacherDashboard() {
     ]);
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold">
-        أهلاً أ/ {session.profile.full_name} 👋
-      </h1>
-      <div className="grid gap-4 sm:grid-cols-3">
-        <Card>
-          <CardHeader>
-            <CardTitle>حصص اليوم</CardTitle>
-            <CardDescription>
-              {todayClassesCount ?? 0} حصة مجدولة اليوم
-            </CardDescription>
-          </CardHeader>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>واجبات بانتظار التصحيح</CardTitle>
-            <CardDescription>
-              {pendingGradingCount ?? 0} تسليم لا يزال بحاجة إلى تصحيح
-            </CardDescription>
-          </CardHeader>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>اختبارات بانتظار تصحيح يدوي</CardTitle>
-            <CardDescription>
-              {pendingQuizGradingCount ?? 0} تسليم اختبار بحاجة إلى مراجعة
-            </CardDescription>
-          </CardHeader>
-        </Card>
-      </div>
-    </div>
+    <PageShell>
+      <PageHeader title={`أهلاً أ/ ${session.profile.full_name} 👋`} />
+      <StatGrid cols={3}>
+        <StatCard
+          label="حصص اليوم"
+          value={todayClassesCount ?? 0}
+          icon={CalendarDays}
+          hint="حصة مجدولة اليوم"
+        />
+        <StatCard
+          label="واجبات بانتظار التصحيح"
+          value={pendingGradingCount ?? 0}
+          icon={ClipboardList}
+          tone={(pendingGradingCount ?? 0) > 0 ? "warning" : "default"}
+          hint="تسليم بحاجة إلى تصحيح"
+          href="/teacher/assignments"
+        />
+        <StatCard
+          label="اختبارات بانتظار تصحيح يدوي"
+          value={pendingQuizGradingCount ?? 0}
+          icon={FileQuestion}
+          tone={(pendingQuizGradingCount ?? 0) > 0 ? "warning" : "default"}
+          hint="تسليم اختبار بحاجة إلى مراجعة"
+          href="/teacher/quizzes"
+        />
+      </StatGrid>
+    </PageShell>
   );
 }
