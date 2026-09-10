@@ -6,13 +6,8 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { AuthCard } from "@/components/shared/AuthCard";
+import { AUTH_INPUT_CLASS } from "@/lib/ui";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -37,55 +32,54 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <Card className="w-full max-w-sm" dir="rtl">
-      <CardHeader>
-        <CardTitle>نسيت كلمة السر؟</CardTitle>
-        <CardDescription>
-          سنرسل إليك رابطًا لإعادة تعيين كلمة السر على بريدك الإلكتروني
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        {sent ? (
-          <div className="space-y-3 text-sm" aria-live="polite">
-            <p className="text-green-600">
-              إذا كان هذا البريد الإلكتروني مسجلاً لدينا، فسيصلك رابط إعادة التعيين ✅
-            </p>
-            <Link href="/login" className="text-primary underline underline-offset-4">
-              الرجوع لتسجيل الدخول
-            </Link>
+    <AuthCard
+      title="نسيت كلمة السر؟"
+      description="سنرسل إليك رابطًا لإعادة تعيين كلمة السر على بريدك الإلكتروني"
+    >
+      {sent ? (
+        <div className="space-y-3 text-sm" aria-live="polite">
+          <p className="text-success">
+            إذا كان هذا البريد الإلكتروني مسجلاً لدينا، فسيصلك رابط إعادة التعيين ✅
+          </p>
+          <Link
+            href="/login"
+            className="inline-block font-medium text-primary underline underline-offset-4"
+          >
+            الرجوع لتسجيل الدخول
+          </Link>
+        </div>
+      ) : (
+        <form onSubmit={onSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="email">البريد الإلكتروني</Label>
+            <Input
+              id="email"
+              type="email"
+              dir="ltr"
+              autoComplete="email"
+              spellCheck={false}
+              required
+              className={AUTH_INPUT_CLASS}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
           </div>
-        ) : (
-          <form onSubmit={onSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">البريد الإلكتروني</Label>
-              <Input
-                id="email"
-                type="email"
-                dir="ltr"
-                autoComplete="email"
-                spellCheck={false}
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
-            {error && (
-              <p className="text-sm text-destructive" aria-live="polite">
-                {error}
-              </p>
-            )}
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "جاري الإرسال…" : "إرسال رابط إعادة التعيين"}
-            </Button>
-            <Link
-              href="/login"
-              className="block text-center text-sm text-muted-foreground underline underline-offset-4"
-            >
-              الرجوع لتسجيل الدخول
-            </Link>
-          </form>
-        )}
-      </CardContent>
-    </Card>
+          {error && (
+            <p className="text-sm text-destructive" aria-live="polite">
+              {error}
+            </p>
+          )}
+          <Button type="submit" size="touch" className="w-full" disabled={loading}>
+            {loading ? "جاري الإرسال…" : "إرسال رابط إعادة التعيين"}
+          </Button>
+          <Link
+            href="/login"
+            className="block text-center text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
+          >
+            الرجوع لتسجيل الدخول
+          </Link>
+        </form>
+      )}
+    </AuthCard>
   );
 }

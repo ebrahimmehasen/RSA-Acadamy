@@ -10,13 +10,9 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { AuthCard } from "@/components/shared/AuthCard";
+import { PasswordInput } from "@/components/shared/PasswordInput";
+import { AUTH_INPUT_CLASS } from "@/lib/ui";
 
 const loginSchema = z.object({
   email: z.email("بريد إلكتروني غير صالح"),
@@ -47,79 +43,83 @@ export default function LoginPage() {
   }
 
   return (
-    <Card className="w-full max-w-sm" dir="rtl">
-      <CardHeader>
-        <CardTitle>تسجيل الدخول</CardTitle>
-        <CardDescription>سجّل الدخول للمتابعة إلى حسابك</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email">البريد الإلكتروني</Label>
-            <Input
-              id="email"
-              type="email"
-              dir="ltr"
-              autoComplete="email"
-              spellCheck={false}
-              {...register("email")}
-            />
-            {errors.email && (
-              <p className="text-sm text-destructive" aria-live="polite">
-                {errors.email.message}
-              </p>
-            )}
-          </div>
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="password">كلمة المرور</Label>
-              <Link
-                href="/forgot-password"
-                className="text-xs text-muted-foreground underline underline-offset-4"
-              >
-                نسيت كلمة السر؟
-              </Link>
-            </div>
-            <Input
-              id="password"
-              type="password"
-              dir="ltr"
-              autoComplete="current-password"
-              {...register("password")}
-            />
-            {errors.password && (
-              <p className="text-sm text-destructive" aria-live="polite">
-                {errors.password.message}
-              </p>
-            )}
-          </div>
-          {serverError && (
+    <AuthCard
+      title="تسجيل الدخول"
+      description="سجّل الدخول للمتابعة إلى حسابك"
+    >
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="email">البريد الإلكتروني</Label>
+          <Input
+            id="email"
+            type="email"
+            dir="ltr"
+            autoComplete="email"
+            spellCheck={false}
+            aria-invalid={!!errors.email}
+            className={AUTH_INPUT_CLASS}
+            {...register("email")}
+          />
+          {errors.email && (
             <p className="text-sm text-destructive" aria-live="polite">
-              {serverError}
+              {errors.email.message}
             </p>
           )}
-          <Button type="submit" className="w-full" disabled={isSubmitting}>
-            {isSubmitting ? "جاري الدخول…" : "تسجيل الدخول"}
-          </Button>
-          <div className="space-y-2 text-center text-sm">
-            <p className="text-muted-foreground">
-              ليس لديك حساب؟{" "}
-              <Link
-                href="/signup"
-                className="text-primary underline underline-offset-4"
-              >
-                إنشاء حساب جديد
-              </Link>
-            </p>
+        </div>
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <Label htmlFor="password">كلمة المرور</Label>
             <Link
-              href="/"
-              className="block text-muted-foreground underline underline-offset-4"
+              href="/forgot-password"
+              className="text-xs text-muted-foreground underline underline-offset-4 hover:text-foreground"
             >
-              → الرئيسية
+              نسيت كلمة السر؟
             </Link>
           </div>
-        </form>
-      </CardContent>
-    </Card>
+          <PasswordInput
+            id="password"
+            autoComplete="current-password"
+            aria-invalid={!!errors.password}
+            className={AUTH_INPUT_CLASS}
+            {...register("password")}
+          />
+          {errors.password && (
+            <p className="text-sm text-destructive" aria-live="polite">
+              {errors.password.message}
+            </p>
+          )}
+        </div>
+        {serverError && (
+          <p className="text-sm text-destructive" aria-live="polite">
+            {serverError}
+          </p>
+        )}
+        <Button
+          type="submit"
+          size="touch"
+          className="w-full"
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? "جاري الدخول…" : "تسجيل الدخول"}
+        </Button>
+        <div className="space-y-2 text-center text-sm">
+          <p className="text-muted-foreground">
+            ليس لديك حساب؟{" "}
+            <Link
+              href="/signup"
+              className="font-medium text-primary underline underline-offset-4"
+            >
+              إنشاء حساب جديد
+            </Link>
+          </p>
+          <Link
+            href="/"
+            className="inline-block text-muted-foreground underline underline-offset-4 hover:text-foreground"
+          >
+            → الرئيسية
+          </Link>
+        </div>
+      </form>
+    </AuthCard>
   );
 }

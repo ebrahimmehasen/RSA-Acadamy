@@ -6,13 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { AuthCard } from "@/components/shared/AuthCard";
+import { PasswordInput } from "@/components/shared/PasswordInput";
+import { AUTH_INPUT_CLASS, AUTH_SELECT_CLASS } from "@/lib/ui";
+import { cn } from "@/lib/utils";
 import { signUpAction, type SignUpResult } from "./actions";
 import { branchLabel } from "@/lib/subjects";
 
@@ -168,20 +165,16 @@ export function SignUpForm({
   }, [subjects]);
 
   return (
-    <Card className="w-full max-w-sm" dir="rtl">
-      <CardHeader>
-        <CardTitle>إنشاء حساب جديد</CardTitle>
-        <CardDescription>
-          سيظل حسابك مغلقًا إلى أن تقوم إدارة RSA Academy بتفعيله
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
+    <AuthCard
+      title="إنشاء حساب جديد"
+      description="سيظل حسابك مغلقًا إلى أن تقوم إدارة RSA Academy بتفعيله"
+    >
         {result?.ok ? (
           <div className="space-y-3 text-sm" aria-live="polite">
-            <p className="text-green-600">{result.message}</p>
+            <p className="text-success">{result.message}</p>
             <Link
               href="/login"
-              className="text-primary underline underline-offset-4"
+              className="inline-block font-medium text-primary underline underline-offset-4"
             >
               تسجيل الدخول
             </Link>
@@ -196,6 +189,7 @@ export function SignUpForm({
                 autoComplete="name"
                 required
                 minLength={3}
+                className={AUTH_INPUT_CLASS}
                 value={draft.full_name}
                 onChange={(e) => update("full_name", e.target.value)}
               />
@@ -208,7 +202,7 @@ export function SignUpForm({
                 required
                 value={draft.role}
                 onChange={(e) => update("role", e.target.value)}
-                className="h-8 w-full rounded-lg border border-input bg-background text-foreground px-2 text-sm"
+                className={AUTH_SELECT_CLASS}
               >
                 {Object.entries(ROLE_LABELS).map(([value, label]) => (
                   <option key={value} value={value}>
@@ -227,6 +221,7 @@ export function SignUpForm({
                 autoComplete="email"
                 spellCheck={false}
                 required
+                className={AUTH_INPUT_CLASS}
                 value={draft.email}
                 onChange={(e) => update("email", e.target.value)}
               />
@@ -241,7 +236,7 @@ export function SignUpForm({
                   aria-label="مفتاح الدولة"
                   value={draft.country_code}
                   onChange={(e) => update("country_code", e.target.value)}
-                  className="h-8 shrink-0 rounded-lg border border-input bg-background text-foreground px-1.5 text-sm"
+                  className={cn(AUTH_SELECT_CLASS, "w-auto shrink-0 px-2")}
                 >
                   {COUNTRY_CODES.map((c) => (
                     <option key={c.code} value={c.code}>
@@ -258,7 +253,7 @@ export function SignUpForm({
                   required={phoneRequired}
                   value={draft.phone}
                   onChange={(e) => update("phone", e.target.value)}
-                  className="flex-1"
+                  className={cn(AUTH_INPUT_CLASS, "flex-1")}
                 />
               </div>
               <input
@@ -269,14 +264,13 @@ export function SignUpForm({
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">كلمة السر</Label>
-              <Input
+              <PasswordInput
                 id="password"
                 name="password"
-                type="password"
-                dir="ltr"
                 autoComplete="new-password"
                 required
                 minLength={8}
+                className={AUTH_INPUT_CLASS}
               />
               <p className="text-xs text-muted-foreground">
                 لا تُحفظ كلمة السر إذا تم تحديث الصفحة، لذا يجب إدخالها من جديد حفاظًا على الأمان
@@ -302,6 +296,7 @@ export function SignUpForm({
                     type="date"
                     dir="ltr"
                     required
+                    className={AUTH_INPUT_CLASS}
                     value={draft.date_of_birth}
                     onChange={(e) => update("date_of_birth", e.target.value)}
                   />
@@ -314,7 +309,7 @@ export function SignUpForm({
                     required
                     value={draft.class_id}
                     onChange={(e) => update("class_id", e.target.value)}
-                    className="h-8 w-full rounded-lg border border-input bg-background text-foreground px-2 text-sm"
+                    className={AUTH_SELECT_CLASS}
                   >
                     <option value="" disabled>
                       اختر الصف الدراسي
@@ -333,7 +328,7 @@ export function SignUpForm({
                     name="branch"
                     value={draft.branch}
                     onChange={(e) => update("branch", e.target.value)}
-                    className="h-8 w-full rounded-lg border border-input bg-background text-foreground px-2 text-sm"
+                    className={AUTH_SELECT_CLASS}
                   >
                     <option value="">—</option>
                     <option value="Arabic">عربي</option>
@@ -349,7 +344,7 @@ export function SignUpForm({
                       required
                       value={draft.second_language}
                       onChange={(e) => update("second_language", e.target.value)}
-                      className="h-8 w-full rounded-lg border border-input bg-background text-foreground px-2 text-sm"
+                      className={AUTH_SELECT_CLASS}
                     >
                       <option value="" disabled>
                         اختر اللغة
@@ -368,6 +363,7 @@ export function SignUpForm({
                 <Input
                   id="address"
                   name="address"
+                  className={AUTH_INPUT_CLASS}
                   value={draft.address}
                   onChange={(e) => update("address", e.target.value)}
                 />
@@ -383,7 +379,7 @@ export function SignUpForm({
                     name="qualification"
                     value={draft.qualification}
                     onChange={(e) => update("qualification", e.target.value)}
-                    className="h-8 w-full rounded-lg border border-input bg-background text-foreground px-2 text-sm"
+                    className={AUTH_SELECT_CLASS}
                   >
                     <option value="">اختر المؤهل</option>
                     {QUALIFICATIONS.map((q) => (
@@ -399,6 +395,7 @@ export function SignUpForm({
                     id="specialization"
                     name="specialization"
                     required
+                    className={AUTH_INPUT_CLASS}
                     value={draft.specialization}
                     onChange={(e) => update("specialization", e.target.value)}
                   />
@@ -452,18 +449,17 @@ export function SignUpForm({
                 {result.message}
               </p>
             )}
-            <Button type="submit" className="w-full" disabled={isPending}>
+            <Button type="submit" size="touch" className="w-full" disabled={isPending}>
               {isPending ? "جاري الإنشاء…" : "إنشاء الحساب"}
             </Button>
             <Link
               href="/login"
-              className="block text-center text-sm text-muted-foreground underline underline-offset-4"
+              className="block text-center text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
             >
               لديك حساب بالفعل؟ سجّل الدخول
             </Link>
           </form>
         )}
-      </CardContent>
-    </Card>
+    </AuthCard>
   );
 }

@@ -5,13 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { AuthCard } from "@/components/shared/AuthCard";
 
 function Verify2faForm() {
   const router = useRouter();
@@ -40,40 +34,35 @@ function Verify2faForm() {
   }
 
   return (
-    <Card className="w-full max-w-sm" dir="rtl">
-      <CardHeader>
-        <CardTitle>التحقق بخطوتين</CardTitle>
-        <CardDescription>
-          اكتب الكود من تطبيق المصادقة، أو أحد أكواد الاسترجاع
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={onSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="token">الكود</Label>
-            <Input
-              id="token"
-              name="token"
-              dir="ltr"
-              inputMode="numeric"
-              autoComplete="one-time-code"
-              autoFocus
-              value={token}
-              onChange={(e) => setToken(e.target.value.trim())}
-              className="text-center font-mono text-lg"
-            />
-          </div>
-          {error && (
-            <p className="text-sm text-destructive" aria-live="polite">
-              {error}
-            </p>
-          )}
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? "جاري التحقق…" : "تأكيد"}
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
+    <AuthCard
+      title="التحقق بخطوتين"
+      description="اكتب الكود من تطبيق المصادقة، أو أحد أكواد الاسترجاع"
+    >
+      <form onSubmit={onSubmit} className="space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="token">الكود</Label>
+          <Input
+            id="token"
+            name="token"
+            dir="ltr"
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            autoFocus
+            value={token}
+            onChange={(e) => setToken(e.target.value.trim())}
+            className="h-12 text-center font-mono text-lg tracking-[0.3em]"
+          />
+        </div>
+        {error && (
+          <p className="text-sm text-destructive" aria-live="polite">
+            {error}
+          </p>
+        )}
+        <Button type="submit" size="touch" className="w-full" disabled={loading}>
+          {loading ? "جاري التحقق…" : "تأكيد"}
+        </Button>
+      </form>
+    </AuthCard>
   );
 }
 

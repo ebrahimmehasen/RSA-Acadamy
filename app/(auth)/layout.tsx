@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Logo } from "@/components/shared/Logo";
 import { ThemeToggle } from "@/components/shared/ThemeToggle";
+import { BrandBackdrop } from "@/components/shared/BrandBackdrop";
 
 export default function AuthLayout({
   children,
@@ -10,13 +11,9 @@ export default function AuthLayout({
   return (
     <main
       dir="rtl"
-      className="relative flex min-h-screen flex-col items-center justify-center gap-6 overflow-hidden bg-background p-4"
+      className="relative flex min-h-screen flex-col items-center justify-center gap-6 overflow-x-clip p-4 py-10"
     >
-      {/* calm brand-tinted backdrop */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(60%_50%_at_50%_0%,color-mix(in_oklch,var(--brand-teal)_16%,transparent),transparent_70%),radial-gradient(45%_40%_at_100%_100%,color-mix(in_oklch,var(--brand-blue)_12%,transparent),transparent_70%)]"
-      />
+      <BrandBackdrop />
       <div className="absolute end-4 top-4">
         <ThemeToggle />
       </div>

@@ -4,15 +4,10 @@ import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { AuthCard } from "@/components/shared/AuthCard";
+import { PasswordInput } from "@/components/shared/PasswordInput";
+import { AUTH_INPUT_CLASS } from "@/lib/ui";
 
 const EXPIRED_LINK_ERROR =
   "انتهت صلاحية الرابط — اطلب رابط جديد من صفحة نسيت كلمة السر";
@@ -89,50 +84,50 @@ function ResetPasswordForm() {
   }
 
   return (
-    <Card className="w-full max-w-sm" dir="rtl">
-      <CardHeader>
-        <CardTitle>تعيين كلمة سر جديدة</CardTitle>
-        <CardDescription>اكتب كلمة السر الجديدة الخاصة بك</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={onSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="password">كلمة السر الجديدة</Label>
-            <Input
-              id="password"
-              type="password"
-              dir="ltr"
-              autoComplete="new-password"
-              required
-              disabled={!ready}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="confirm">تأكيد كلمة السر</Label>
-            <Input
-              id="confirm"
-              type="password"
-              dir="ltr"
-              autoComplete="new-password"
-              required
-              disabled={!ready}
-              value={confirm}
-              onChange={(e) => setConfirm(e.target.value)}
-            />
-          </div>
-          {error && (
-            <p className="text-sm text-destructive" aria-live="polite">
-              {error}
-            </p>
-          )}
-          <Button type="submit" className="w-full" disabled={loading || !ready}>
-            {loading ? "جاري الحفظ…" : "حفظ كلمة السر"}
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
+    <AuthCard
+      title="تعيين كلمة سر جديدة"
+      description="اكتب كلمة السر الجديدة الخاصة بك"
+    >
+      <form onSubmit={onSubmit} className="space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="password">كلمة السر الجديدة</Label>
+          <PasswordInput
+            id="password"
+            autoComplete="new-password"
+            required
+            disabled={!ready}
+            className={AUTH_INPUT_CLASS}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="confirm">تأكيد كلمة السر</Label>
+          <PasswordInput
+            id="confirm"
+            autoComplete="new-password"
+            required
+            disabled={!ready}
+            className={AUTH_INPUT_CLASS}
+            value={confirm}
+            onChange={(e) => setConfirm(e.target.value)}
+          />
+        </div>
+        {error && (
+          <p className="text-sm text-destructive" aria-live="polite">
+            {error}
+          </p>
+        )}
+        <Button
+          type="submit"
+          size="touch"
+          className="w-full"
+          disabled={loading || !ready}
+        >
+          {loading ? "جاري الحفظ…" : "حفظ كلمة السر"}
+        </Button>
+      </form>
+    </AuthCard>
   );
 }
 

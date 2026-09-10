@@ -2,12 +2,14 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { motion, MotionConfig, useReducedMotion, type Variants } from "framer-motion";
+import { motion, MotionConfig, type Variants } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ThemeToggle } from "@/components/shared/ThemeToggle";
+import { BrandBackdrop } from "@/components/shared/BrandBackdrop";
 import { cn } from "@/lib/utils";
+import { GLASS, GLASS_HOVER } from "@/lib/ui";
 import {
   GraduationCap,
   Video,
@@ -126,12 +128,6 @@ const TRUST_POINTS = [
     color: "brand-terracotta",
   },
 ];
-
-/** Shared frosted-glass surface used for every card/panel on the landing page. */
-const GLASS =
-  "border border-white/50 bg-white/50 shadow-lg shadow-black/[0.04] backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.06] dark:shadow-black/20";
-const GLASS_HOVER =
-  "hover:border-white/70 hover:bg-white/65 hover:shadow-xl dark:hover:border-white/15 dark:hover:bg-white/[0.09]";
 
 const fadeUp: Variants = {
   hidden: { opacity: 0, y: 24 },
@@ -256,50 +252,6 @@ function ColorIcon({
   );
 }
 
-/**
- * Full-page animated aurora backdrop the glass panels float over.
- * Kept deliberately light: fewer blobs, a smaller blur radius, and
- * opacity-only motion (no scale) — animated blur filters are one of
- * the most expensive things a low-end phone's compositor can do, and
- * five large continuously-scaling ones were enough to visibly stutter
- * scroll on weaker devices. Also fully static for prefers-reduced-motion.
- */
-function AuroraBackground() {
-  const reduceMotion = useReducedMotion();
-
-  // Sizes use clamp(min, vw-scaled, max) instead of a fixed rem value so the
-  // blobs stay proportional to the viewport: on a ~375px phone they were
-  // nearly full-bleed and read as bold moving color, but at fixed rem sizes
-  // the same blob was a small, mostly off-screen sliver on a 1440px+
-  // desktop — reads as "missing" even though it's rendering correctly.
-  const blobs = [
-    { color: "brand-gold", top: "-8%", right: "-8%", size: "clamp(20rem, 28vw, 38rem)", dur: 14, delay: 0 },
-    { color: "brand-teal", top: "22%", left: "-10%", size: "clamp(18rem, 25vw, 34rem)", dur: 17, delay: 1.5 },
-    { color: "brand-blue", top: "60%", right: "5%", size: "clamp(20rem, 28vw, 40rem)", dur: 16, delay: 0.8 },
-  ];
-  return (
-    <div aria-hidden className="fixed inset-0 -z-10 overflow-hidden bg-background">
-      {blobs.map((b, i) => (
-        <motion.div
-          key={i}
-          className="absolute rounded-full blur-2xl"
-          style={{
-            top: b.top,
-            left: b.left,
-            right: b.right,
-            width: b.size,
-            height: b.size,
-            backgroundColor: `color-mix(in oklch, var(--${b.color}) 26%, transparent)`,
-          }}
-          animate={reduceMotion ? undefined : { opacity: [0.6, 0.9, 0.6] }}
-          transition={{ duration: b.dur, repeat: Infinity, ease: "easeInOut", delay: b.delay }}
-        />
-      ))}
-      <div className="absolute inset-0 bg-background/30" />
-    </div>
-  );
-}
-
 export function LandingPage({ authEnabled }: { authEnabled: boolean }) {
   return (
     // reducedMotion="user" makes every whileInView/whileHover/animate
@@ -308,7 +260,7 @@ export function LandingPage({ authEnabled }: { authEnabled: boolean }) {
     // one switch instead of threading useReducedMotion through each variant.
     <MotionConfig reducedMotion="user">
       <main dir="rtl" className="relative min-h-screen overflow-x-clip">
-        <AuroraBackground />
+        <BrandBackdrop />
         <div className="fixed end-4 top-4 z-20">
           <ThemeToggle />
         </div>
