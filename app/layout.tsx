@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Cairo } from "next/font/google";
 import { ThemeProvider } from "@/components/shared/ThemeProvider";
+import { SiteFooter } from "@/components/shared/SiteFooter";
 import "./globals.css";
 
 const cairo = Cairo({
@@ -39,6 +40,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col font-[family-name:var(--font-cairo)]">
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
           {children}
+          <SiteFooter />
         </ThemeProvider>
       </body>
     </html>

@@ -11,6 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { SELECT_CLASS } from "@/lib/ui";
+import { CopyableSecret } from "@/components/shared/CopyableSecret";
 import {
   editStudentAction,
   resetStudentPasswordAction,
@@ -152,34 +153,33 @@ export function EditStudentForm({
         )}
 
         <div className="border-t pt-4">
-          <form
-            action={resetAction}
-            className="flex items-end gap-3"
-            onSubmit={(e) => {
-              if (
-                !confirm(
-                  `هل أنت متأكد من رغبتك في إعادة تعيين كلمة سر "${fullName}"؟ ستُلغى كلمة السر الحالية فورًا.`,
-                )
-              ) {
-                e.preventDefault();
-              }
-            }}
-          >
-            <input type="hidden" name="student_id" value={studentId} />
-            <Button type="submit" variant="outline" disabled={resetPending}>
-              {resetPending ? "جاري إعادة التعيين…" : "إعادة تعيين كلمة السر"}
-            </Button>
-          </form>
+          <div className="flex flex-wrap items-center gap-3">
+            <form
+              action={resetAction}
+              onSubmit={(e) => {
+                if (
+                  !confirm(
+                    `هل أنت متأكد من رغبتك في إعادة تعيين كلمة سر "${fullName}"؟ ستُلغى كلمة السر الحالية فورًا.`,
+                  )
+                ) {
+                  e.preventDefault();
+                }
+              }}
+            >
+              <input type="hidden" name="student_id" value={studentId} />
+              <Button type="submit" variant="outline" disabled={resetPending}>
+                {resetPending ? "جاري إعادة التعيين…" : "إعادة تعيين كلمة السر"}
+              </Button>
+            </form>
+            {resetResult?.ok && resetResult.password && (
+              <CopyableSecret value={resetResult.password} />
+            )}
+          </div>
           <div aria-live="polite">
             {resetResult?.ok && resetResult.password && (
-              <div className="mt-2 rounded-lg border border-green-300 bg-green-50 p-3 text-sm dark:bg-green-950">
-                <p dir="ltr">
-                  كلمة السر الجديدة: <b>{resetResult.password}</b>
-                </p>
-                <p className="text-muted-foreground">
-                  ⚠️ انسخها الآن وسلّمها إلى الطالب، فلن تظهر مرة أخرى
-                </p>
-              </div>
+              <p className="mt-2 text-xs text-muted-foreground">
+                ⚠️ اضغط على المربع لنسخ كلمة السر وسلّمها إلى الطالب، فلن تظهر مرة أخرى
+              </p>
             )}
             {resetResult && !resetResult.ok && (
               <p className="mt-2 text-sm text-destructive">{resetResult.message}</p>

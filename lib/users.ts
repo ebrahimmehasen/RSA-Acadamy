@@ -129,18 +129,48 @@ export async function resetAccountPassword(profileId: number): Promise<string> {
   const supabase = createAdminClient();
   const { data: profile } = await supabase
     .from("profiles")
-    .select("user_id")
+    .select("user_id, full_name")
     .eq("id", profileId)
     .maybeSingle();
   if (!profile) throw new Error("الحساب غير موجود");
 
-  const password = generatePassword();
+  const password = simplePassword(profile.full_name);
   const { error } = await supabase.auth.admin.updateUserById(profile.user_id, {
     password,
   });
   if (error) throw new Error(error.message);
 
   return password;
+}
+
+/** Rough Arabic → Latin letter map, enough to build a typeable name slug. */
+const AR_TO_LATIN: Record<string, string> = {
+  ا: "a", أ: "a", إ: "i", آ: "a", ب: "b", ت: "t", ث: "th", ج: "j",
+  ح: "h", خ: "kh", د: "d", ذ: "dh", ر: "r", ز: "z", س: "s", ش: "sh",
+  ص: "s", ض: "d", ط: "t", ظ: "z", ع: "a", غ: "gh", ف: "f", ق: "q",
+  ك: "k", ل: "l", م: "m", ن: "n", ه: "h", و: "w", ي: "y", ى: "a",
+  ة: "a", ء: "", ئ: "", ؤ: "",
+};
+
+/** The person's first name as a plain ASCII, capitalised slug ("Ahmed"). */
+function firstNameSlug(fullName: string): string {
+  const first = fullName.trim().split(/\s+/)[0] ?? "";
+  let slug = first
+    .toLowerCase()
+    .split("")
+    .map((ch) => (/[a-z0-9]/.test(ch) ? ch : (AR_TO_LATIN[ch] ?? "")))
+    .join("");
+  if (!slug) slug = "user";
+  return slug.charAt(0).toUpperCase() + slug.slice(1);
+}
+
+/**
+ * Simple, hand-off-friendly password (admin reset flow): the person's
+ * first name followed by 5 digits, e.g. "Ahmed48213".
+ */
+export function simplePassword(fullName: string): string {
+  const digits = String(Math.floor(10000 + Math.random() * 90000));
+  return `${firstNameSlug(fullName)}${digits}`;
 }
 
 /** Random readable password like "A7k9LmP2" (decision #2). */
