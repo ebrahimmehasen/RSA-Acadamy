@@ -3,6 +3,9 @@ import { getSession } from "@/lib/auth/session";
 import { RoleShell } from "@/components/shared/RoleShell";
 import { ROLE_NAV } from "@/lib/roleNav";
 
+// Every page here is per-user and session-gated — never prerender.
+export const dynamic = "force-dynamic";
+
 export default async function AdminLayout({
   children,
 }: {

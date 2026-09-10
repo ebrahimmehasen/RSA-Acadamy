@@ -4,6 +4,9 @@ import { RoleShell } from "@/components/shared/RoleShell";
 import { PendingActivation } from "@/components/shared/PendingActivation";
 import { ROLE_NAV } from "@/lib/roleNav";
 
+// Every page here is per-user and session-gated — never prerender.
+export const dynamic = "force-dynamic";
+
 export default async function StudentLayout({
   children,
 }: {

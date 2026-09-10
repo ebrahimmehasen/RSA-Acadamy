@@ -8,6 +8,9 @@ import { PageHeader } from "@/components/shared/PageHeader";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { AnnouncementCard } from "./AnnouncementCard";
 
+// Per-user, session-gated — never prerender.
+export const dynamic = "force-dynamic";
+
 export default async function AnnouncementsPage() {
   const session = await getSession();
   if (!session) redirect("/login");
