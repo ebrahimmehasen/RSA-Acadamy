@@ -125,16 +125,6 @@ export function ScheduleGrid({
         {entry.sub != null && (
           <p className="text-xs text-muted-foreground">{entry.sub}</p>
         )}
-        {zoomLabel && entry.zoomLink && (
-          <a
-            href={entry.zoomLink}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-block text-xs font-medium text-primary underline underline-offset-2"
-          >
-            {zoomLabel} 🔗
-          </a>
-        )}
         {entryActions?.[entry.id] != null && (
           <div className="flex flex-wrap gap-1 pt-0.5">
             {entryActions[entry.id]}
@@ -144,8 +134,72 @@ export function ScheduleGrid({
     );
   }
 
+  // "Today at a glance" — the class running now (or the next one today),
+  // with its join link, lifted out of the grid cells.
+  const todayEntries = now.day
+    ? entries
+        .filter((e) => e.day === now.day)
+        .sort((a, b) => toMin(a.start) - toMin(b.start))
+    : [];
+  const activeEntry = todayEntries.find(
+    (e) => now.minutes >= toMin(e.start) && now.minutes < toMin(e.end),
+  );
+  const nextEntry = todayEntries.find((e) => toMin(e.start) > now.minutes);
+  const spotlight = activeEntry ?? nextEntry;
+  const dateLabel = now.ready
+    ? new Intl.DateTimeFormat("ar-EG", {
+        timeZone: SCHOOL_TIMEZONE,
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+      }).format(new Date())
+    : null;
+
   return (
-    <div className="overflow-hidden rounded-xl bg-card ring-1 ring-foreground/10">
+    <div className="flex flex-col gap-3">
+      <div className="flex min-h-11 flex-wrap items-center gap-x-3 gap-y-1.5 rounded-xl border bg-primary/5 px-3 py-2 text-sm">
+        <span className="font-medium">
+          📅 {dateLabel ?? <span className="text-muted-foreground">…</span>}
+        </span>
+        {now.ready && (
+          <>
+            {spotlight ? (
+              <>
+                <span
+                  className={cn(
+                    "rounded-full px-2 py-0.5 text-xs font-bold",
+                    activeEntry
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-muted-foreground",
+                  )}
+                >
+                  {activeEntry ? "الآن" : "القادمة"}
+                </span>
+                <span className="font-semibold">{spotlight.subject}</span>
+                <span dir="ltr" className="text-xs text-muted-foreground">
+                  {formatTime(spotlight.start)} – {formatTime(spotlight.end)}
+                </span>
+                {zoomLabel && spotlight.zoomLink && (
+                  <a
+                    href={spotlight.zoomLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground"
+                  >
+                    {zoomLabel} 🔗
+                  </a>
+                )}
+              </>
+            ) : (
+              <span className="text-muted-foreground">
+                لا توجد حصص أخرى اليوم
+              </span>
+            )}
+          </>
+        )}
+      </div>
+
+      <div className="overflow-hidden rounded-xl bg-card ring-1 ring-foreground/10">
       <div className="overflow-x-auto">
         <table className="w-full min-w-[52rem] border-collapse text-sm">
           <thead>
@@ -278,11 +332,12 @@ export function ScheduleGrid({
         </div>
       )}
 
-      {caption && (
-        <p className="border-t px-3 py-2 text-xs text-muted-foreground">
-          {caption}
-        </p>
-      )}
+        {caption && (
+          <p className="border-t px-3 py-2 text-xs text-muted-foreground">
+            {caption}
+          </p>
+        )}
+      </div>
     </div>
   );
 }

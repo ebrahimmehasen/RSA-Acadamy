@@ -215,23 +215,26 @@ export function ScheduleSkeleton({
   rows?: number;
 }) {
   return (
-    <div className="overflow-hidden rounded-xl bg-card ring-1 ring-foreground/10">
-      <div className="overflow-x-auto p-3">
-        <div className="min-w-[52rem] space-y-2">
-          <div className="flex gap-2">
-            <Skeleton className="h-10 w-20 shrink-0" />
-            {Array.from({ length: cols }).map((_, i) => (
-              <Skeleton key={i} className="h-10 flex-1" />
-            ))}
-          </div>
-          {Array.from({ length: rows }).map((_, r) => (
-            <div key={r} className="flex gap-2">
-              <Skeleton className="h-16 w-20 shrink-0" />
-              {Array.from({ length: cols }).map((_, c) => (
-                <Skeleton key={c} className="h-16 flex-1" />
+    <div className="flex flex-col gap-3">
+      <Skeleton className="h-11 rounded-xl" />
+      <div className="overflow-hidden rounded-xl bg-card ring-1 ring-foreground/10">
+        <div className="overflow-x-auto p-3">
+          <div className="min-w-[52rem] space-y-2">
+            <div className="flex gap-2">
+              <Skeleton className="h-10 w-20 shrink-0" />
+              {Array.from({ length: cols }).map((_, i) => (
+                <Skeleton key={i} className="h-10 flex-1" />
               ))}
             </div>
-          ))}
+            {Array.from({ length: rows }).map((_, r) => (
+              <div key={r} className="flex gap-2">
+                <Skeleton className="h-16 w-20 shrink-0" />
+                {Array.from({ length: cols }).map((_, c) => (
+                  <Skeleton key={c} className="h-16 flex-1" />
+                ))}
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>
