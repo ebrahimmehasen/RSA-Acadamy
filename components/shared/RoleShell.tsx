@@ -119,6 +119,7 @@ export function RoleShell({
   const tailNav = tailStart === -1 ? [] : nav.slice(tailStart);
 
   const bottomNav = nav.slice(0, 4);
+  const moreNav = nav.slice(4);
   const bottomHasActive = bottomNav.some((n) => n.href === current);
 
   function renderNavLink(item: NavItem, opts?: { onClick?: () => void }) {
@@ -195,18 +196,21 @@ export function RoleShell({
         </div>
       </aside>
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-10 flex h-14 items-center justify-between border-b bg-background/95 px-4 backdrop-blur supports-backdrop-filter:bg-background/70 md:px-6">
-          <div className="md:hidden">
-            <Logo markClassName="h-7 w-7" showWordmark={false} />
-          </div>
-          <div className="hidden flex-1 items-center md:flex">
-            <h1 className="text-sm font-semibold text-muted-foreground">
+        <header className="sticky top-0 z-10 flex h-14 items-center justify-between gap-2 border-b bg-background/95 px-4 backdrop-blur supports-backdrop-filter:bg-background/70 md:px-6">
+          <div className="flex min-w-0 items-center gap-2">
+            <span className="md:hidden">
+              <Logo markClassName="h-7 w-7" showWordmark={false} />
+            </span>
+            <p className="truncate text-sm font-semibold text-muted-foreground">
               {title}
-            </h1>
+            </p>
           </div>
-          <div className="flex items-center gap-1">
-            <ThemeToggle />
-            <NotificationBell profileId={profileId} />
+          <div className="flex shrink-0 items-center gap-0.5">
+            <ThemeToggle className="size-11 md:size-9" />
+            <NotificationBell
+              profileId={profileId}
+              className="size-11 md:size-9"
+            />
             <Link
               href={profileHref}
               aria-label="الملف الشخصي"
@@ -241,28 +245,30 @@ export function RoleShell({
                 href={item.href}
                 aria-current={active ? "page" : undefined}
                 className={cn(
-                  "flex min-h-14 flex-1 flex-col items-center justify-center gap-0.5 px-1 text-[11px] text-muted-foreground",
+                  "flex min-h-14 flex-1 flex-col items-center justify-center gap-0.5 px-0.5 py-1.5 text-center text-[11px] leading-[1.15] text-muted-foreground",
                   active && "font-semibold text-primary",
                 )}
               >
-                <Icon className="size-5" aria-hidden="true" />
-                <span className="max-w-16 truncate">{item.label}</span>
+                <Icon className="size-5 shrink-0" aria-hidden="true" />
+                <span className="line-clamp-2">{item.label}</span>
               </Link>
             );
           })}
+          {moreNav.length > 0 && (
           <Dialog open={moreOpen} onOpenChange={setMoreOpen}>
             <DialogTrigger
               render={
                 <button
                   type="button"
+                  aria-label="المزيد من الأقسام"
                   className={cn(
-                    "flex min-h-14 flex-1 flex-col items-center justify-center gap-0.5 px-1 text-[11px] text-muted-foreground",
+                    "flex min-h-14 flex-1 flex-col items-center justify-center gap-0.5 px-0.5 py-1.5 text-[11px] leading-[1.15] text-muted-foreground",
                     !bottomHasActive && current && "font-semibold text-primary",
                   )}
                 />
               }
             >
-              <MoreHorizontal className="size-5" aria-hidden="true" />
+              <MoreHorizontal className="size-5 shrink-0" aria-hidden="true" />
               <span>المزيد</span>
             </DialogTrigger>
             <DialogContent className="max-h-[80vh] overflow-y-auto">
@@ -270,12 +276,13 @@ export function RoleShell({
                 <DialogTitle>{title}</DialogTitle>
               </DialogHeader>
               <nav className="grid grid-cols-2 gap-2">
-                {nav.map((item) =>
+                {moreNav.map((item) =>
                   renderNavLink(item, { onClick: () => setMoreOpen(false) }),
                 )}
               </nav>
             </DialogContent>
           </Dialog>
+          )}
         </nav>
       </div>
     </div>

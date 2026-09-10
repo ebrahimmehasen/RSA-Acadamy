@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { useNotifications } from "@/hooks/useNotifications";
 
 const TYPE_ICON: Record<string, string> = {
@@ -14,7 +15,13 @@ const TYPE_ICON: Record<string, string> = {
   announcement: "📢",
 };
 
-export function NotificationBell({ profileId }: { profileId: number }) {
+export function NotificationBell({
+  profileId,
+  className,
+}: {
+  profileId: number;
+  className?: string;
+}) {
   const { notifications, unreadCount, markRead, markAllRead } =
     useNotifications(profileId);
   const [open, setOpen] = useState(false);
@@ -64,6 +71,7 @@ export function NotificationBell({ profileId }: { profileId: number }) {
         aria-label="الإشعارات"
         aria-haspopup="dialog"
         aria-expanded={open}
+        className={cn("size-9", className)}
       >
         <span aria-hidden="true">🔔</span>
         {unreadCount > 0 && (
@@ -84,7 +92,7 @@ export function NotificationBell({ profileId }: { profileId: number }) {
           role="dialog"
           aria-label="الإشعارات"
           tabIndex={-1}
-          className="absolute left-0 z-50 mt-2 w-80 rounded-lg border bg-background shadow-lg outline-none"
+          className="absolute left-0 z-50 mt-2 w-[min(20rem,calc(100vw-1.5rem))] rounded-lg border bg-popover text-popover-foreground shadow-lg outline-none"
         >
           <div className="flex items-center justify-between border-b p-3">
             <span className="font-medium">الإشعارات</span>

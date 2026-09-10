@@ -4,13 +4,14 @@ import { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
 import { Moon, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 /**
  * Cycles system -> light -> dark -> system. Defaults to following the OS
  * preference (see ThemeProvider in app/layout.tsx), but most people expect
  * an explicit switch they can override that with, so this exposes one.
  */
-export function ThemeToggle() {
+export function ThemeToggle({ className }: { className?: string }) {
   const { theme, setTheme } = useTheme();
   // next-themes only knows the resolved theme after mount (it reads
   // localStorage/matchMedia client-side) — render a neutral icon until
@@ -38,10 +39,11 @@ export function ThemeToggle() {
   return (
     <Button
       variant="ghost"
-      size="sm"
+      size="icon"
       onClick={cycle}
       aria-label={label}
       title={label}
+      className={cn("size-9", className)}
     >
       {mounted && theme === "light" ? (
         <Sun className="size-4" aria-hidden="true" />
