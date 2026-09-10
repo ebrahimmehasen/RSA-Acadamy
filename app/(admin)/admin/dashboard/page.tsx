@@ -1,11 +1,10 @@
+import { Users, GraduationCap, UsersRound } from "lucide-react";
 import { getSession } from "@/lib/auth/session";
 import { createAdminClient } from "@/lib/supabase/admin";
-import {
-  Card,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { PageShell } from "@/components/shared/PageShell";
+import { PageHeader } from "@/components/shared/PageHeader";
+import { StatGrid } from "@/components/shared/StatGrid";
+import { StatCard } from "@/components/shared/StatCard";
 
 export default async function AdminDashboard() {
   const session = await getSession();
@@ -18,26 +17,25 @@ export default async function AdminDashboard() {
   ]);
 
   const stats = [
-    { title: "الطلاب", count: students.count ?? 0 },
-    { title: "المدرسون", count: teachers.count ?? 0 },
-    { title: "أولياء الأمور", count: parents.count ?? 0 },
-  ];
+    { label: "الطلاب", count: students.count ?? 0, icon: Users, href: "/admin/students" },
+    { label: "المدرسون", count: teachers.count ?? 0, icon: GraduationCap, href: "/admin/teachers" },
+    { label: "أولياء الأمور", count: parents.count ?? 0, icon: UsersRound, href: "/admin/parents" },
+  ] as const;
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold">
-        أهلاً {session?.profile.full_name} 👋
-      </h1>
-      <div className="grid gap-4 sm:grid-cols-3">
+    <PageShell>
+      <PageHeader title={`أهلاً ${session?.profile.full_name} 👋`} />
+      <StatGrid cols={3}>
         {stats.map((stat) => (
-          <Card key={stat.title}>
-            <CardHeader>
-              <CardDescription>{stat.title}</CardDescription>
-              <CardTitle className="text-3xl">{stat.count}</CardTitle>
-            </CardHeader>
-          </Card>
+          <StatCard
+            key={stat.label}
+            label={stat.label}
+            value={stat.count}
+            icon={stat.icon}
+            href={stat.href}
+          />
         ))}
-      </div>
-    </div>
+      </StatGrid>
+    </PageShell>
   );
 }

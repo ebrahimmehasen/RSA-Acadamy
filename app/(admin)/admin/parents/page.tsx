@@ -11,6 +11,9 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ConfirmDeleteButton } from "@/components/shared/ConfirmDeleteButton";
+import { PageShell } from "@/components/shared/PageShell";
+import { PageHeader } from "@/components/shared/PageHeader";
+import { DataCard } from "@/components/shared/DataCard";
 import { CreateParentForm } from "./CreateParentForm";
 import { deleteParent, toggleParentActive } from "./actions";
 
@@ -33,18 +36,22 @@ export default async function AdminParentsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold">إدارة أولياء الأمور</h1>
+    <PageShell>
+      <PageHeader
+        title="إدارة أولياء الأمور"
+        description={`${(parents ?? []).length} ولي أمر`}
+      />
 
       <CreateParentForm />
 
+      <DataCard title="أولياء الأمور" count={(parents ?? []).length}>
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="text-right">الاسم</TableHead>
-            <TableHead className="text-right">الهاتف</TableHead>
-            <TableHead className="text-right">عدد الأبناء المربوطين</TableHead>
-            <TableHead className="text-right">الحالة</TableHead>
+            <TableHead>الاسم</TableHead>
+            <TableHead>الهاتف</TableHead>
+            <TableHead>عدد الأبناء المربوطين</TableHead>
+            <TableHead>الحالة</TableHead>
             <TableHead />
           </TableRow>
         </TableHeader>
@@ -64,13 +71,13 @@ export default async function AdminParentsPage() {
                     {profile?.full_name}
                   </Link>
                 </TableCell>
-                <TableCell dir="ltr" className="text-right">
+                <TableCell dir="ltr" className="text-start">
                   {profile?.phone ?? "—"}
                 </TableCell>
                 <TableCell>{childCount.get(p.user_id) ?? 0}</TableCell>
                 <TableCell>
                   {p.is_active ? (
-                    <Badge>نشط</Badge>
+                    <Badge variant="success">نشط</Badge>
                   ) : (
                     <Badge variant="destructive">موقوف</Badge>
                   )}
@@ -84,7 +91,7 @@ export default async function AdminParentsPage() {
                         name="is_active"
                         value={String(p.is_active)}
                       />
-                      <Button variant="outline" size="xs" type="submit">
+                      <Button variant="outline" size="sm" type="submit">
                         {p.is_active ? "إيقاف" : "تفعيل"}
                       </Button>
                     </form>
@@ -100,13 +107,14 @@ export default async function AdminParentsPage() {
           })}
           {(parents ?? []).length === 0 && (
             <TableRow>
-              <TableCell colSpan={5} className="text-center text-muted-foreground">
+              <TableCell colSpan={5} className="py-8 text-center text-muted-foreground">
                 لا يوجد أولياء أمور بعد
               </TableCell>
             </TableRow>
           )}
         </TableBody>
       </Table>
-    </div>
+      </DataCard>
+    </PageShell>
   );
 }

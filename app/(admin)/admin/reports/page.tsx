@@ -7,6 +7,9 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { SimpleBarChart } from "@/components/charts/SimpleBarChart";
+import { PageShell } from "@/components/shared/PageShell";
+import { PageHeader } from "@/components/shared/PageHeader";
+import { EmptyState } from "@/components/shared/EmptyState";
 
 export default async function AdminReportsPage() {
   const supabase = createAdminClient();
@@ -37,11 +40,11 @@ export default async function AdminReportsPage() {
   }));
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold">التقارير</h1>
-      <p className="text-sm text-muted-foreground">
-        تتبع الحضور غير متاح بعد — مؤجل لمرحلة لاحقة
-      </p>
+    <PageShell>
+      <PageHeader
+        title="التقارير"
+        description="تتبع الحضور غير متاح بعد — مؤجل لمرحلة لاحقة"
+      />
 
       <Card>
         <CardHeader>
@@ -52,12 +55,10 @@ export default async function AdminReportsPage() {
           {gradesChart.length > 0 ? (
             <SimpleBarChart data={gradesChart} valueSuffix="%" color="#0f8a72" />
           ) : (
-            <p className="text-sm text-muted-foreground">
-              لا توجد درجات مصححة بعد
-            </p>
+            <EmptyState title="لا توجد درجات مصححة بعد" />
           )}
         </CardContent>
       </Card>
-    </div>
+    </PageShell>
   );
 }

@@ -6,6 +6,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { PageShell } from "@/components/shared/PageShell";
+import { PageHeader } from "@/components/shared/PageHeader";
 
 export default async function AdminClassesPage() {
   const supabase = createAdminClient();
@@ -25,28 +27,29 @@ export default async function AdminClassesPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">الفصول والجدول الدراسي</h1>
-        <p className="text-muted-foreground">
-          اختر فصلًا لإدارة جدوله الأسبوعي وروابط Zoom
-        </p>
-      </div>
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+    <PageShell>
+      <PageHeader
+        title="الفصول والجدول الدراسي"
+        description="اختر فصلًا لإدارة جدوله الأسبوعي وروابط Zoom"
+      />
+      <div className="grid grid-cols-1 gap-[var(--card-gap)] sm:grid-cols-2 lg:grid-cols-3">
         {(classes ?? []).map((cls) => (
-          <Link key={cls.id} href={`/admin/classes/${cls.id}`}>
-            <Card className="transition-colors hover:bg-accent">
+          <Link
+            key={cls.id}
+            href={`/admin/classes/${cls.id}`}
+            className="block rounded-xl outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+          >
+            <Card className="h-full transition-colors hover:bg-muted/40">
               <CardHeader>
                 <CardTitle className="text-base">{cls.class_name}</CardTitle>
                 <CardDescription>
-                  {cls.class_short} · {countByClass.get(cls.id) ?? 0} حصة
-                  أسبوعيًا
+                  {cls.class_short} · {countByClass.get(cls.id) ?? 0} حصة أسبوعيًا
                 </CardDescription>
               </CardHeader>
             </Card>
           </Link>
         ))}
       </div>
-    </div>
+    </PageShell>
   );
 }

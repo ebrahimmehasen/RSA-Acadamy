@@ -11,6 +11,9 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ConfirmDeleteButton } from "@/components/shared/ConfirmDeleteButton";
+import { PageShell } from "@/components/shared/PageShell";
+import { PageHeader } from "@/components/shared/PageHeader";
+import { DataCard } from "@/components/shared/DataCard";
 import { CreateTeacherForm } from "./CreateTeacherForm";
 import { deleteTeacher, toggleTeacherActive } from "./actions";
 
@@ -25,18 +28,22 @@ export default async function AdminTeachersPage() {
     .order("user_id", { ascending: false });
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold">إدارة المدرسين</h1>
+    <PageShell>
+      <PageHeader
+        title="إدارة المدرسين"
+        description={`${(teachers ?? []).length} مدرس`}
+      />
 
       <CreateTeacherForm />
 
+      <DataCard title="المدرسون" count={(teachers ?? []).length}>
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="text-right">الاسم</TableHead>
-            <TableHead className="text-right">التخصص</TableHead>
-            <TableHead className="text-right">الهاتف</TableHead>
-            <TableHead className="text-right">الحالة</TableHead>
+            <TableHead>الاسم</TableHead>
+            <TableHead>التخصص</TableHead>
+            <TableHead>الهاتف</TableHead>
+            <TableHead>الحالة</TableHead>
             <TableHead />
           </TableRow>
         </TableHeader>
@@ -57,12 +64,12 @@ export default async function AdminTeachersPage() {
                   </Link>
                 </TableCell>
                 <TableCell>{t.specialization ?? "—"}</TableCell>
-                <TableCell dir="ltr" className="text-right">
+                <TableCell dir="ltr" className="text-start">
                   {profile?.phone ?? "—"}
                 </TableCell>
                 <TableCell>
                   {t.is_active ? (
-                    <Badge>نشط</Badge>
+                    <Badge variant="success">نشط</Badge>
                   ) : (
                     <Badge variant="destructive">موقوف</Badge>
                   )}
@@ -76,7 +83,7 @@ export default async function AdminTeachersPage() {
                         name="is_active"
                         value={String(t.is_active)}
                       />
-                      <Button variant="outline" size="xs" type="submit">
+                      <Button variant="outline" size="sm" type="submit">
                         {t.is_active ? "إيقاف" : "تفعيل"}
                       </Button>
                     </form>
@@ -92,13 +99,14 @@ export default async function AdminTeachersPage() {
           })}
           {(teachers ?? []).length === 0 && (
             <TableRow>
-              <TableCell colSpan={5} className="text-center text-muted-foreground">
+              <TableCell colSpan={5} className="py-8 text-center text-muted-foreground">
                 لا يوجد مدرسون بعد
               </TableCell>
             </TableRow>
           )}
         </TableBody>
       </Table>
-    </div>
+      </DataCard>
+    </PageShell>
   );
 }

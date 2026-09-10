@@ -1,4 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/admin";
+import { PageShell } from "@/components/shared/PageShell";
+import { PageHeader } from "@/components/shared/PageHeader";
 import { CreateStudentForm } from "./CreateStudentForm";
 import { StudentsTable, type StudentRow } from "./StudentsTable";
 
@@ -32,12 +34,15 @@ export default async function AdminStudentsPage() {
   }));
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold">إدارة الطلاب</h1>
+    <PageShell>
+      <PageHeader
+        title="إدارة الطلاب"
+        description={`${rows.length} طالب مسجّل`}
+      />
 
       <CreateStudentForm classes={classes ?? []} />
 
       <StudentsTable students={rows} />
-    </div>
+    </PageShell>
   );
 }
