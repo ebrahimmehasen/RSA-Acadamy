@@ -39,7 +39,7 @@ export default async function ParentChildDetailPage({
     await Promise.all([
       supabase
         .from("class_assignments")
-        .select("*, subjects(subject_name)")
+        .select("*, subjects(subject_name, branch)")
         .eq("class_id", child.class_id!)
         .eq("is_active", true)
         .order("start_time"),
@@ -80,9 +80,13 @@ export default async function ParentChildDetailPage({
   const summary = summarizeGrades(gradedRows);
 
   const profile = child.profiles as unknown as { full_name: string };
-  const typedSlots = (slots ?? []) as (ScheduleSlot & {
-    subjects: { subject_name: string } | null;
+  const allSlots = (slots ?? []) as (ScheduleSlot & {
+    subjects: { subject_name: string; branch: string } | null;
   })[];
+  // Only the slots for the child's own branch (a class can hold both).
+  const typedSlots = child.branch
+    ? allSlots.filter((s) => s.subjects?.branch === child.branch)
+    : allSlots;
 
   return (
     <PageShell>

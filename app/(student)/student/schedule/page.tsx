@@ -14,7 +14,7 @@ export default async function StudentSchedulePage() {
   // RLS scopes rows to the student's own class
   const { data: slots } = await supabase
     .from("class_assignments")
-    .select("*, subjects(subject_name)")
+    .select("*, subjects(subject_name, branch)")
     .eq("is_active", true)
     .order("start_time");
 
@@ -24,9 +24,14 @@ export default async function StudentSchedulePage() {
     .eq("user_id", session!.profile.id)
     .single();
 
-  const typedSlots = (slots ?? []) as (ScheduleSlot & {
-    subjects: { subject_name: string } | null;
+  const allSlots = (slots ?? []) as (ScheduleSlot & {
+    subjects: { subject_name: string; branch: string } | null;
   })[];
+  // A class can hold both branches (Arabic + Languages) — only show the
+  // slots for subjects in the student's own branch.
+  const typedSlots = student?.branch
+    ? allSlots.filter((s) => s.subjects?.branch === student.branch)
+    : allSlots;
 
   if (!student?.class_id) {
     return (
