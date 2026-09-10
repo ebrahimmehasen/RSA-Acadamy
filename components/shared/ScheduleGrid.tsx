@@ -5,10 +5,15 @@ import {
   DAYS,
   DAY_LABELS,
   PERIODS,
+  formatHourMinute,
   formatTime,
   type DayOfWeek,
 } from "@/lib/schedule";
-import { SCHOOL_TIMEZONE } from "@/lib/timezone";
+import {
+  SCHOOL_TIMEZONE,
+  localHourMinute,
+  timezoneLabel,
+} from "@/lib/timezone";
 import { cn } from "@/lib/utils";
 
 export interface ScheduleGridEntry {
@@ -37,17 +42,23 @@ const FALLBACK_DAYS: DayOfWeek[] = [
   "thursday",
 ];
 
-/** Where the viewer's browser is, in the school's clock, refreshed every minute. */
-function useSchoolNow() {
-  const [now, setNow] = useState<{
+/**
+ * Where the viewer's browser is — the school clock (for the "now"
+ * highlight) and the viewer's own timezone (for displaying times).
+ * Refreshed every minute.
+ */
+function useViewerClock() {
+  const [clock, setClock] = useState<{
     ready: boolean;
     day: DayOfWeek | null;
     minutes: number;
-  }>({ ready: false, day: null, minutes: 0 });
+    tz: string;
+  }>({ ready: false, day: null, minutes: 0, tz: SCHOOL_TIMEZONE });
 
   useEffect(() => {
     function compute() {
       try {
+        const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
         const parts = new Intl.DateTimeFormat("en-US", {
           timeZone: SCHOOL_TIMEZONE,
           weekday: "long",
@@ -60,9 +71,14 @@ function useSchoolNow() {
           ?.value.toLowerCase() as DayOfWeek | undefined;
         const hh = Number(parts.find((p) => p.type === "hour")?.value ?? 0);
         const mm = Number(parts.find((p) => p.type === "minute")?.value ?? 0);
-        setNow({ ready: true, day: wd ?? null, minutes: hh * 60 + mm });
+        setClock({
+          ready: true,
+          day: wd ?? null,
+          minutes: hh * 60 + mm,
+          tz: tz || SCHOOL_TIMEZONE,
+        });
       } catch {
-        setNow({ ready: false, day: null, minutes: 0 });
+        setClock((c) => ({ ...c, ready: false }));
       }
     }
     compute();
@@ -70,45 +86,60 @@ function useSchoolNow() {
     return () => clearInterval(id);
   }, []);
 
-  return now;
+  return clock;
 }
 
 /**
  * The weekly timetable, drawn as an actual matrix: period columns across
  * the top (each labelled with its name and time), day rows down the
- * side, each cell holding the lesson(s) for that day + period. The
- * current day's row and the period running right now are shaded, and
- * their intersection — the lesson happening now — is emphasised.
+ * side, each cell holding the lesson(s) for that day + period.
  *
- * Slots whose start time doesn't line up with one of the six fixed
- * PERIODS (a custom-timed extra session) are listed under the grid.
+ * - Today's row and the period running right now are shaded; their
+ *   intersection — the lesson happening now — is emphasised.
+ * - A "today" box above the grid spotlights the live (or next) class
+ *   with its join link.
+ * - All times are shown in the viewer's own timezone (Egypt / Saudi /
+ *   …), converted from the school's Cairo wall-clock.
+ * - Custom-timed extra sessions are listed under the grid.
  */
 export function ScheduleGrid({
   entries,
   zoomLabel,
   entryActions,
-  caption = "كل الأوقات بتوقيت القاهرة",
+  caption,
 }: {
   entries: ScheduleGridEntry[];
-  /** when set, each entry that has a zoomLink shows a join link with this label */
+  /** when set, the "today" box shows a join link with this label */
   zoomLabel?: string;
   /** extra controls per entry, keyed by entry id (e.g. the admin edit / delete buttons) */
   entryActions?: Record<string | number, ReactNode>;
+  /** an extra note shown before the auto timezone line */
   caption?: ReactNode;
 }) {
-  const now = useSchoolNow();
+  const clock = useViewerClock();
 
   const days = DAYS.filter((d) => entries.some((e) => e.day === d));
   const shownDays = days.length > 0 ? days : FALLBACK_DAYS;
+  const refDay = clock.day ?? shownDays[0] ?? "sunday";
 
   const periodStarts = new Set<string>(PERIODS.map((p) => p.start));
   const extras = entries.filter((e) => !periodStarts.has(hhmm(e.start)));
 
-  const activePeriodIndex = now.ready
+  const activePeriodIndex = clock.ready
     ? PERIODS.findIndex(
-        (p) => now.minutes >= toMin(p.start) && now.minutes < toMin(p.end),
+        (p) => clock.minutes >= toMin(p.start) && clock.minutes < toMin(p.end),
       )
     : -1;
+
+  /** Cairo "HH:MM" → the viewer's local "h:mm ص/م" (Cairo before mount). */
+  function localTime(day: DayOfWeek, time: string): string {
+    if (!clock.ready) return formatTime(time);
+    const { hour, minute } = localHourMinute(day, time);
+    return formatHourMinute(hour, minute);
+  }
+  function localRange(day: DayOfWeek, start: string, end: string) {
+    return `${localTime(day, start)} – ${localTime(day, end)}`;
+  }
 
   function cellEntries(day: DayOfWeek, periodStart: string) {
     return entries.filter(
@@ -134,19 +165,18 @@ export function ScheduleGrid({
     );
   }
 
-  // "Today at a glance" — the class running now (or the next one today),
-  // with its join link, lifted out of the grid cells.
-  const todayEntries = now.day
+  // "Today at a glance" — the class running now (or the next one today).
+  const todayEntries = clock.day
     ? entries
-        .filter((e) => e.day === now.day)
+        .filter((e) => e.day === clock.day)
         .sort((a, b) => toMin(a.start) - toMin(b.start))
     : [];
   const activeEntry = todayEntries.find(
-    (e) => now.minutes >= toMin(e.start) && now.minutes < toMin(e.end),
+    (e) => clock.minutes >= toMin(e.start) && clock.minutes < toMin(e.end),
   );
-  const nextEntry = todayEntries.find((e) => toMin(e.start) > now.minutes);
+  const nextEntry = todayEntries.find((e) => toMin(e.start) > clock.minutes);
   const spotlight = activeEntry ?? nextEntry;
-  const dateLabel = now.ready
+  const dateLabel = clock.ready
     ? new Intl.DateTimeFormat("ar-EG", {
         timeZone: SCHOOL_TIMEZONE,
         weekday: "long",
@@ -154,6 +184,7 @@ export function ScheduleGrid({
         month: "long",
       }).format(new Date())
     : null;
+  const tzName = clock.ready ? timezoneLabel(clock.tz) : "مصر";
 
   return (
     <div className="flex flex-col gap-3">
@@ -161,7 +192,7 @@ export function ScheduleGrid({
         <span className="font-medium">
           📅 {dateLabel ?? <span className="text-muted-foreground">…</span>}
         </span>
-        {now.ready && (
+        {clock.ready && (
           <>
             {spotlight ? (
               <>
@@ -177,7 +208,7 @@ export function ScheduleGrid({
                 </span>
                 <span className="font-semibold">{spotlight.subject}</span>
                 <span dir="ltr" className="text-xs text-muted-foreground">
-                  {formatTime(spotlight.start)} – {formatTime(spotlight.end)}
+                  {localRange(spotlight.day, spotlight.start, spotlight.end)}
                 </span>
                 {zoomLabel && spotlight.zoomLink && (
                   <a
@@ -200,143 +231,132 @@ export function ScheduleGrid({
       </div>
 
       <div className="overflow-hidden rounded-xl bg-card ring-1 ring-foreground/10">
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[52rem] border-collapse text-sm">
-          <thead>
-            <tr>
-              <th className="sticky start-0 z-10 border bg-muted/60 p-2 text-start text-xs font-semibold whitespace-nowrap text-muted-foreground">
-                اليوم
-              </th>
-              {PERIODS.map((p, pi) => {
-                const activeCol = pi === activePeriodIndex;
-                return (
-                  <th
-                    key={p.start}
-                    className={cn(
-                      "border bg-muted/60 p-2 text-center align-top whitespace-nowrap",
-                      activeCol && "bg-primary/10",
-                    )}
-                  >
-                    <span className="block font-semibold">{p.label}</span>
-                    <span
-                      className="mt-0.5 block text-xs font-normal text-muted-foreground"
-                      dir="ltr"
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[52rem] border-collapse text-sm">
+            <thead>
+              <tr>
+                <th className="sticky start-0 z-10 border bg-muted/60 p-2 text-start text-xs font-semibold whitespace-nowrap text-muted-foreground">
+                  اليوم
+                </th>
+                {PERIODS.map((p, pi) => {
+                  const activeCol = pi === activePeriodIndex;
+                  return (
+                    <th
+                      key={p.start}
+                      className={cn(
+                        "border bg-muted/60 p-2 text-center align-top whitespace-nowrap",
+                        activeCol && "bg-primary/10",
+                      )}
                     >
-                      {formatTime(p.start)} – {formatTime(p.end)}
-                    </span>
-                    {activeCol && (
-                      <span className="mt-1 inline-block rounded-full bg-primary px-1.5 text-[10px] font-bold text-primary-foreground">
-                        الآن
+                      <span className="block font-semibold">{p.label}</span>
+                      <span
+                        className="mt-0.5 block text-xs font-normal text-muted-foreground"
+                        dir="ltr"
+                      >
+                        {localRange(refDay, p.start, p.end)}
                       </span>
-                    )}
-                  </th>
+                      {activeCol && (
+                        <span className="mt-1 inline-block rounded-full bg-primary px-1.5 text-[10px] font-bold text-primary-foreground">
+                          الآن
+                        </span>
+                      )}
+                    </th>
+                  );
+                })}
+              </tr>
+            </thead>
+            <tbody>
+              {shownDays.map((d) => {
+                const isToday = clock.ready && d === clock.day;
+                return (
+                  <tr key={d}>
+                    <th
+                      scope="row"
+                      className={cn(
+                        "sticky start-0 z-10 border bg-muted/40 p-2 text-start align-top font-medium whitespace-nowrap",
+                        isToday && "bg-primary/10 text-primary",
+                      )}
+                    >
+                      {DAY_LABELS[d]}
+                      {isToday && (
+                        <span className="mt-1 block text-[10px] font-bold">
+                          اليوم
+                        </span>
+                      )}
+                    </th>
+                    {PERIODS.map((p, pi) => {
+                      const cell = cellEntries(d, p.start);
+                      const activeCol = pi === activePeriodIndex;
+                      const isLiveCell = isToday && activeCol;
+                      return (
+                        <td
+                          key={p.start}
+                          aria-current={isLiveCell ? "time" : undefined}
+                          className={cn(
+                            "border p-1.5 align-top",
+                            cell.length === 0 && "text-center",
+                            isToday && "bg-primary/[0.04]",
+                            activeCol && "bg-primary/[0.06]",
+                            isLiveCell &&
+                              "bg-primary/12 ring-2 ring-primary/50 ring-inset",
+                          )}
+                        >
+                          {cell.length === 0 ? (
+                            <span className="text-muted-foreground/40">—</span>
+                          ) : (
+                            <div className="space-y-1.5">
+                              {cell.map((entry) => (
+                                <Entry key={entry.id} entry={entry} />
+                              ))}
+                            </div>
+                          )}
+                        </td>
+                      );
+                    })}
+                  </tr>
                 );
               })}
-            </tr>
-          </thead>
-          <tbody>
-            {shownDays.map((d) => {
-              const isToday = now.ready && d === now.day;
-              return (
-                <tr key={d}>
-                  <th
-                    scope="row"
-                    className={cn(
-                      "sticky start-0 z-10 border bg-muted/40 p-2 text-start align-top font-medium whitespace-nowrap",
-                      isToday && "bg-primary/10 text-primary",
-                    )}
-                  >
-                    {DAY_LABELS[d]}
-                    {isToday && (
-                      <span className="mt-1 block text-[10px] font-bold">
-                        اليوم
-                      </span>
-                    )}
-                  </th>
-                  {PERIODS.map((p, pi) => {
-                    const cell = cellEntries(d, p.start);
-                    const activeCol = pi === activePeriodIndex;
-                    const isLiveCell = isToday && activeCol;
-                    return (
-                      <td
-                        key={p.start}
-                        aria-current={isLiveCell ? "time" : undefined}
-                        className={cn(
-                          "border p-1.5 align-top",
-                          cell.length === 0 && "text-center",
-                          isToday && "bg-primary/[0.04]",
-                          activeCol && "bg-primary/[0.06]",
-                          isLiveCell &&
-                            "bg-primary/12 ring-2 ring-primary/50 ring-inset",
-                        )}
-                      >
-                        {cell.length === 0 ? (
-                          <span className="text-muted-foreground/40">—</span>
-                        ) : (
-                          <div className="space-y-1.5">
-                            {cell.map((entry) => (
-                              <Entry key={entry.id} entry={entry} />
-                            ))}
-                          </div>
-                        )}
-                      </td>
-                    );
-                  })}
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-
-      {extras.length > 0 && (
-        <div className="border-t p-3">
-          <p className="mb-2 text-xs font-semibold text-muted-foreground">
-            حصص بمواعيد خاصة
-          </p>
-          <ul className="space-y-1.5 text-sm">
-            {extras.map((entry) => (
-              <li
-                key={entry.id}
-                className="flex flex-wrap items-center gap-x-2 gap-y-1"
-              >
-                <span className="font-medium">{DAY_LABELS[entry.day]}</span>
-                <span dir="ltr" className="text-xs text-muted-foreground">
-                  {formatTime(entry.start)} – {formatTime(entry.end)}
-                </span>
-                <span>·</span>
-                <span>{entry.subject}</span>
-                {entry.sub != null && (
-                  <span className="text-xs text-muted-foreground">
-                    ({entry.sub})
-                  </span>
-                )}
-                {zoomLabel && entry.zoomLink && (
-                  <a
-                    href={entry.zoomLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-xs font-medium text-primary underline underline-offset-2"
-                  >
-                    {zoomLabel} 🔗
-                  </a>
-                )}
-                {entryActions?.[entry.id] != null && (
-                  <span className="flex flex-wrap gap-1">
-                    {entryActions[entry.id]}
-                  </span>
-                )}
-              </li>
-            ))}
-          </ul>
+            </tbody>
+          </table>
         </div>
-      )}
 
-        {caption && (
-          <p className="border-t px-3 py-2 text-xs text-muted-foreground">
-            {caption}
-          </p>
+        {extras.length > 0 && (
+          <div className="border-t p-3">
+            <p className="mb-2 text-xs font-semibold text-muted-foreground">
+              حصص بمواعيد خاصة
+            </p>
+            <ul className="space-y-1.5 text-sm">
+              {extras.map((entry) => (
+                <li
+                  key={entry.id}
+                  className="flex flex-wrap items-center gap-x-2 gap-y-1"
+                >
+                  <span className="font-medium">{DAY_LABELS[entry.day]}</span>
+                  <span dir="ltr" className="text-xs text-muted-foreground">
+                    {localRange(entry.day, entry.start, entry.end)}
+                  </span>
+                  <span>·</span>
+                  <span>{entry.subject}</span>
+                  {entry.sub != null && (
+                    <span className="text-xs text-muted-foreground">
+                      ({entry.sub})
+                    </span>
+                  )}
+                  {entryActions?.[entry.id] != null && (
+                    <span className="flex flex-wrap gap-1">
+                      {entryActions[entry.id]}
+                    </span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
         )}
+
+        <p className="border-t px-3 py-2 text-xs text-muted-foreground">
+          {caption && <>{caption} · </>}
+          التوقيتات بتوقيت {tzName}
+        </p>
       </div>
     </div>
   );

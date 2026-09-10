@@ -113,7 +113,7 @@ export default async function AdminClassSchedulePage({
     <PageShell>
       <PageHeader
         title={cls.class_name}
-        description="الجدول الأسبوعي وروابط Zoom — كل الأوقات هنا بتوقيت القاهرة"
+        description="الجدول الأسبوعي وروابط Zoom"
         backHref="/admin/classes"
         backLabel="رجوع للفصول"
         action={

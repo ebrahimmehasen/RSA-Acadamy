@@ -18,6 +18,51 @@ import type { DayOfWeek } from "@/lib/schedule";
  */
 export const SCHOOL_TIMEZONE = "Africa/Cairo";
 
+/** IANA timezone → Arabic country name, for the region our users are in. */
+const TZ_COUNTRY: Record<string, string> = {
+  "Africa/Cairo": "مصر",
+  "Asia/Riyadh": "السعودية",
+  "Asia/Dubai": "الإمارات",
+  "Asia/Kuwait": "الكويت",
+  "Asia/Qatar": "قطر",
+  "Asia/Bahrain": "البحرين",
+  "Asia/Muscat": "عُمان",
+  "Asia/Amman": "الأردن",
+  "Asia/Beirut": "لبنان",
+  "Asia/Baghdad": "العراق",
+  "Asia/Damascus": "سوريا",
+  "Asia/Jerusalem": "فلسطين",
+  "Asia/Gaza": "فلسطين",
+  "Asia/Hebron": "فلسطين",
+  "Africa/Khartoum": "السودان",
+  "Africa/Tripoli": "ليبيا",
+  "Africa/Tunis": "تونس",
+  "Africa/Algiers": "الجزائر",
+  "Africa/Casablanca": "المغرب",
+  "Asia/Aden": "اليمن",
+};
+
+/**
+ * A human label for the timezone the times on screen are shown in —
+ * the viewer's own. A known country name where we have one, otherwise
+ * the localized long zone name, else a generic fallback.
+ */
+export function timezoneLabel(timeZone: string): string {
+  if (TZ_COUNTRY[timeZone]) return TZ_COUNTRY[timeZone];
+  try {
+    const name = new Intl.DateTimeFormat("ar", {
+      timeZone,
+      timeZoneName: "long",
+    })
+      .formatToParts(new Date())
+      .find((p) => p.type === "timeZoneName")?.value;
+    if (name) return name;
+  } catch {
+    // invalid/unknown zone — fall through
+  }
+  return "توقيتك المحلي";
+}
+
 const DAY_INDEX: Record<DayOfWeek, number> = {
   sunday: 0,
   monday: 1,
