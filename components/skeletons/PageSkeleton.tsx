@@ -206,10 +206,10 @@ export function CardGridSkeleton({
   );
 }
 
-/** The weekly timetable matrix (mirrors <ScheduleGrid>). */
+/** The weekly timetable matrix (mirrors <ScheduleGrid>): period columns, day rows. */
 export function ScheduleSkeleton({
-  cols = 5,
-  rows = 6,
+  cols = 6,
+  rows = 5,
 }: {
   cols?: number;
   rows?: number;
@@ -217,16 +217,16 @@ export function ScheduleSkeleton({
   return (
     <div className="overflow-hidden rounded-xl bg-card ring-1 ring-foreground/10">
       <div className="overflow-x-auto p-3">
-        <div className="min-w-[44rem] space-y-2">
+        <div className="min-w-[52rem] space-y-2">
           <div className="flex gap-2">
-            <Skeleton className="h-8 w-28 shrink-0" />
+            <Skeleton className="h-10 w-20 shrink-0" />
             {Array.from({ length: cols }).map((_, i) => (
-              <Skeleton key={i} className="h-8 flex-1" />
+              <Skeleton key={i} className="h-10 flex-1" />
             ))}
           </div>
           {Array.from({ length: rows }).map((_, r) => (
             <div key={r} className="flex gap-2">
-              <Skeleton className="h-16 w-28 shrink-0" />
+              <Skeleton className="h-16 w-20 shrink-0" />
               {Array.from({ length: cols }).map((_, c) => (
                 <Skeleton key={c} className="h-16 flex-1" />
               ))}

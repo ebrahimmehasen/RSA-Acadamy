@@ -96,30 +96,18 @@ export function ScheduleGrid<T extends ScheduleGridEntry>({
   return (
     <div className="overflow-hidden rounded-xl bg-card ring-1 ring-foreground/10">
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[44rem] border-collapse text-sm">
+        <table className="w-full min-w-[52rem] border-collapse text-sm">
           <thead>
             <tr>
               <th className="sticky start-0 z-10 border bg-muted/60 p-2 text-start text-xs font-semibold whitespace-nowrap text-muted-foreground">
-                الحصة
+                اليوم
               </th>
-              {shownDays.map((d) => (
+              {PERIODS.map((p) => (
                 <th
-                  key={d}
-                  className="border bg-muted/60 p-2 text-center font-semibold whitespace-nowrap"
+                  key={p.start}
+                  className="border bg-muted/60 p-2 text-center align-top whitespace-nowrap"
                 >
-                  {DAY_LABELS[d]}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {PERIODS.map((p) => (
-              <tr key={p.start}>
-                <th
-                  scope="row"
-                  className="sticky start-0 z-10 border bg-muted/40 p-2 text-start align-top whitespace-nowrap"
-                >
-                  <span className="block font-medium">{p.label}</span>
+                  <span className="block font-semibold">{p.label}</span>
                   <span
                     className="mt-0.5 block text-xs font-normal text-muted-foreground"
                     dir="ltr"
@@ -127,11 +115,23 @@ export function ScheduleGrid<T extends ScheduleGridEntry>({
                     {formatTime(p.start)} – {formatTime(p.end)}
                   </span>
                 </th>
-                {shownDays.map((d) => {
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {shownDays.map((d) => (
+              <tr key={d}>
+                <th
+                  scope="row"
+                  className="sticky start-0 z-10 border bg-muted/40 p-2 text-start align-top font-medium whitespace-nowrap"
+                >
+                  {DAY_LABELS[d]}
+                </th>
+                {PERIODS.map((p) => {
                   const cell = cellEntries(d, p.start);
                   return (
                     <td
-                      key={d}
+                      key={p.start}
                       className={cn(
                         "border p-1.5 align-top",
                         cell.length === 0 && "text-center",
