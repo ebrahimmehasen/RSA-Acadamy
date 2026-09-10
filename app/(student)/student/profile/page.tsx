@@ -8,6 +8,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { PageShell } from "@/components/shared/PageShell";
+import { PageHeader } from "@/components/shared/PageHeader";
+import { SectionCard } from "@/components/shared/SectionCard";
+import { SignOutButton } from "@/components/shared/SignOutButton";
 import { ProfileForm } from "@/app/settings/profile/ProfileForm";
 
 export default async function StudentProfilePage() {
@@ -29,8 +33,8 @@ export default async function StudentProfilePage() {
   ]);
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold">الملف الشخصي</h1>
+    <PageShell>
+      <PageHeader title="الملف الشخصي" />
 
       <ProfileForm
         fullName={session!.profile.full_name}
@@ -84,6 +88,10 @@ export default async function StudentProfilePage() {
           })}
         </CardContent>
       </Card>
-    </div>
+
+      <SectionCard title="الجلسة" description="تسجيل الخروج من هذا الجهاز">
+        <SignOutButton variant="outline" size="touch" />
+      </SectionCard>
+    </PageShell>
   );
 }

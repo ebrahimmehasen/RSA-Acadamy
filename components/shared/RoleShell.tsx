@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   Calendar,
@@ -24,12 +24,9 @@ import {
   UsersRound,
   ShieldPlus,
   ClipboardCheck,
-  LogOut,
   MoreHorizontal,
   type LucideIcon,
 } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
-import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -41,6 +38,7 @@ import { cn } from "@/lib/utils";
 import { NotificationBell } from "@/components/shared/NotificationBell";
 import { Logo } from "@/components/shared/Logo";
 import { ThemeToggle } from "@/components/shared/ThemeToggle";
+import { SignOutButton } from "@/components/shared/SignOutButton";
 
 export interface NavItem {
   href: string;
@@ -106,7 +104,6 @@ export function RoleShell({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const router = useRouter();
   const [moreOpen, setMoreOpen] = useState(false);
 
   const current = activeHref(pathname, nav);
@@ -117,13 +114,6 @@ export function RoleShell({
 
   const bottomNav = nav.slice(0, 4);
   const bottomHasActive = bottomNav.some((n) => n.href === current);
-
-  async function signOut() {
-    const supabase = createClient();
-    await supabase.auth.signOut();
-    router.replace("/login");
-    router.refresh();
-  }
 
   function renderNavLink(item: NavItem, opts?: { onClick?: () => void }) {
     const Icon = iconForHref(item.href);
@@ -178,15 +168,7 @@ export function RoleShell({
             </p>
             <ThemeToggle />
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            className="w-full justify-center gap-1.5"
-            onClick={signOut}
-          >
-            <LogOut className="size-4" />
-            تسجيل الخروج
-          </Button>
+          <SignOutButton className="w-full justify-center gap-1.5" />
         </div>
       </aside>
       <div className="flex min-w-0 flex-1 flex-col">
@@ -202,15 +184,14 @@ export function RoleShell({
           <div className="flex items-center gap-1">
             <ThemeToggle />
             <NotificationBell profileId={profileId} />
-            <Button
+            <SignOutButton
               variant="ghost"
               size="icon"
-              onClick={signOut}
               className="size-11 md:hidden"
+              showIcon
+              label=""
               aria-label="تسجيل الخروج"
-            >
-              <LogOut className="size-4" aria-hidden="true" />
-            </Button>
+            />
           </div>
         </header>
         <main className="flex-1 p-4 pb-24 md:p-6 md:pb-6">{children}</main>
@@ -261,14 +242,6 @@ export function RoleShell({
                   renderNavLink(item, { onClick: () => setMoreOpen(false) }),
                 )}
               </nav>
-              <Button
-                variant="outline"
-                className="w-full justify-center gap-1.5"
-                onClick={signOut}
-              >
-                <LogOut className="size-4" />
-                تسجيل الخروج
-              </Button>
             </DialogContent>
           </Dialog>
         </nav>
