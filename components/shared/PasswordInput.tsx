@@ -17,11 +17,12 @@ export function PasswordInput({
   const [visible, setVisible] = useState(false);
 
   return (
-    <div className="relative">
+    // The field is LTR (passwords read left-to-right); keep the whole
+    // control LTR so the toggle sits on the right, clear of the text.
+    <div className="relative" dir="ltr">
       <Input
         type={visible ? "text" : "password"}
-        dir="ltr"
-        className={cn("pe-11", className)}
+        className={cn("pr-11", className)}
         {...props}
       />
       <button
@@ -29,7 +30,7 @@ export function PasswordInput({
         onClick={() => setVisible((v) => !v)}
         aria-label={visible ? "إخفاء كلمة السر" : "إظهار كلمة السر"}
         aria-pressed={visible}
-        className="absolute inset-y-0 end-0 flex w-11 items-center justify-center rounded-e-lg text-muted-foreground outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50"
+        className="absolute inset-y-0 right-0 flex w-11 items-center justify-center rounded-r-lg text-muted-foreground outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50"
       >
         {visible ? (
           <EyeOff className="size-4" aria-hidden="true" />
