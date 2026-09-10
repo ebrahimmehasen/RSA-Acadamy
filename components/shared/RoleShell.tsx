@@ -34,6 +34,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { NotificationBell } from "@/components/shared/NotificationBell";
 import { Logo } from "@/components/shared/Logo";
@@ -92,6 +93,7 @@ export function RoleShell({
   title,
   fullName,
   profileId,
+  pictureDriveId = null,
   nav,
   density = "comfortable",
   children,
@@ -99,6 +101,7 @@ export function RoleShell({
   title: string;
   fullName: string;
   profileId: number;
+  pictureDriveId?: string | null;
   nav: NavItem[];
   density?: "comfortable" | "compact";
   children: React.ReactNode;
@@ -107,6 +110,9 @@ export function RoleShell({
   const [moreOpen, setMoreOpen] = useState(false);
 
   const current = activeHref(pathname, nav);
+  const profileHref =
+    nav.find((n) => n.href.endsWith("/profile"))?.href ?? "/settings/profile";
+  const initial = fullName.charAt(0);
   // Trailing shared-settings items get their own group below a divider.
   const tailStart = nav.findIndex((n) => n.href.startsWith("/settings"));
   const mainNav = tailStart === -1 ? nav : nav.slice(0, tailStart);
@@ -160,12 +166,29 @@ export function RoleShell({
         </nav>
         <div className="mt-auto space-y-3 border-t pt-4">
           <div className="flex items-center gap-2 px-1">
-            <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary">
-              {fullName.charAt(0)}
-            </span>
-            <p className="min-w-0 flex-1 truncate text-sm font-medium">
+            <Link
+              href={profileHref}
+              aria-label="الملف الشخصي"
+              className="rounded-full outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+            >
+              <Avatar className="size-8">
+                {pictureDriveId && (
+                  <AvatarImage
+                    src={`/api/files/${pictureDriveId}`}
+                    alt={fullName}
+                  />
+                )}
+                <AvatarFallback className="bg-primary/10 text-sm font-bold text-primary">
+                  {initial}
+                </AvatarFallback>
+              </Avatar>
+            </Link>
+            <Link
+              href={profileHref}
+              className="min-w-0 flex-1 truncate text-sm font-medium outline-none hover:underline focus-visible:underline"
+            >
               {fullName}
-            </p>
+            </Link>
             <ThemeToggle />
           </div>
           <SignOutButton className="w-full justify-center gap-1.5" />
@@ -184,14 +207,23 @@ export function RoleShell({
           <div className="flex items-center gap-1">
             <ThemeToggle />
             <NotificationBell profileId={profileId} />
-            <SignOutButton
-              variant="ghost"
-              size="icon"
-              className="size-11 md:hidden"
-              showIcon
-              label=""
-              aria-label="تسجيل الخروج"
-            />
+            <Link
+              href={profileHref}
+              aria-label="الملف الشخصي"
+              className="flex size-11 items-center justify-center rounded-full outline-none focus-visible:ring-3 focus-visible:ring-ring/50 md:hidden"
+            >
+              <Avatar className="size-9">
+                {pictureDriveId && (
+                  <AvatarImage
+                    src={`/api/files/${pictureDriveId}`}
+                    alt={fullName}
+                  />
+                )}
+                <AvatarFallback className="bg-primary/10 font-bold text-primary">
+                  {initial}
+                </AvatarFallback>
+              </Avatar>
+            </Link>
           </div>
         </header>
         <main className="flex-1 p-4 pb-24 md:p-6 md:pb-6">{children}</main>

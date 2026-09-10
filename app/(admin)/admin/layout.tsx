@@ -19,6 +19,7 @@ export default async function AdminLayout({
       title={title}
       fullName={session.profile.full_name}
       profileId={session.profile.id}
+      pictureDriveId={session.profile.profile_picture_drive_id}
       nav={nav}
       density={density}
     >
