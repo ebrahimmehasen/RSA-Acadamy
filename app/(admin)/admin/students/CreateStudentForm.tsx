@@ -4,12 +4,8 @@ import { useActionState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { SectionCard } from "@/components/shared/SectionCard";
+import { SELECT_CLASS } from "@/lib/ui";
 import {
   createStudentAction,
   type CreateStudentResult,
@@ -26,11 +22,7 @@ export function CreateStudentForm({
   >(createStudentAction, null);
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-lg">إضافة طالب جديد</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
+    <SectionCard title="إضافة طالب جديد" contentClassName="space-y-4">
         <form action={formAction} className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2 sm:col-span-2">
             <Label htmlFor="full_name">الاسم الكامل</Label>
@@ -45,7 +37,7 @@ export function CreateStudentForm({
               id="class_id"
               name="class_id"
               required
-              className="h-8 w-full rounded-lg border border-input bg-background text-foreground px-2 text-sm"
+              className={SELECT_CLASS}
             >
               <option value="">اختر الصف…</option>
               {classes.map((c) => (
@@ -61,7 +53,7 @@ export function CreateStudentForm({
               id="branch"
               name="branch"
               required
-              className="h-8 w-full rounded-lg border border-input bg-background text-foreground px-2 text-sm"
+              className={SELECT_CLASS}
             >
               <option value="Arabic">عربي</option>
               <option value="Languages">لغات</option>
@@ -112,7 +104,6 @@ export function CreateStudentForm({
             </div>
           )}
         </div>
-      </CardContent>
-    </Card>
+    </SectionCard>
   );
 }

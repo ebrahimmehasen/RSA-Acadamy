@@ -1,12 +1,5 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
   Table,
   TableBody,
   TableCell,
@@ -15,6 +8,10 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ConfirmDeleteButton } from "@/components/shared/ConfirmDeleteButton";
+import { PageShell } from "@/components/shared/PageShell";
+import { PageHeader } from "@/components/shared/PageHeader";
+import { SectionCard } from "@/components/shared/SectionCard";
+import { DataCard } from "@/components/shared/DataCard";
 import { AddZoomAccountForm } from "./AddZoomAccountForm";
 import { deleteZoomAccount } from "./actions";
 
@@ -26,40 +23,24 @@ export default async function AdminZoomAccountsPage() {
     .order("id");
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">حسابات زووم</h1>
-        <p className="text-muted-foreground">
-          القائمة الثابتة لروابط زووم التي تظهر للاختيار مباشرةً عند بناء
-          جدول الفصول، بدل كتابة الرابط ومعرّف الاجتماع وكلمة السر يدويًا
-          في كل مرة
-        </p>
-      </div>
+    <PageShell>
+      <PageHeader
+        title="حسابات زووم"
+        description="القائمة الثابتة لروابط زووم التي تظهر للاختيار مباشرةً عند بناء جدول الفصول، بدل كتابة الرابط ومعرّف الاجتماع وكلمة السر يدويًا في كل مرة"
+      />
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">إضافة حساب جديد</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <AddZoomAccountForm />
-        </CardContent>
-      </Card>
+      <SectionCard title="إضافة حساب جديد">
+        <AddZoomAccountForm />
+      </SectionCard>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">الحسابات المتاحة</CardTitle>
-          <CardDescription>
-            {(accounts ?? []).length} حساب
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+      <DataCard title="الحسابات المتاحة" count={(accounts ?? []).length}>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="text-right">الاسم</TableHead>
-                <TableHead className="text-right">الرابط</TableHead>
-                <TableHead className="text-right">Meeting ID</TableHead>
-                <TableHead className="text-right">Passcode</TableHead>
+                <TableHead>الاسم</TableHead>
+                <TableHead>الرابط</TableHead>
+                <TableHead>Meeting ID</TableHead>
+                <TableHead>Passcode</TableHead>
                 <TableHead />
               </TableRow>
             </TableHeader>
@@ -83,15 +64,14 @@ export default async function AdminZoomAccountsPage() {
               ))}
               {(accounts ?? []).length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center text-muted-foreground">
+                  <TableCell colSpan={5} className="py-8 text-center text-muted-foreground">
                     لا توجد حسابات زووم بعد
                   </TableCell>
                 </TableRow>
               )}
             </TableBody>
           </Table>
-        </CardContent>
-      </Card>
-    </div>
+      </DataCard>
+    </PageShell>
   );
 }

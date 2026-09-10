@@ -3,17 +3,19 @@ import Link from "next/link";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { suggestDistribution } from "@/lib/distribution";
 import { DAY_LABELS } from "@/lib/schedule";
+import { CalendarCheck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import { createSlot } from "../actions";
-import { BackLink } from "@/components/shared/BackLink";
+import { PageShell } from "@/components/shared/PageShell";
+import { PageHeader } from "@/components/shared/PageHeader";
+import { EmptyState } from "@/components/shared/EmptyState";
 
 export default async function SuggestDistributionPage({
   params,
@@ -35,25 +37,29 @@ export default async function SuggestDistributionPage({
   const suggestions = await suggestDistribution(id);
 
   return (
-    <div className="space-y-6">
-      <BackLink href={`/admin/classes/${id}`} label={`رجوع لـ ${cls.class_name}`} />
-      <div>
-        <h1 className="text-2xl font-bold">اقتراح توزيع — {cls.class_name}</h1>
-        <CardDescription>
-          مقترحات بناءً على تفضيلات المدرسين وأوقات توافرهم — راجع واعتمد كل
-          صف على حدة، فلا شيء يُحفظ تلقائيًا
-        </CardDescription>
-      </div>
-
-      <Button variant="outline" size="sm" render={<Link href={`/admin/classes/${id}`}>الرجوع للجدول</Link>} />
+    <PageShell>
+      <PageHeader
+        title={`اقتراح توزيع — ${cls.class_name}`}
+        description="مقترحات بناءً على تفضيلات المدرسين وأوقات توافرهم — راجع واعتمد كل صف على حدة، فلا شيء يُحفظ تلقائيًا"
+        backHref={`/admin/classes/${id}`}
+        backLabel={`رجوع لـ ${cls.class_name}`}
+        action={
+          <Button
+            variant="outline"
+            size="sm"
+            render={<Link href={`/admin/classes/${id}`}>الرجوع للجدول</Link>}
+          />
+        }
+      />
 
       {suggestions.length === 0 && (
-        <p className="text-muted-foreground">
-          كل مواد هذا الفصل موزَّعة بالفعل ✅
-        </p>
+        <EmptyState
+          icon={CalendarCheck}
+          title="كل مواد هذا الفصل موزَّعة بالفعل ✅"
+        />
       )}
 
-      <div className="grid gap-3">
+      <div className="grid gap-[var(--card-gap)]">
         {suggestions.map((s) => (
           <Card key={s.subjectId}>
             <CardHeader>
@@ -63,7 +69,7 @@ export default async function SuggestDistributionPage({
               {s.teacherId && s.dayOfWeek && s.startTime && s.endTime ? (
                 <>
                   <p className="text-sm">
-                    <Badge>{s.teacherName}</Badge>{" "}
+                    <Badge variant="info">{s.teacherName}</Badge>{" "}
                     {DAY_LABELS[s.dayOfWeek]}{" "}
                     <span dir="ltr">
                       {s.startTime}–{s.endTime}
@@ -91,6 +97,6 @@ export default async function SuggestDistributionPage({
           </Card>
         ))}
       </div>
-    </div>
+    </PageShell>
   );
 }

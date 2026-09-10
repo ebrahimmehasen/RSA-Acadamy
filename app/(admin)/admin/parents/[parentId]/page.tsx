@@ -1,18 +1,13 @@
 import { notFound } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { EditParentForm } from "./EditParentForm";
 import { LinkChildForm } from "./LinkChildForm";
 import { unlinkChild } from "./actions";
-import { BackLink } from "@/components/shared/BackLink";
+import { PageShell } from "@/components/shared/PageShell";
+import { PageHeader } from "@/components/shared/PageHeader";
+import { SectionCard } from "@/components/shared/SectionCard";
 import { AdminEditLogCard } from "@/components/shared/AdminEditLogCard";
 
 export default async function AdminParentDetailPage({
@@ -50,14 +45,19 @@ export default async function AdminParentDetailPage({
   const { data: authUser } = await supabase.auth.admin.getUserById(profile.user_id);
 
   return (
-    <div className="space-y-6">
-      <BackLink href="/admin/parents" label="رجوع لأولياء الأمور" />
-      <div>
-        <h1 className="text-2xl font-bold">{profile?.full_name}</h1>
-        <p className="text-muted-foreground">
-          {parent.is_active ? <Badge>نشط</Badge> : <Badge variant="destructive">موقوف</Badge>}
-        </p>
-      </div>
+    <PageShell>
+      <PageHeader
+        title={profile?.full_name}
+        backHref="/admin/parents"
+        backLabel="رجوع لأولياء الأمور"
+        description={
+          parent.is_active ? (
+            <Badge variant="success">نشط</Badge>
+          ) : (
+            <Badge variant="destructive">موقوف</Badge>
+          )
+        }
+      />
 
       <EditParentForm
         parentId={parentId}
@@ -67,12 +67,11 @@ export default async function AdminParentDetailPage({
         address={parent.address}
       />
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">الأبناء المربوطين</CardTitle>
-          <CardDescription>{(children ?? []).length} ابن/ابنة</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
+      <SectionCard
+        title="الأبناء المربوطين"
+        description={`${(children ?? []).length} ابن/ابنة`}
+        contentClassName="space-y-4"
+      >
           <div className="space-y-2">
             {(children ?? []).map((c) => {
               const childProfile = c.profiles as unknown as { full_name: string };
@@ -87,7 +86,7 @@ export default async function AdminParentDetailPage({
                   <form action={unlinkChild}>
                     <input type="hidden" name="student_id" value={c.user_id} />
                     <input type="hidden" name="parent_id" value={parentId} />
-                    <Button variant="destructive" size="xs" type="submit">
+                    <Button variant="destructive" size="sm" type="submit">
                       إزالة ابن
                     </Button>
                   </form>
@@ -100,10 +99,9 @@ export default async function AdminParentDetailPage({
           </div>
 
           <LinkChildForm parentId={parentId} />
-        </CardContent>
-      </Card>
+      </SectionCard>
 
       <AdminEditLogCard targetType="parent" targetId={parentId} />
-    </div>
+    </PageShell>
   );
 }

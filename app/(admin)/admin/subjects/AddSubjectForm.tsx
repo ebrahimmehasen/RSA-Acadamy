@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { SELECT_CLASS } from "@/lib/ui";
 import { addSubject } from "./actions";
 
 export function AddSubjectForm({
@@ -18,7 +19,7 @@ export function AddSubjectForm({
           id="class_id"
           name="class_id"
           required
-          className="h-8 w-full rounded-lg border border-input bg-background text-foreground px-2 text-sm"
+          className={SELECT_CLASS}
         >
           {classes.map((c) => (
             <option key={c.id} value={c.id}>
@@ -33,7 +34,7 @@ export function AddSubjectForm({
           id="branch"
           name="branch"
           required
-          className="h-8 w-full rounded-lg border border-input bg-background text-foreground px-2 text-sm"
+          className={SELECT_CLASS}
         >
           <option value="Arabic">عربي</option>
           <option value="Languages">لغات</option>

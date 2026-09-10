@@ -8,6 +8,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { PageShell } from "@/components/shared/PageShell";
+import { PageHeader } from "@/components/shared/PageHeader";
+import { DataCard } from "@/components/shared/DataCard";
 
 const EVENT_LABEL: Record<string, string> = {
   "2fa_enabled": "تفعيل 2FA",
@@ -26,19 +29,18 @@ export default async function AdminSecurityLogsPage() {
     .limit(200);
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">سجل الأمان</h1>
-        <p className="text-muted-foreground">
-          آخر 200 حدث أمني (تفعيل/إلغاء 2FA، محاولات فاشلة، إلخ)
-        </p>
-      </div>
+    <PageShell>
+      <PageHeader
+        title="سجل الأمان"
+        description="آخر 200 حدث أمني (تفعيل/إلغاء 2FA، محاولات فاشلة، إلخ)"
+      />
+      <DataCard title="الأحداث" count={(logs ?? []).length}>
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="text-right">المستخدم</TableHead>
-            <TableHead className="text-right">الحدث</TableHead>
-            <TableHead className="text-right">الوقت</TableHead>
+            <TableHead>المستخدم</TableHead>
+            <TableHead>الحدث</TableHead>
+            <TableHead>الوقت</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -57,20 +59,21 @@ export default async function AdminSecurityLogsPage() {
                   {EVENT_LABEL[log.event_type] ?? log.event_type}
                 </Badge>
               </TableCell>
-              <TableCell dir="ltr" className="text-right">
+              <TableCell dir="ltr" className="text-start">
                 {new Date(log.created_at).toLocaleString("ar-EG")}
               </TableCell>
             </TableRow>
           ))}
           {(logs ?? []).length === 0 && (
             <TableRow>
-              <TableCell colSpan={3} className="text-center text-muted-foreground">
+              <TableCell colSpan={3} className="py-8 text-center text-muted-foreground">
                 لا توجد أحداث مسجلة بعد
               </TableCell>
             </TableRow>
           )}
         </TableBody>
       </Table>
-    </div>
+      </DataCard>
+    </PageShell>
   );
 }

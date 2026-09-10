@@ -1,3 +1,4 @@
+import { Megaphone } from "lucide-react";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -6,6 +7,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { PageShell } from "@/components/shared/PageShell";
+import { PageHeader } from "@/components/shared/PageHeader";
+import { SectionCard } from "@/components/shared/SectionCard";
+import { EmptyState } from "@/components/shared/EmptyState";
 import { AnnouncementForm } from "./AnnouncementForm";
 
 const TARGET_LABEL: Record<string, string> = {
@@ -28,19 +33,14 @@ export default async function AdminAnnouncementsPage() {
   ]);
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold">الإعلانات</h1>
+    <PageShell>
+      <PageHeader title="الإعلانات" description={`${(announcements ?? []).length} إعلان منشور`} />
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">إعلان جديد</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <AnnouncementForm classes={classes ?? []} />
-        </CardContent>
-      </Card>
+      <SectionCard title="إعلان جديد">
+        <AnnouncementForm classes={classes ?? []} />
+      </SectionCard>
 
-      <div className="grid gap-3">
+      <div className="grid gap-[var(--card-gap)]">
         {(announcements ?? []).map((a) => (
           <Card key={a.id}>
             <CardHeader>
@@ -78,9 +78,9 @@ export default async function AdminAnnouncementsPage() {
           </Card>
         ))}
         {(announcements ?? []).length === 0 && (
-          <p className="text-muted-foreground">لا توجد إعلانات بعد</p>
+          <EmptyState icon={Megaphone} title="لا توجد إعلانات بعد" />
         )}
       </div>
-    </div>
+    </PageShell>
   );
 }

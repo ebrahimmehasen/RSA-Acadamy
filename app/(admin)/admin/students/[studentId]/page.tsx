@@ -2,13 +2,6 @@ import { notFound } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { Badge } from "@/components/ui/badge";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
   Table,
   TableBody,
   TableCell,
@@ -19,7 +12,9 @@ import {
 import { EditStudentForm } from "./EditStudentForm";
 import { GradeEditForm } from "./GradeEditForm";
 import { adminUpdateAssignmentGrade, adminUpdateQuizGrade } from "./actions";
-import { BackLink } from "@/components/shared/BackLink";
+import { PageShell } from "@/components/shared/PageShell";
+import { PageHeader } from "@/components/shared/PageHeader";
+import { SectionCard } from "@/components/shared/SectionCard";
 import { AdminEditLogCard } from "@/components/shared/AdminEditLogCard";
 
 export default async function AdminStudentDetailPage({
@@ -90,15 +85,27 @@ export default async function AdminStudentDetailPage({
   }));
 
   return (
-    <div className="space-y-6">
-      <BackLink href="/admin/students" label="رجوع للطلاب" />
-      <div>
-        <h1 className="text-2xl font-bold">{profile?.full_name}</h1>
-        <p className="text-muted-foreground">
-          كود الطالب: <span className="font-mono" dir="ltr">{student.student_code}</span> ·{" "}
-          {student.is_active ? <Badge>نشط</Badge> : <Badge variant="destructive">موقوف</Badge>}
-        </p>
-      </div>
+    <PageShell>
+      <PageHeader
+        title={profile?.full_name}
+        backHref="/admin/students"
+        backLabel="رجوع للطلاب"
+        description={
+          <span className="inline-flex flex-wrap items-center gap-2">
+            <span>
+              كود الطالب:{" "}
+              <span className="font-mono" dir="ltr">
+                {student.student_code}
+              </span>
+            </span>
+            {student.is_active ? (
+              <Badge variant="success">نشط</Badge>
+            ) : (
+              <Badge variant="destructive">موقوف</Badge>
+            )}
+          </span>
+        }
+      />
 
       <EditStudentForm
         studentId={studentId}
@@ -112,38 +119,32 @@ export default async function AdminStudentDetailPage({
         parents={parentOptions}
       />
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">موادّه الدراسية</CardTitle>
-          <CardDescription>{(subjects ?? []).length} مادة</CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-wrap gap-2">
-          {(subjects ?? []).map((s) => {
-            const subject = s.subjects as unknown as { subject_name: string };
-            return (
-              <Badge key={s.subject_id} variant="secondary">
-                {subject?.subject_name}
-              </Badge>
-            );
-          })}
-          {(subjects ?? []).length === 0 && (
-            <p className="text-sm text-muted-foreground">لا توجد مواد مسجَّلة له</p>
-          )}
-        </CardContent>
-      </Card>
+      <SectionCard
+        title="موادّه الدراسية"
+        description={`${(subjects ?? []).length} مادة`}
+        contentClassName="flex flex-wrap gap-2"
+      >
+        {(subjects ?? []).map((s) => {
+          const subject = s.subjects as unknown as { subject_name: string };
+          return (
+            <Badge key={s.subject_id} variant="secondary">
+              {subject?.subject_name}
+            </Badge>
+          );
+        })}
+        {(subjects ?? []).length === 0 && (
+          <p className="text-sm text-muted-foreground">لا توجد مواد مسجَّلة له</p>
+        )}
+      </SectionCard>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">درجات الواجبات</CardTitle>
-        </CardHeader>
-        <CardContent>
+      <SectionCard title="درجات الواجبات" contentClassName="-mx-4 overflow-x-auto sm:mx-0">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="text-right">الواجب</TableHead>
-                <TableHead className="text-right">المادة</TableHead>
-                <TableHead className="text-right">الحالة</TableHead>
-                <TableHead className="text-right">الدرجة</TableHead>
+                <TableHead>الواجب</TableHead>
+                <TableHead>المادة</TableHead>
+                <TableHead>الحالة</TableHead>
+                <TableHead>الدرجة</TableHead>
                 <TableHead />
               </TableRow>
             </TableHeader>
@@ -160,7 +161,7 @@ export default async function AdminStudentDetailPage({
                     <TableCell>{assignment?.subjects?.subject_name}</TableCell>
                     <TableCell>
                       {sub.status === "graded" ? (
-                        <Badge>مصحح</Badge>
+                        <Badge variant="success">مصحح</Badge>
                       ) : (
                         <Badge variant="secondary">تم التسليم</Badge>
                       )}
@@ -187,28 +188,23 @@ export default async function AdminStudentDetailPage({
               })}
               {(assignmentSubs ?? []).length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center text-muted-foreground">
+                  <TableCell colSpan={5} className="py-8 text-center text-muted-foreground">
                     لا توجد تسليمات واجبات بعد
                   </TableCell>
                 </TableRow>
               )}
             </TableBody>
           </Table>
-        </CardContent>
-      </Card>
+      </SectionCard>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">درجات الاختبارات</CardTitle>
-        </CardHeader>
-        <CardContent>
+      <SectionCard title="درجات الاختبارات" contentClassName="-mx-4 overflow-x-auto sm:mx-0">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="text-right">الاختبار</TableHead>
-                <TableHead className="text-right">المادة</TableHead>
-                <TableHead className="text-right">الحالة</TableHead>
-                <TableHead className="text-right">الدرجة</TableHead>
+                <TableHead>الاختبار</TableHead>
+                <TableHead>المادة</TableHead>
+                <TableHead>الحالة</TableHead>
+                <TableHead>الدرجة</TableHead>
                 <TableHead />
               </TableRow>
             </TableHeader>
@@ -224,7 +220,7 @@ export default async function AdminStudentDetailPage({
                     <TableCell>{quiz?.subjects?.subject_name}</TableCell>
                     <TableCell>
                       {sub.status === "graded" ? (
-                        <Badge>مصحح</Badge>
+                        <Badge variant="success">مصحح</Badge>
                       ) : sub.status === "submitted" ? (
                         <Badge variant="secondary">قيد التصحيح</Badge>
                       ) : (
@@ -248,17 +244,16 @@ export default async function AdminStudentDetailPage({
               })}
               {(quizSubs ?? []).length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center text-muted-foreground">
+                  <TableCell colSpan={5} className="py-8 text-center text-muted-foreground">
                     لا توجد تسليمات اختبارات بعد
                   </TableCell>
                 </TableRow>
               )}
             </TableBody>
           </Table>
-        </CardContent>
-      </Card>
+      </SectionCard>
 
       <AdminEditLogCard targetType="student" targetId={studentId} />
-    </div>
+    </PageShell>
   );
 }

@@ -10,6 +10,9 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { ConfirmDeleteButton } from "@/components/shared/ConfirmDeleteButton";
+import { PageShell } from "@/components/shared/PageShell";
+import { PageHeader } from "@/components/shared/PageHeader";
+import { DataCard } from "@/components/shared/DataCard";
 import { CreateAdminForm } from "./CreateAdminForm";
 import { deleteAdminAction } from "./actions";
 
@@ -31,16 +34,20 @@ export default async function AdminAdminsPage() {
   );
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold">فريق الإدارة</h1>
+    <PageShell>
+      <PageHeader
+        title="فريق الإدارة"
+        description={`${(admins ?? []).length} مسؤول`}
+      />
 
       <CreateAdminForm />
 
+      <DataCard title="المسؤولون" count={(admins ?? []).length}>
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="text-right">الاسم</TableHead>
-            <TableHead className="text-right">البريد الإلكتروني</TableHead>
+            <TableHead>الاسم</TableHead>
+            <TableHead>البريد الإلكتروني</TableHead>
             <TableHead />
           </TableRow>
         </TableHeader>
@@ -55,10 +62,10 @@ export default async function AdminAdminsPage() {
                   </Badge>
                 )}
                 {a.is_super_admin && (
-                  <Badge className="mr-2">المسؤول الرئيسي</Badge>
+                  <Badge className="mr-2" variant="info">المسؤول الرئيسي</Badge>
                 )}
               </TableCell>
-              <TableCell dir="ltr" className="text-right">
+              <TableCell dir="ltr" className="text-start">
                 {emailByUserId.get(a.user_id) ?? "—"}
               </TableCell>
               <TableCell>
@@ -74,13 +81,14 @@ export default async function AdminAdminsPage() {
           ))}
           {(admins ?? []).length === 0 && (
             <TableRow>
-              <TableCell colSpan={3} className="text-center text-muted-foreground">
+              <TableCell colSpan={3} className="py-8 text-center text-muted-foreground">
                 لا يوجد مسؤولون بعد
               </TableCell>
             </TableRow>
           )}
         </TableBody>
       </Table>
-    </div>
+      </DataCard>
+    </PageShell>
   );
 }

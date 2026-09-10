@@ -26,8 +26,9 @@ import Link from "next/link";
 import { createSlot, deleteSlot, updateSlot } from "./actions";
 import { AddSlotForm } from "./AddSlotForm";
 import { EditSlotForm } from "./EditSlotForm";
-import { BackLink } from "@/components/shared/BackLink";
 import { ConfirmDeleteButton } from "@/components/shared/ConfirmDeleteButton";
+import { PageShell } from "@/components/shared/PageShell";
+import { PageHeader } from "@/components/shared/PageHeader";
 import { branchLabel } from "@/lib/subjects";
 
 export default async function AdminClassSchedulePage({
@@ -92,21 +93,22 @@ export default async function AdminClassSchedulePage({
   }));
 
   return (
-    <div className="space-y-6">
-      <BackLink href="/admin/classes" label="رجوع للفصول" />
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div>
-          <h1 className="text-2xl font-bold">{cls.class_name}</h1>
-          <p className="text-muted-foreground">
-            الجدول الأسبوعي وروابط Zoom — كل الأوقات هنا بتوقيت القاهرة
-          </p>
-        </div>
-        <Button
-          variant="outline"
-          size="sm"
-          render={<Link href={`/admin/classes/${id}/suggest`}>اقتراح توزيع 🪄</Link>}
-        />
-      </div>
+    <PageShell>
+      <PageHeader
+        title={cls.class_name}
+        description="الجدول الأسبوعي وروابط Zoom — كل الأوقات هنا بتوقيت القاهرة"
+        backHref="/admin/classes"
+        backLabel="رجوع للفصول"
+        action={
+          <Button
+            variant="outline"
+            size="sm"
+            render={
+              <Link href={`/admin/classes/${id}/suggest`}>اقتراح توزيع 🪄</Link>
+            }
+          />
+        }
+      />
 
       {DAYS.map((day) => {
         const daySlots = typedSlots.filter((s) => s.day_of_week === day);
@@ -189,6 +191,6 @@ export default async function AdminClassSchedulePage({
           />
         </CardContent>
       </Card>
-    </div>
+    </PageShell>
   );
 }

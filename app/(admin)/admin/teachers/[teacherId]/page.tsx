@@ -5,13 +5,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
   Table,
   TableBody,
   TableCell,
@@ -19,9 +12,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Users, ClipboardList, FileQuestion } from "lucide-react";
 import { updateTeacherSubjects } from "../actions";
 import { EditTeacherForm } from "./EditTeacherForm";
-import { BackLink } from "@/components/shared/BackLink";
+import { PageShell } from "@/components/shared/PageShell";
+import { PageHeader } from "@/components/shared/PageHeader";
+import { SectionCard } from "@/components/shared/SectionCard";
+import { StatGrid } from "@/components/shared/StatGrid";
+import { StatCard } from "@/components/shared/StatCard";
 import { AdminEditLogCard } from "@/components/shared/AdminEditLogCard";
 import { branchLabel } from "@/lib/subjects";
 
@@ -131,27 +129,38 @@ export default async function AdminTeacherDetailPage({
   }
 
   return (
-    <div className="space-y-6">
-      <BackLink href="/admin/teachers" label="رجوع للمدرسين" />
-      <div>
-        <h1 className="text-2xl font-bold">{profile?.full_name}</h1>
-        <p className="text-muted-foreground">
-          {teacher.specialization ?? "بدون تخصص"}
-          {teacher.qualification ? ` · ${teacher.qualification}` : ""} ·{" "}
-          <span dir="ltr">{profile?.phone ?? "—"}</span> ·{" "}
-          {teacher.is_active ? <Badge>نشط</Badge> : <Badge variant="destructive">موقوف</Badge>}
-        </p>
-        {teacher.cv_drive_id && (
-          <a
-            href={`/api/files/${teacher.cv_drive_id}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-2 inline-block text-sm text-primary underline underline-offset-4"
-          >
-            تحميل السيرة الذاتية (CV) 📄
-          </a>
-        )}
-      </div>
+    <PageShell>
+      <PageHeader
+        title={profile?.full_name}
+        backHref="/admin/teachers"
+        backLabel="رجوع للمدرسين"
+        description={
+          <span className="inline-flex flex-wrap items-center gap-2">
+            <span>
+              {teacher.specialization ?? "بدون تخصص"}
+              {teacher.qualification ? ` · ${teacher.qualification}` : ""} ·{" "}
+              <span dir="ltr">{profile?.phone ?? "—"}</span>
+            </span>
+            {teacher.is_active ? (
+              <Badge variant="success">نشط</Badge>
+            ) : (
+              <Badge variant="destructive">موقوف</Badge>
+            )}
+          </span>
+        }
+        action={
+          teacher.cv_drive_id ? (
+            <a
+              href={`/api/files/${teacher.cv_drive_id}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm text-primary underline underline-offset-4"
+            >
+              تحميل السيرة الذاتية (CV) 📄
+            </a>
+          ) : undefined
+        }
+      />
 
       <EditTeacherForm
         teacherId={teacherId}
@@ -162,39 +171,20 @@ export default async function AdminTeacherDetailPage({
         qualification={teacher.qualification}
       />
 
-      <div className="grid gap-4 sm:grid-cols-3">
-        <Card>
-          <CardHeader>
-            <CardDescription>عدد الفصول</CardDescription>
-            <CardTitle className="text-3xl">{classesTaught.size}</CardTitle>
-          </CardHeader>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardDescription>عدد الواجبات</CardDescription>
-            <CardTitle className="text-3xl">{(assignments ?? []).length}</CardTitle>
-          </CardHeader>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardDescription>عدد الاختبارات</CardDescription>
-            <CardTitle className="text-3xl">{(quizzes ?? []).length}</CardTitle>
-          </CardHeader>
-        </Card>
-      </div>
+      <StatGrid cols={3}>
+        <StatCard label="عدد الفصول" value={classesTaught.size} icon={Users} />
+        <StatCard label="عدد الواجبات" value={(assignments ?? []).length} icon={ClipboardList} tone="info" />
+        <StatCard label="عدد الاختبارات" value={(quizzes ?? []).length} icon={FileQuestion} tone="success" />
+      </StatGrid>
 
       {statsByClass.size > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">تفصيل حسب الفصل</CardTitle>
-          </CardHeader>
-          <CardContent>
+        <SectionCard title="تفصيل حسب الفصل" contentClassName="-mx-4 overflow-x-auto sm:mx-0">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="text-right">الفصل</TableHead>
-                  <TableHead className="text-right">الواجبات</TableHead>
-                  <TableHead className="text-right">الاختبارات</TableHead>
+                  <TableHead>الفصل</TableHead>
+                  <TableHead>الواجبات</TableHead>
+                  <TableHead>الاختبارات</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -207,24 +197,22 @@ export default async function AdminTeacherDetailPage({
                 ))}
               </TableBody>
             </Table>
-          </CardContent>
-        </Card>
+        </SectionCard>
       )}
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">الجدول الحالي</CardTitle>
-          <CardDescription>الحصص المسندة فعليًا لهذا المدرس في الجدول</CardDescription>
-        </CardHeader>
-        <CardContent>
+      <SectionCard
+        title="الجدول الحالي"
+        description="الحصص المسندة فعليًا لهذا المدرس في الجدول"
+        contentClassName="-mx-4 overflow-x-auto sm:mx-0"
+      >
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="text-right">اليوم</TableHead>
-                <TableHead className="text-right">الوقت</TableHead>
-                <TableHead className="text-right">الفصل</TableHead>
-                <TableHead className="text-right">المادة</TableHead>
-                <TableHead className="text-right">الحالة</TableHead>
+                <TableHead>اليوم</TableHead>
+                <TableHead>الوقت</TableHead>
+                <TableHead>الفصل</TableHead>
+                <TableHead>المادة</TableHead>
+                <TableHead>الحالة</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -241,28 +229,30 @@ export default async function AdminTeacherDetailPage({
                     {(row.subjects as unknown as { subject_name: string })?.subject_name}
                   </TableCell>
                   <TableCell>
-                    {row.is_active ? <Badge>نشط</Badge> : <Badge variant="outline">موقوف</Badge>}
+                    {row.is_active ? (
+                      <Badge variant="success">نشط</Badge>
+                    ) : (
+                      <Badge variant="outline">موقوف</Badge>
+                    )}
                   </TableCell>
                 </TableRow>
               ))}
               {(schedule ?? []).length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center text-muted-foreground">
+                  <TableCell colSpan={5} className="py-8 text-center text-muted-foreground">
                     لا توجد حصص مسندة بعد
                   </TableCell>
                 </TableRow>
               )}
             </TableBody>
           </Table>
-        </CardContent>
-      </Card>
+      </SectionCard>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">أوقات التفرغ</CardTitle>
-          <CardDescription>الأوقات التي حدّد المدرس أنه متاح فيها أسبوعيًا</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-2">
+      <SectionCard
+        title="أوقات التفرغ"
+        description="الأوقات التي حدّد المدرس أنه متاح فيها أسبوعيًا"
+        contentClassName="space-y-2"
+      >
           {(availability ?? []).length === 0 && (
             <p className="text-sm text-muted-foreground">لا توجد أوقات تفرغ محددة بعد</p>
           )}
@@ -284,17 +274,12 @@ export default async function AdminTeacherDetailPage({
               </div>
             );
           })}
-        </CardContent>
-      </Card>
+      </SectionCard>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">المواد التي يمكنه تدريسها</CardTitle>
-          <CardDescription>
-            تساعد في اقتراح توزيع الجدول تلقائيًا، ويمكن للمسؤول تعديلها هنا
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+      <SectionCard
+        title="المواد التي يمكنه تدريسها"
+        description="تساعد في اقتراح توزيع الجدول تلقائيًا، ويمكن للمسؤول تعديلها هنا"
+      >
           <form action={updateTeacherSubjects} className="space-y-6">
             <input type="hidden" name="teacher_id" value={teacherId} />
             {[...subjectsByClass.entries()].map(([className, subs]) => (
@@ -321,10 +306,9 @@ export default async function AdminTeacherDetailPage({
               حفظ المواد
             </Button>
           </form>
-        </CardContent>
-      </Card>
+      </SectionCard>
 
       <AdminEditLogCard targetType="teacher" targetId={teacherId} />
-    </div>
+    </PageShell>
   );
 }

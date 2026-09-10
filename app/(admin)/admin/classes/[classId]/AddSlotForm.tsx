@@ -5,6 +5,7 @@ import { DAYS, DAY_LABELS, PERIODS, formatTime, periodValue } from "@/lib/schedu
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { SELECT_CLASS } from "@/lib/ui";
 
 export function AddSlotForm({
   classId,
@@ -43,7 +44,7 @@ export function AddSlotForm({
           id="subject_id"
           name="subject_id"
           required
-          className="h-8 w-full rounded-lg border border-input bg-background text-foreground px-2 text-sm"
+          className={SELECT_CLASS}
         >
           <option value="">اختر المادة…</option>
           {subjects.map((s) => (
@@ -59,7 +60,7 @@ export function AddSlotForm({
         <select
           id="teacher_id"
           name="teacher_id"
-          className="h-8 w-full rounded-lg border border-input bg-background text-foreground px-2 text-sm"
+          className={SELECT_CLASS}
         >
           <option value="">غير محدد</option>
           {teachers.map((t) => (
@@ -76,7 +77,7 @@ export function AddSlotForm({
           id="day_of_week"
           name="day_of_week"
           required
-          className="h-8 w-full rounded-lg border border-input bg-background text-foreground px-2 text-sm"
+          className={SELECT_CLASS}
         >
           {DAYS.map((d) => (
             <option key={d} value={d}>
@@ -119,7 +120,7 @@ export function AddSlotForm({
             id="period"
             name="period"
             required
-            className="h-8 w-full rounded-lg border border-input bg-background text-foreground px-2 text-sm"
+            className={SELECT_CLASS}
           >
             {PERIODS.map((p) => (
               <option key={periodValue(p)} value={periodValue(p)}>
@@ -158,7 +159,7 @@ export function AddSlotForm({
         <select
           id="zoom_account_id"
           name="zoom_account_id"
-          className="h-8 w-full rounded-lg border border-input bg-background text-foreground px-2 text-sm"
+          className={SELECT_CLASS}
         >
           <option value="">بدون رابط</option>
           {zoomAccounts.map((z) => (

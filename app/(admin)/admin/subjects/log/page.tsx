@@ -1,6 +1,5 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { Badge } from "@/components/ui/badge";
-import { BackLink } from "@/components/shared/BackLink";
 import {
   Table,
   TableBody,
@@ -9,9 +8,15 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { PageShell } from "@/components/shared/PageShell";
+import { PageHeader } from "@/components/shared/PageHeader";
+import { DataCard } from "@/components/shared/DataCard";
 
-const ACTION_LABEL: Record<string, { label: string; variant: "default" | "destructive" | "secondary" }> = {
-  enrolled: { label: "تسجيل", variant: "default" },
+const ACTION_LABEL: Record<
+  string,
+  { label: string; variant: "success" | "destructive" | "secondary" }
+> = {
+  enrolled: { label: "تسجيل", variant: "success" },
   removed: { label: "إلغاء", variant: "destructive" },
   restored: { label: "استرجاع", variant: "secondary" },
 };
@@ -28,22 +33,22 @@ export default async function SubjectEnrollmentLogPage() {
     .limit(200);
 
   return (
-    <div className="space-y-6">
-      <BackLink href="/admin/subjects" label="رجوع للمواد" />
-      <div>
-        <h1 className="text-2xl font-bold">سجل تسجيل المواد</h1>
-        <p className="text-muted-foreground">
-          آخر 200 عملية تسجيل/إلغاء/استرجاع مادة لأي طالب
-        </p>
-      </div>
+    <PageShell>
+      <PageHeader
+        title="سجل تسجيل المواد"
+        description="آخر 200 عملية تسجيل/إلغاء/استرجاع مادة لأي طالب"
+        backHref="/admin/subjects"
+        backLabel="رجوع للمواد"
+      />
+      <DataCard title="العمليات" count={(logs ?? []).length}>
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="text-right">الطالب</TableHead>
-            <TableHead className="text-right">المادة</TableHead>
-            <TableHead className="text-right">العملية</TableHead>
-            <TableHead className="text-right">السبب</TableHead>
-            <TableHead className="text-right">الوقت</TableHead>
+            <TableHead>الطالب</TableHead>
+            <TableHead>المادة</TableHead>
+            <TableHead>العملية</TableHead>
+            <TableHead>السبب</TableHead>
+            <TableHead>الوقت</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -55,7 +60,7 @@ export default async function SubjectEnrollmentLogPage() {
             const subject = log.subjects as unknown as { subject_name: string };
             const action = ACTION_LABEL[log.action] ?? {
               label: log.action,
-              variant: "secondary" as const,
+              variant: "secondary" as "success" | "destructive" | "secondary",
             };
             return (
               <TableRow key={log.id}>
@@ -72,7 +77,7 @@ export default async function SubjectEnrollmentLogPage() {
                 <TableCell className="text-muted-foreground">
                   {log.reason ?? "—"}
                 </TableCell>
-                <TableCell dir="ltr" className="text-right">
+                <TableCell dir="ltr" className="text-start">
                   {new Date(log.action_date).toLocaleString("ar-EG")}
                 </TableCell>
               </TableRow>
@@ -80,13 +85,14 @@ export default async function SubjectEnrollmentLogPage() {
           })}
           {(logs ?? []).length === 0 && (
             <TableRow>
-              <TableCell colSpan={5} className="text-center text-muted-foreground">
+              <TableCell colSpan={5} className="py-8 text-center text-muted-foreground">
                 لا توجد عمليات مسجلة بعد
               </TableCell>
             </TableRow>
           )}
         </TableBody>
       </Table>
-    </div>
+      </DataCard>
+    </PageShell>
   );
 }

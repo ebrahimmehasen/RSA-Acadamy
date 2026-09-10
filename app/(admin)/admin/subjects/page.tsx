@@ -18,6 +18,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { PageShell } from "@/components/shared/PageShell";
+import { PageHeader } from "@/components/shared/PageHeader";
+import { SectionCard } from "@/components/shared/SectionCard";
+import { SELECT_CLASS } from "@/lib/ui";
 import { AddSubjectForm } from "./AddSubjectForm";
 import { EditSubjectName } from "./EditSubjectName";
 import { toggleSubject } from "./actions";
@@ -89,30 +93,22 @@ export default async function AdminSubjectsPage({
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div>
-          <h1 className="text-2xl font-bold">إدارة المواد الدراسية</h1>
-          <p className="text-muted-foreground">
-            {total} مادة في الكتالوج — يُسجَّل طلاب الفصل الجدد تلقائيًا في
-            مواد فصلهم وشعبتهم
-          </p>
-        </div>
-        <Button
-          variant="outline"
-          size="sm"
-          render={<Link href="/admin/subjects/log">سجل التسجيل 📋</Link>}
-        />
-      </div>
+    <PageShell>
+      <PageHeader
+        title="إدارة المواد الدراسية"
+        description={`${total} مادة في الكتالوج — يُسجَّل طلاب الفصل الجدد تلقائيًا في مواد فصلهم وشعبتهم`}
+        action={
+          <Button
+            variant="outline"
+            size="sm"
+            render={<Link href="/admin/subjects/log">سجل التسجيل 📋</Link>}
+          />
+        }
+      />
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">إضافة مادة جديدة</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <AddSubjectForm classes={classes ?? []} />
-        </CardContent>
-      </Card>
+      <SectionCard title="إضافة مادة جديدة">
+        <AddSubjectForm classes={classes ?? []} />
+      </SectionCard>
 
       <Card>
         <CardHeader>
@@ -130,7 +126,7 @@ export default async function AdminSubjectsPage({
                 id="class_id"
                 name="class_id"
                 defaultValue={filters.class_id ?? ""}
-                className="h-8 w-full rounded-lg border border-input bg-background px-2 text-sm text-foreground"
+                className={SELECT_CLASS}
               >
                 <option value="">كل الصفوف</option>
                 {(classes ?? []).map((c) => (
@@ -146,7 +142,7 @@ export default async function AdminSubjectsPage({
                 id="branch"
                 name="branch"
                 defaultValue={filters.branch ?? ""}
-                className="h-8 w-full rounded-lg border border-input bg-background px-2 text-sm text-foreground"
+                className={SELECT_CLASS}
               >
                 <option value="">كل الشعب</option>
                 <option value="Arabic">عربي</option>
@@ -159,7 +155,7 @@ export default async function AdminSubjectsPage({
                 id="status"
                 name="status"
                 defaultValue={filters.status ?? ""}
-                className="h-8 w-full rounded-lg border border-input bg-background px-2 text-sm text-foreground"
+                className={SELECT_CLASS}
               >
                 <option value="">الكل</option>
                 <option value="active">نشط</option>
@@ -178,14 +174,15 @@ export default async function AdminSubjectsPage({
             </div>
           </form>
 
+          <div className="-mx-4 overflow-x-auto sm:mx-0">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="text-right">المادة</TableHead>
-                <TableHead className="text-right">الصف</TableHead>
-                <TableHead className="text-right">الشعبة</TableHead>
-                <TableHead className="text-right">الكود</TableHead>
-                <TableHead className="text-right">الحالة</TableHead>
+                <TableHead>المادة</TableHead>
+                <TableHead>الصف</TableHead>
+                <TableHead>الشعبة</TableHead>
+                <TableHead>الكود</TableHead>
+                <TableHead>الحالة</TableHead>
                 <TableHead />
               </TableRow>
             </TableHeader>
@@ -202,12 +199,12 @@ export default async function AdminSubjectsPage({
                     {(s.classes as unknown as { class_name: string })?.class_name}
                   </TableCell>
                   <TableCell>{s.branch === "Arabic" ? "عربي" : "لغات"}</TableCell>
-                  <TableCell dir="ltr" className="text-right font-mono text-xs">
+                  <TableCell dir="ltr" className="text-start font-mono text-xs">
                     {s.subject_id}
                   </TableCell>
                   <TableCell>
                     {s.is_active ? (
-                      <Badge>نشط</Badge>
+                      <Badge variant="success">نشط</Badge>
                     ) : (
                       <Badge variant="outline">موقوف</Badge>
                     )}
@@ -220,7 +217,7 @@ export default async function AdminSubjectsPage({
                         name="is_active"
                         value={String(s.is_active)}
                       />
-                      <Button variant="outline" size="xs" type="submit">
+                      <Button variant="outline" size="sm" type="submit">
                         {s.is_active ? "إيقاف" : "تفعيل"}
                       </Button>
                     </form>
@@ -229,13 +226,14 @@ export default async function AdminSubjectsPage({
               ))}
               {subjects.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center text-muted-foreground">
+                  <TableCell colSpan={6} className="py-8 text-center text-muted-foreground">
                     لا توجد نتائج مطابقة
                   </TableCell>
                 </TableRow>
               )}
             </TableBody>
           </Table>
+          </div>
 
           {totalPages > 1 && (
             <div className="flex flex-wrap items-center justify-between gap-2 pt-2">
@@ -256,6 +254,6 @@ export default async function AdminSubjectsPage({
           )}
         </CardContent>
       </Card>
-    </div>
+    </PageShell>
   );
 }

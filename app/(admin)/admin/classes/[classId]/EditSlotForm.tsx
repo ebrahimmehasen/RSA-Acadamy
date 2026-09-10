@@ -5,6 +5,7 @@ import { DAYS, DAY_LABELS, PERIODS, formatTime, periodValue } from "@/lib/schedu
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { SELECT_CLASS } from "@/lib/ui";
 import {
   Dialog,
   DialogClose,
@@ -73,7 +74,7 @@ export function EditSlotForm({
               name="subject_id"
               required
               defaultValue={slot.subject_id}
-              className="h-8 w-full rounded-lg border border-input bg-background text-foreground px-2 text-sm"
+              className={SELECT_CLASS}
             >
               {subjects.map((s) => (
                 <option key={s.id} value={s.id}>
@@ -89,7 +90,7 @@ export function EditSlotForm({
               id={`teacher_id-${slot.id}`}
               name="teacher_id"
               defaultValue={slot.teacher_id ?? ""}
-              className="h-8 w-full rounded-lg border border-input bg-background text-foreground px-2 text-sm"
+              className={SELECT_CLASS}
             >
               <option value="">غير محدد</option>
               {teachers.map((t) => (
@@ -107,7 +108,7 @@ export function EditSlotForm({
               name="day_of_week"
               required
               defaultValue={slot.day_of_week}
-              className="h-8 w-full rounded-lg border border-input bg-background text-foreground px-2 text-sm"
+              className={SELECT_CLASS}
             >
               {DAYS.map((d) => (
                 <option key={d} value={d}>
@@ -151,7 +152,7 @@ export function EditSlotForm({
                 name="period"
                 required
                 defaultValue={isFixedPeriod ? currentPeriod : undefined}
-                className="h-8 w-full rounded-lg border border-input bg-background text-foreground px-2 text-sm"
+                className={SELECT_CLASS}
               >
                 {PERIODS.map((p) => (
                   <option key={periodValue(p)} value={periodValue(p)}>
@@ -193,7 +194,7 @@ export function EditSlotForm({
               id={`zoom_account_id-${slot.id}`}
               name="zoom_account_id"
               defaultValue="keep"
-              className="h-8 w-full rounded-lg border border-input bg-background text-foreground px-2 text-sm"
+              className={SELECT_CLASS}
             >
               <option value="keep">إبقاء الرابط الحالي بدون تغيير</option>
               <option value="none">إزالة الرابط</option>

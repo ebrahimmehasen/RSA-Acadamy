@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
+import { SELECT_CLASS } from "@/lib/ui";
 import { createAnnouncement } from "./actions";
 
 export function AnnouncementForm({
@@ -58,7 +60,7 @@ export function AnnouncementForm({
           name="target_type"
           value={targetType}
           onChange={(e) => setTargetType(e.target.value)}
-          className="h-8 w-full rounded-lg border border-input bg-background text-foreground px-2 text-sm sm:w-64"
+          className={cn(SELECT_CLASS, "sm:w-64")}
         >
           <option value="all">الجميع</option>
           <option value="role">دور محدد</option>
@@ -74,7 +76,7 @@ export function AnnouncementForm({
           <select
             id="target_role"
             name="target_role"
-            className="h-8 w-full rounded-lg border border-input bg-background text-foreground px-2 text-sm sm:w-64"
+            className={cn(SELECT_CLASS, "sm:w-64")}
           >
             <option value="student">الطلاب</option>
             <option value="parent">أولياء الأمور</option>
@@ -89,7 +91,7 @@ export function AnnouncementForm({
           <select
             id="target_class_id"
             name="target_class_id"
-            className="h-8 w-full rounded-lg border border-input bg-background text-foreground px-2 text-sm sm:w-64"
+            className={cn(SELECT_CLASS, "sm:w-64")}
           >
             {classes.map((c) => (
               <option key={c.id} value={c.id}>
@@ -106,7 +108,7 @@ export function AnnouncementForm({
           <select
             id="target_branch"
             name="target_branch"
-            className="h-8 w-full rounded-lg border border-input bg-background text-foreground px-2 text-sm sm:w-64"
+            className={cn(SELECT_CLASS, "sm:w-64")}
           >
             <option value="Arabic">عربي</option>
             <option value="Languages">لغات</option>

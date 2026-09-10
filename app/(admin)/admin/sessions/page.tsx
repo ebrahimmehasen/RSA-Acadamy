@@ -1,3 +1,4 @@
+import { Video } from "lucide-react";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -7,6 +8,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { PageShell } from "@/components/shared/PageShell";
+import { PageHeader } from "@/components/shared/PageHeader";
+import { EmptyState } from "@/components/shared/EmptyState";
 import { toggleArchived, togglePublished } from "./actions";
 
 export default async function AdminSessionsPage() {
@@ -21,9 +25,12 @@ export default async function AdminSessionsPage() {
     .limit(100);
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold">إدارة الحصص المسجلة</h1>
-      <div className="grid gap-3">
+    <PageShell>
+      <PageHeader
+        title="إدارة الحصص المسجلة"
+        description={`${(sessions ?? []).length} حصة`}
+      />
+      <div className="grid gap-[var(--card-gap)]">
         {(sessions ?? []).map((s) => {
           const teacherName = (
             s.teachers as unknown as { profiles: { full_name: string } }
@@ -36,11 +43,11 @@ export default async function AdminSessionsPage() {
                   <div className="flex gap-1">
                     {s.is_archived && <Badge variant="destructive">مؤرشفة</Badge>}
                     {s.is_published ? (
-                      <Badge>منشورة</Badge>
+                      <Badge variant="success">منشورة</Badge>
                     ) : (
                       <Badge variant="outline">غير منشورة</Badge>
                     )}
-                    {!s.is_public && <Badge variant="secondary">وصول مقيّد</Badge>}
+                    {!s.is_public && <Badge variant="warning">وصول مقيّد</Badge>}
                   </div>
                 </div>
               </CardHeader>
@@ -63,7 +70,7 @@ export default async function AdminSessionsPage() {
                       name="is_published"
                       value={String(s.is_published)}
                     />
-                    <Button variant="outline" size="xs" type="submit">
+                    <Button variant="outline" size="sm" type="submit">
                       {s.is_published ? "إلغاء النشر" : "نشر"}
                     </Button>
                   </form>
@@ -74,7 +81,7 @@ export default async function AdminSessionsPage() {
                       name="is_archived"
                       value={String(s.is_archived)}
                     />
-                    <Button variant="outline" size="xs" type="submit">
+                    <Button variant="outline" size="sm" type="submit">
                       {s.is_archived ? "استرجاع من الأرشيف" : "أرشفة"}
                     </Button>
                   </form>
@@ -84,9 +91,9 @@ export default async function AdminSessionsPage() {
           );
         })}
         {(sessions ?? []).length === 0 && (
-          <p className="text-muted-foreground">لا توجد حصص مرفوعة بعد</p>
+          <EmptyState icon={Video} title="لا توجد حصص مرفوعة بعد" />
         )}
       </div>
-    </div>
+    </PageShell>
   );
 }

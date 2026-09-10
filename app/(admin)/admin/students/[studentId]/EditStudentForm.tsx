@@ -10,6 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { SELECT_CLASS } from "@/lib/ui";
 import {
   editStudentAction,
   resetStudentPasswordAction,
@@ -96,7 +97,7 @@ export function EditStudentForm({
               id="class_id"
               name="class_id"
               defaultValue={classId ?? ""}
-              className="h-8 w-full rounded-lg border border-input bg-background text-foreground px-2 text-sm"
+              className={SELECT_CLASS}
             >
               <option value="">—</option>
               {classes.map((c) => (
@@ -112,7 +113,7 @@ export function EditStudentForm({
               id="branch"
               name="branch"
               defaultValue={branch ?? ""}
-              className="h-8 w-full rounded-lg border border-input bg-background text-foreground px-2 text-sm"
+              className={SELECT_CLASS}
             >
               <option value="">—</option>
               <option value="Arabic">عربي</option>
@@ -125,7 +126,7 @@ export function EditStudentForm({
               id="parent_id"
               name="parent_id"
               defaultValue={parentId ?? ""}
-              className="h-8 w-full rounded-lg border border-input bg-background text-foreground px-2 text-sm"
+              className={SELECT_CLASS}
             >
               <option value="">غير مربوط</option>
               {parents.map((p) => (
