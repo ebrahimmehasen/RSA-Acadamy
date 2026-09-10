@@ -65,6 +65,20 @@ export function CreateAssignmentForm({
           </div>
 
           <div className="space-y-2">
+            <Label htmlFor="branch">الشعبة المستهدفة</Label>
+            <select
+              id="branch"
+              name="branch"
+              defaultValue=""
+              className="h-8 w-full rounded-lg border border-input bg-background px-2 text-sm text-foreground"
+            >
+              <option value="">الفصل كله (الشعبتين)</option>
+              <option value="Arabic">شعبة العربي فقط</option>
+              <option value="Languages">شعبة اللغات فقط</option>
+            </select>
+          </div>
+
+          <div className="space-y-2">
             <Label htmlFor="title">عنوان الواجب</Label>
             <Input id="title" name="title" required />
           </div>

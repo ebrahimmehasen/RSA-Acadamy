@@ -23,7 +23,7 @@ export default async function TeacherAssignmentsPage() {
         .eq("is_active", true),
       supabase
         .from("assignments")
-        .select("id, title, due_date, max_grade, classes(class_name), subjects(subject_name)")
+        .select("id, title, due_date, max_grade, branch, classes(class_name), subjects(subject_name)")
         .eq("teacher_id", session!.profile.id)
         .order("due_date", { ascending: false }),
       supabase
@@ -72,11 +72,18 @@ export default async function TeacherAssignmentsPage() {
                   <CardTitle className="min-w-0 flex-1 truncate text-base">
                     {a.title}
                   </CardTitle>
-                  {(pendingCountByAssignment.get(a.id) ?? 0) > 0 && (
-                    <Badge>
-                      {pendingCountByAssignment.get(a.id)} بانتظار التصحيح
-                    </Badge>
-                  )}
+                  <div className="flex items-center gap-2">
+                    {a.branch && (
+                      <Badge variant="outline">
+                        {a.branch === "Arabic" ? "شعبة العربي فقط" : "شعبة اللغات فقط"}
+                      </Badge>
+                    )}
+                    {(pendingCountByAssignment.get(a.id) ?? 0) > 0 && (
+                      <Badge>
+                        {pendingCountByAssignment.get(a.id)} بانتظار التصحيح
+                      </Badge>
+                    )}
+                  </div>
                 </div>
               </CardHeader>
               <CardContent className="text-sm text-muted-foreground">

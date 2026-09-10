@@ -23,6 +23,11 @@ const schema = z.object({
   max_grade: z.coerce.number().int().min(1).max(100),
   allow_file: z.coerce.boolean(),
   allow_text: z.coerce.boolean(),
+  // null = whole class (both branches); otherwise restricts the
+  // assignment to just that branch of the class (decision: a teacher
+  // covering a shared subject like Arabic/Religion for a mixed class
+  // may want to target only one branch's half).
+  branch: z.enum(["Arabic", "Languages"]).nullable(),
 });
 
 export interface ActionResult {
@@ -46,6 +51,7 @@ export async function createAssignment(
       max_grade: formData.get("max_grade") || 100,
       allow_file: formData.get("allow_file") === "on",
       allow_text: formData.get("allow_text") === "on",
+      branch: (formData.get("branch") as "Arabic" | "Languages" | "") || null,
     });
 
     if (!parsed.allow_file && !parsed.allow_text) {
@@ -76,6 +82,7 @@ export async function createAssignment(
         max_grade: parsed.max_grade,
         allow_file: parsed.allow_file,
         allow_text: parsed.allow_text,
+        branch: parsed.branch,
       })
       .select("id")
       .single();
