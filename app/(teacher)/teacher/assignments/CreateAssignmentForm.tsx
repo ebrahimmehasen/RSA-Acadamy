@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,6 +8,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { SectionCard } from "@/components/shared/SectionCard";
 import { SELECT_CLASS } from "@/lib/ui";
+import {
+  ASSIGNMENT_ATTACHMENT_LIMITS,
+  formatFileSize,
+  validateAssignmentAttachmentBatch,
+} from "@/lib/uploadLimits";
 import { createAssignment, type ActionResult } from "./actions";
 
 export function CreateAssignmentForm({
@@ -21,6 +26,44 @@ export function CreateAssignmentForm({
   >(createAssignment, null);
   const [selection, setSelection] = useState("");
   const [dueLocal, setDueLocal] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [fileError, setFileError] = useState<string | null>(null);
+  const totalBytes = selectedFiles.reduce((sum, f) => sum + f.size, 0);
+
+  // Native <input type=file multiple> REPLACES its selection every time
+  // the picker reopens, so re-syncing input.files to the merged list
+  // (via DataTransfer) is what actually lets the teacher add files "on
+  // top of" what's already picked across several picker opens, instead
+  // of losing the earlier batch.
+  function syncInputFiles(list: File[]) {
+    if (!fileInputRef.current) return;
+    const dataTransfer = new DataTransfer();
+    list.forEach((f) => dataTransfer.items.add(f));
+    fileInputRef.current.files = dataTransfer.files;
+  }
+
+  function handleFilesPicked(picked: File[]) {
+    if (picked.length === 0) return;
+    const merged = [...selectedFiles, ...picked];
+    const error = validateAssignmentAttachmentBatch(0, 0, merged);
+    if (error) {
+      // Reject only this new pick — keep whatever was already validly
+      // selected (re-sync the input so the rejected pick isn't left in it).
+      setFileError(error);
+      syncInputFiles(selectedFiles);
+      return;
+    }
+    setSelectedFiles(merged);
+    setFileError(null);
+    syncInputFiles(merged);
+  }
+
+  function clearFiles() {
+    setSelectedFiles([]);
+    setFileError(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }
 
   return (
     <SectionCard title="إنشاء واجب جديد">
@@ -133,9 +176,40 @@ export function CreateAssignmentForm({
 
           <div className="space-y-2">
             <Label htmlFor="attachments">
-              مرفقات (حد أقصى 3 ملفات، 50MB إجمالي)
+              مرفقات (حد أقصى {ASSIGNMENT_ATTACHMENT_LIMITS.maxFiles} ملفات،{" "}
+              {formatFileSize(ASSIGNMENT_ATTACHMENT_LIMITS.maxTotalBytes)} إجمالي)
             </Label>
-            <Input id="attachments" name="attachments" type="file" multiple />
+            <Input
+              ref={fileInputRef}
+              id="attachments"
+              name="attachments"
+              type="file"
+              multiple
+              onChange={(e) => {
+                const picked = Array.from(e.target.files ?? []);
+                handleFilesPicked(picked);
+              }}
+            />
+            {selectedFiles.length > 0 && (
+              <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                <span>
+                  {selectedFiles.length} ملف · {formatFileSize(totalBytes)} من
+                  أصل {formatFileSize(ASSIGNMENT_ATTACHMENT_LIMITS.maxTotalBytes)}
+                </span>
+                <button
+                  type="button"
+                  onClick={clearFiles}
+                  className="text-destructive underline underline-offset-2"
+                >
+                  مسح الكل
+                </button>
+              </div>
+            )}
+            {fileError && (
+              <p className="text-sm text-destructive" aria-live="polite">
+                {fileError}
+              </p>
+            )}
           </div>
 
           {result && (

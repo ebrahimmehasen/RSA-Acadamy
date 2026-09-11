@@ -3,6 +3,7 @@ import { drive } from "./client";
 import { getOrCreateFolder } from "./folders";
 import { getFileUrl } from "./files";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { ASSIGNMENT_ATTACHMENT_LIMITS } from "@/lib/uploadLimits";
 
 export interface UploadResult {
   fileId: string;
@@ -26,7 +27,10 @@ export const UPLOAD_RULES = {
     ],
   },
   teacher_attachment: {
-    maxBytes: 50 * 1024 * 1024,
+    // per-file cap == the whole-assignment cap (lib/uploadLimits.ts) — a
+    // single file can't exceed it anyway once the aggregate check runs,
+    // this just avoids a redundant lower ceiling.
+    maxBytes: ASSIGNMENT_ATTACHMENT_LIMITS.maxTotalBytes,
     mimes: [
       "image/jpeg", "image/png", "image/gif",
       "application/pdf",

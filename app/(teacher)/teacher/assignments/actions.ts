@@ -8,6 +8,7 @@ import {
   uploadTeacherAttachment,
   validateUpload,
 } from "@/lib/googleDrive/upload";
+import { validateAssignmentAttachmentBatch } from "@/lib/uploadLimits";
 import { createNotification, getNotificationSettings } from "@/lib/notifications/create";
 import { sendEmail } from "@/lib/email/resend";
 import { assignmentGradedEmail } from "@/lib/email/templates";
@@ -60,8 +61,13 @@ export async function createAssignment(
 
     const files = formData
       .getAll("attachments")
-      .filter((f): f is File => f instanceof File && f.size > 0)
-      .slice(0, 3); // decision #18: max 3 files
+      .filter((f): f is File => f instanceof File && f.size > 0);
+
+    // Aggregate cap (Task 1: 10 files / 5GB per assignment) — this is a
+    // brand-new assignment, so "existing" is empty; the same helper is
+    // reused when attachments are added later to an existing one.
+    const batchError = validateAssignmentAttachmentBatch(0, 0, files);
+    if (batchError) return { ok: false, message: batchError };
 
     for (const file of files) {
       const err = validateUpload("teacher_attachment", file.type, file.size);
