@@ -1,8 +1,10 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { getSession } from "@/lib/auth/session";
 import { Badge } from "@/components/ui/badge";
 import { GradeForm } from "./GradeForm";
+import { FilePreviewGrid, type FileAttachment } from "../FilePreview";
 import { PageShell } from "@/components/shared/PageShell";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { SectionCard } from "@/components/shared/SectionCard";
@@ -36,6 +38,23 @@ export default async function TeacherAssignmentDetailPage({
     .eq("assignment_id", assignmentId)
     .order("submitted_at", { ascending: false });
 
+  // file_storage is admin-only under RLS — safe to read here with the
+  // admin client since we've already confirmed above that this
+  // assignment belongs to the signed-in teacher.
+  const { data: attachmentRows } = await createAdminClient()
+    .from("file_storage")
+    .select("drive_file_id, file_name, mime_type, file_size")
+    .eq("entity_type", "teacher_attachment")
+    .eq("entity_id", String(assignmentId))
+    .is("deleted_at", null)
+    .order("uploaded_at");
+  const attachments: FileAttachment[] = (attachmentRows ?? []).map((f) => ({
+    id: f.drive_file_id,
+    fileName: f.file_name,
+    mimeType: f.mime_type,
+    sizeBytes: f.file_size,
+  }));
+
   return (
     <PageShell>
       <RealtimeRefresh
@@ -50,6 +69,12 @@ export default async function TeacherAssignmentDetailPage({
         backLabel="رجوع للواجبات"
         description={`${(assignment.classes as unknown as { class_name: string })?.class_name} · ${(assignment.subjects as unknown as { subject_name: string })?.subject_name} · الدرجة العظمى: ${assignment.max_grade}`}
       />
+
+      {attachments.length > 0 && (
+        <SectionCard title={`مرفقات الواجب (${attachments.length})`}>
+          <FilePreviewGrid files={attachments} />
+        </SectionCard>
+      )}
 
       <SectionCard
         title={`التسليمات (${(submissions ?? []).length})`}
