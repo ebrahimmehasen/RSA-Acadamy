@@ -2,6 +2,8 @@ import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth/session";
 import { RoleShell } from "@/components/shared/RoleShell";
 import { PendingActivation } from "@/components/shared/PendingActivation";
+import { ProfileWarningBanner } from "@/components/shared/ProfileWarningBanner";
+import { getStudentProfileWarnings } from "@/lib/profileCompleteness";
 import { ROLE_NAV } from "@/lib/roleNav";
 
 // Every page here is per-user and session-gated — never prerender.
@@ -27,6 +29,10 @@ export default async function StudentLayout({
 
   const { title, nav, density } = ROLE_NAV.student;
 
+  const warnings = getStudentProfileWarnings({
+    pictureDriveId: session.profile.profile_picture_drive_id,
+  });
+
   return (
     <RoleShell
       title={title}
@@ -35,6 +41,7 @@ export default async function StudentLayout({
       pictureDriveId={session.profile.profile_picture_drive_id}
       nav={nav}
       density={density}
+      banner={<ProfileWarningBanner items={warnings} />}
     >
       {children}
     </RoleShell>

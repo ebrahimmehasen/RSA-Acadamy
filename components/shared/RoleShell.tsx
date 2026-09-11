@@ -96,6 +96,7 @@ export function RoleShell({
   pictureDriveId = null,
   nav,
   density = "comfortable",
+  banner,
   children,
 }: {
   title: string;
@@ -104,6 +105,8 @@ export function RoleShell({
   pictureDriveId?: string | null;
   nav: NavItem[];
   density?: "comfortable" | "compact";
+  /** Persistent alert (e.g. incomplete profile) shown above every page. */
+  banner?: React.ReactNode;
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
@@ -230,6 +233,7 @@ export function RoleShell({
             </Link>
           </div>
         </header>
+        {banner}
         <main className="flex-1 p-4 pb-24 md:p-6 md:pb-6">{children}</main>
 
         <nav
