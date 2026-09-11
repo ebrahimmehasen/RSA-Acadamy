@@ -31,6 +31,20 @@ const schema = z.object({
   branch: z.enum(["Arabic", "Languages"]).nullable(),
 });
 
+// Class/subject/branch targeting is intentionally not editable — changing
+// who an assignment is for after students may have already seen or
+// submitted to it is out of scope for a same-assignment edit.
+const updateSchema = z.object({
+  assignment_id: z.coerce.number().int().positive(),
+  title: z.string().min(2),
+  description: z.string().optional(),
+  instructions: z.string().optional(),
+  due_date: z.string().min(1),
+  max_grade: z.coerce.number().int().min(1).max(100),
+  allow_file: z.coerce.boolean(),
+  allow_text: z.coerce.boolean(),
+});
+
 export interface ActionResult {
   ok: boolean;
   message: string;
@@ -115,6 +129,122 @@ export async function createAssignment(
 
     revalidatePath("/teacher/assignments");
     return { ok: true, message: "تم إنشاء الواجب ✅" };
+  } catch (error) {
+    return {
+      ok: false,
+      message: error instanceof Error ? error.message : "حدث خطأ",
+    };
+  }
+}
+
+export async function updateAssignment(
+  _prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  try {
+    const session = await requireRole("teacher");
+    const parsed = updateSchema.parse({
+      assignment_id: formData.get("assignment_id"),
+      title: formData.get("title"),
+      description: formData.get("description") || undefined,
+      instructions: formData.get("instructions") || undefined,
+      due_date: formData.get("due_date"),
+      max_grade: formData.get("max_grade") || 100,
+      allow_file: formData.get("allow_file") === "on",
+      allow_text: formData.get("allow_text") === "on",
+    });
+
+    if (!parsed.allow_file && !parsed.allow_text) {
+      return { ok: false, message: "يجب السماح بإرفاق ملف أو كتابة إجابة نصية على الأقل" };
+    }
+
+    const supabase = createAdminClient();
+    const { data: assignment } = await supabase
+      .from("assignments")
+      .select("teacher_id, due_date")
+      .eq("id", parsed.assignment_id)
+      .single();
+    if (!assignment || assignment.teacher_id !== session.profile.id) {
+      return { ok: false, message: "لا يمكنك تعديل واجب ليس واجبك" };
+    }
+    // Re-check against the assignment's CURRENT due date (not the one
+    // being submitted) — once the deadline has passed, editing is closed
+    // even if the new form value would push it into the future.
+    if (new Date(assignment.due_date) <= new Date()) {
+      return { ok: false, message: "لا يمكن تعديل الواجب بعد انتهاء الموعد" };
+    }
+
+    const removeIds = formData.getAll("remove_attachment_ids").map(String);
+    const newFiles = formData
+      .getAll("attachments")
+      .filter((f): f is File => f instanceof File && f.size > 0);
+
+    const { data: currentFiles } = await supabase
+      .from("file_storage")
+      .select("drive_file_id, file_size")
+      .eq("entity_type", "teacher_attachment")
+      .eq("entity_id", String(parsed.assignment_id))
+      .is("deleted_at", null);
+    const remaining = (currentFiles ?? []).filter(
+      (f) => !removeIds.includes(f.drive_file_id),
+    );
+    const remainingBytes = remaining.reduce((sum, f) => sum + (f.file_size ?? 0), 0);
+
+    const batchError = validateAssignmentAttachmentBatch(
+      remaining.length,
+      remainingBytes,
+      newFiles,
+    );
+    if (batchError) return { ok: false, message: batchError };
+
+    for (const file of newFiles) {
+      const err = validateUpload("teacher_attachment", file.type, file.size);
+      if (err) return { ok: false, message: `${file.name}: ${err}` };
+    }
+
+    if (removeIds.length > 0) {
+      await supabase
+        .from("file_storage")
+        .update({ deleted_at: new Date().toISOString() })
+        .eq("entity_type", "teacher_attachment")
+        .eq("entity_id", String(parsed.assignment_id))
+        .in("drive_file_id", removeIds);
+    }
+
+    const newDriveIds: string[] = [];
+    for (const file of newFiles) {
+      const buffer = Buffer.from(await file.arrayBuffer());
+      const uploaded = await uploadTeacherAttachment({
+        buffer,
+        fileName: file.name,
+        mimeType: file.type,
+        uploadedBy: session.profile.id,
+        assignmentId: parsed.assignment_id,
+      });
+      newDriveIds.push(uploaded.fileId);
+    }
+
+    const { error } = await supabase
+      .from("assignments")
+      .update({
+        title: parsed.title,
+        description: parsed.description ?? null,
+        instructions: parsed.instructions ?? null,
+        due_date: new Date(parsed.due_date).toISOString(),
+        max_grade: parsed.max_grade,
+        allow_file: parsed.allow_file,
+        allow_text: parsed.allow_text,
+        attachment_drive_ids: [
+          ...remaining.map((f) => f.drive_file_id),
+          ...newDriveIds,
+        ],
+      })
+      .eq("id", parsed.assignment_id);
+    if (error) return { ok: false, message: error.message };
+
+    revalidatePath(`/teacher/assignments/${parsed.assignment_id}`);
+    revalidatePath("/teacher/assignments");
+    return { ok: true, message: "تم تحديث الواجب ✅" };
   } catch (error) {
     return {
       ok: false,

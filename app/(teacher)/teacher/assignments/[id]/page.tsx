@@ -4,6 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { getSession } from "@/lib/auth/session";
 import { Badge } from "@/components/ui/badge";
 import { GradeForm } from "./GradeForm";
+import { EditAssignmentForm } from "./EditAssignmentForm";
 import { FilePreviewGrid, type FileAttachment } from "../FilePreview";
 import { PageShell } from "@/components/shared/PageShell";
 import { PageHeader } from "@/components/shared/PageHeader";
@@ -54,6 +55,14 @@ export default async function TeacherAssignmentDetailPage({
     mimeType: f.mime_type,
     sizeBytes: f.file_size,
   }));
+  const existingAttachmentsForEdit = (attachmentRows ?? []).map((f) => ({
+    driveId: f.drive_file_id,
+    fileName: f.file_name,
+    mimeType: f.mime_type,
+    sizeBytes: f.file_size,
+  }));
+
+  const isOpenForEdits = new Date(assignment.due_date) > new Date();
 
   return (
     <PageShell>
@@ -69,6 +78,26 @@ export default async function TeacherAssignmentDetailPage({
         backLabel="رجوع للواجبات"
         description={`${(assignment.classes as unknown as { class_name: string })?.class_name} · ${(assignment.subjects as unknown as { subject_name: string })?.subject_name} · الدرجة العظمى: ${assignment.max_grade}`}
       />
+
+      {isOpenForEdits ? (
+        <EditAssignmentForm
+          assignment={{
+            id: assignment.id,
+            title: assignment.title,
+            description: assignment.description,
+            instructions: assignment.instructions,
+            dueDateIso: assignment.due_date,
+            maxGrade: assignment.max_grade,
+            allowFile: assignment.allow_file,
+            allowText: assignment.allow_text,
+          }}
+          existingAttachments={existingAttachmentsForEdit}
+        />
+      ) : (
+        <p className="text-xs text-muted-foreground">
+          انتهى موعد التسليم — لا يمكن تعديل الواجب
+        </p>
+      )}
 
       {attachments.length > 0 && (
         <SectionCard title={`مرفقات الواجب (${attachments.length})`}>
