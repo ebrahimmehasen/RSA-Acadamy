@@ -1,9 +1,15 @@
 import { notFound } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { DAYS, DAY_LABELS, formatTime } from "@/lib/schedule";
+import { DAYS, DAY_LABELS, formatTime, type ScheduleSlot } from "@/lib/schedule";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -14,7 +20,12 @@ import {
 } from "@/components/ui/table";
 import { Users, ClipboardList, FileQuestion } from "lucide-react";
 import { updateTeacherSubjects } from "../actions";
+import { createSlot, deleteSlot, updateSlot } from "../../classes/[classId]/actions";
+import { EditSlotForm } from "../../classes/[classId]/EditSlotForm";
+import { ConfirmDeleteButton } from "@/components/shared/ConfirmDeleteButton";
+import { ScheduleGrid } from "@/components/shared/ScheduleGrid";
 import { EditTeacherForm } from "./EditTeacherForm";
+import { TeacherAddSlotForm } from "./TeacherAddSlotForm";
 import { PageShell } from "@/components/shared/PageShell";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { SectionCard } from "@/components/shared/SectionCard";
@@ -42,6 +53,9 @@ export default async function AdminTeacherDetailPage({
     { data: availability },
     { data: assignments },
     { data: quizzes },
+    { data: classesAll },
+    { data: teachersAll },
+    { data: zoomAccounts },
   ] = await Promise.all([
     supabase
       .from("teachers")
@@ -57,13 +71,12 @@ export default async function AdminTeacherDetailPage({
       .maybeSingle(),
     supabase
       .from("subjects")
-      .select("subject_id, subject_name, branch, classes(class_name)")
+      .select("subject_id, subject_name, branch, class_id, classes(class_name)")
+      .eq("is_active", true)
       .order("class_id"),
     supabase
       .from("class_assignments")
-      .select(
-        "id, class_id, day_of_week, start_time, end_time, is_active, classes(class_name), subjects(subject_name)",
-      )
+      .select("*, classes(class_name), subjects(subject_name)")
       .eq("teacher_id", teacherId)
       .order("day_of_week")
       .order("start_time"),
@@ -81,6 +94,12 @@ export default async function AdminTeacherDetailPage({
       .from("quizzes")
       .select("id, class_id, classes(class_name)")
       .eq("teacher_id", teacherId),
+    supabase.from("classes").select("id, class_name").order("id"),
+    supabase
+      .from("teachers")
+      .select("user_id, profiles!inner(full_name)")
+      .eq("is_active", true),
+    supabase.from("zoom_accounts").select("id, label").order("id"),
   ]);
 
   if (!teacher) notFound();
@@ -127,6 +146,56 @@ export default async function AdminTeacherDetailPage({
       branch: s.branch,
     });
   }
+
+  // For the schedule grid + add/edit slot forms below — subject options
+  // scoped per class id (not name), and the full teacher list so a slot
+  // can be reassigned without leaving this page.
+  const subjectOptionsByClassId: Record<number, { id: string; label: string }[]> = {};
+  for (const s of subjects ?? []) {
+    const suffix = branchLabel(s.subject_name, s.branch);
+    const label = suffix ? `${s.subject_name} ${suffix}` : s.subject_name;
+    (subjectOptionsByClassId[s.class_id] ??= []).push({ id: s.subject_id, label });
+  }
+  const teacherOptions = (teachersAll ?? []).map((t) => ({
+    id: t.user_id as number,
+    name:
+      (t.profiles as unknown as { full_name: string })?.full_name ??
+      `مدرس #${t.user_id}`,
+  }));
+  const typedSchedule = (schedule ?? []) as (ScheduleSlot & {
+    classes: { class_name: string } | null;
+    subjects: { subject_name: string } | null;
+  })[];
+  const gridEntries = typedSchedule.map((slot) => ({
+    id: slot.id,
+    day: slot.day_of_week,
+    start: slot.start_time,
+    end: slot.end_time,
+    subject: slot.subjects?.subject_name ?? slot.subject_id,
+    sub: slot.classes?.class_name,
+    zoomLink: slot.zoom_link,
+    zoomPasscode: slot.zoom_passcode,
+  }));
+  const gridEntryActions = Object.fromEntries(
+    typedSchedule.map((slot) => [
+      slot.id,
+      <div key={slot.id} className="flex flex-wrap gap-1">
+        <EditSlotForm
+          slot={slot}
+          classId={slot.class_id}
+          subjects={subjectOptionsByClassId[slot.class_id] ?? []}
+          teachers={teacherOptions}
+          zoomAccounts={zoomAccounts ?? []}
+          action={updateSlot}
+        />
+        <ConfirmDeleteButton
+          action={deleteSlot}
+          hiddenFields={{ slot_id: slot.id, class_id: slot.class_id }}
+          confirmMessage="هل أنت متأكد من رغبتك في حذف هذه الحصة؟ هذا الإجراء نهائي ولا يمكن التراجع عنه."
+        />
+      </div>,
+    ]),
+  );
 
   return (
     <PageShell>
@@ -202,51 +271,29 @@ export default async function AdminTeacherDetailPage({
 
       <SectionCard
         title="الجدول الحالي"
-        description="الحصص المسندة فعليًا لهذا المدرس في الجدول"
-        contentClassName="-mx-4 overflow-x-auto sm:mx-0"
+        description="نفس الجدول الذي يظهر للطالب — اضغط ✏️ لتعديل حصة أو 🗑️ لحذفها"
       >
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>اليوم</TableHead>
-                <TableHead>الوقت</TableHead>
-                <TableHead>الفصل</TableHead>
-                <TableHead>المادة</TableHead>
-                <TableHead>الحالة</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {(schedule ?? []).map((row) => (
-                <TableRow key={row.id}>
-                  <TableCell>{DAY_LABELS[row.day_of_week as keyof typeof DAY_LABELS]}</TableCell>
-                  <TableCell dir="ltr">
-                    {formatTime(row.start_time)}–{formatTime(row.end_time)}
-                  </TableCell>
-                  <TableCell>
-                    {(row.classes as unknown as { class_name: string })?.class_name}
-                  </TableCell>
-                  <TableCell>
-                    {(row.subjects as unknown as { subject_name: string })?.subject_name}
-                  </TableCell>
-                  <TableCell>
-                    {row.is_active ? (
-                      <Badge variant="success">نشط</Badge>
-                    ) : (
-                      <Badge variant="outline">موقوف</Badge>
-                    )}
-                  </TableCell>
-                </TableRow>
-              ))}
-              {(schedule ?? []).length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={5} className="py-8 text-center text-muted-foreground">
-                    لا توجد حصص مسندة بعد
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
+        {typedSchedule.length === 0 ? (
+          <p className="text-sm text-muted-foreground">لا توجد حصص مسندة بعد</p>
+        ) : (
+          <ScheduleGrid entries={gridEntries} entryActions={gridEntryActions} />
+        )}
       </SectionCard>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">إضافة حصة جديدة</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <TeacherAddSlotForm
+            teacherId={teacherId}
+            classes={classesAll ?? []}
+            subjectsByClass={subjectOptionsByClassId}
+            zoomAccounts={zoomAccounts ?? []}
+            action={createSlot}
+          />
+        </CardContent>
+      </Card>
 
       <SectionCard
         title="أوقات التفرغ"
