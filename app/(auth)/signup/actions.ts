@@ -67,6 +67,9 @@ export async function signUpAction(
       if (!classId) {
         return { ok: false, message: "الصف الدراسي مطلوب" };
       }
+      if (!branch) {
+        return { ok: false, message: "الشعبة مطلوبة" };
+      }
       if (!dateOfBirth) {
         return { ok: false, message: "تاريخ الميلاد مطلوب" };
       }
@@ -80,7 +83,7 @@ export async function signUpAction(
         phone: phoneRaw || null,
         role: "student",
         classId: Number(classId),
-        branch: branch || null,
+        branch,
         dateOfBirth,
         secondLanguage: branch === "Languages" ? secondLanguage : null,
         profilePicture,

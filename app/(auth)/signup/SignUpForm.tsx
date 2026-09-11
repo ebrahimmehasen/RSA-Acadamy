@@ -322,15 +322,18 @@ export function SignUpForm({
                   </select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="branch">الشعبة (اختياري)</Label>
+                  <Label htmlFor="branch">الشعبة</Label>
                   <select
                     id="branch"
                     name="branch"
+                    required
                     value={draft.branch}
                     onChange={(e) => update("branch", e.target.value)}
                     className={AUTH_SELECT_CLASS}
                   >
-                    <option value="">—</option>
+                    <option value="" disabled>
+                      اختر الشعبة
+                    </option>
                     <option value="Arabic">عربي</option>
                     <option value="Languages">لغات</option>
                     <option value="Private">خاص (حصص فردية)</option>
