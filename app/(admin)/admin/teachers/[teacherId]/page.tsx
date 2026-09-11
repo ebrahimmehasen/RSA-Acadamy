@@ -7,6 +7,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -323,47 +324,52 @@ export default async function AdminTeacherDetailPage({
           })}
       </SectionCard>
 
-      <SectionCard
-        title="المواد التي يمكنه تدريسها"
-        description="تساعد في اقتراح توزيع الجدول تلقائيًا، ويمكن للمسؤول تعديلها هنا"
-      >
-          <form action={updateTeacherSubjects} className="space-y-3">
-            <input type="hidden" name="teacher_id" value={teacherId} />
-            {[...subjectsByClass.entries()].map(([className, subs]) => (
-              <details
-                key={className}
-                open={subs.some((s) => preferredSubjects.has(s.subject_id))}
-                className="group rounded-lg border"
-              >
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-2 p-2.5 text-sm font-medium outline-none [&::-webkit-details-marker]:hidden">
-                  {className}
-                  <ChevronDown
-                    className="size-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180"
-                    aria-hidden="true"
-                  />
-                </summary>
-                <div className="grid grid-cols-2 gap-2 border-t p-2.5 sm:grid-cols-3">
-                  {subs.map((s) => (
-                    <label
-                      key={s.subject_id}
-                      className="flex items-center gap-2 text-sm"
-                    >
-                      <Checkbox
-                        name="subjects"
-                        value={s.subject_id}
-                        defaultChecked={preferredSubjects.has(s.subject_id)}
-                      />
-                      {s.subject_name} {branchLabel(s.subject_name, s.branch)}
-                    </label>
-                  ))}
+      <Card>
+        <details className="group">
+          <summary className="cursor-pointer list-none outline-none [&::-webkit-details-marker]:hidden">
+            <CardHeader className="flex-row items-center justify-between gap-2">
+              <div className="space-y-1">
+                <CardTitle>المواد التي يمكنه تدريسها</CardTitle>
+                <CardDescription>
+                  تساعد في اقتراح توزيع الجدول تلقائيًا، ويمكن للمسؤول تعديلها هنا
+                </CardDescription>
+              </div>
+              <ChevronDown
+                className="size-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180"
+                aria-hidden="true"
+              />
+            </CardHeader>
+          </summary>
+          <CardContent>
+            <form action={updateTeacherSubjects} className="space-y-6">
+              <input type="hidden" name="teacher_id" value={teacherId} />
+              {[...subjectsByClass.entries()].map(([className, subs]) => (
+                <div key={className} className="space-y-2">
+                  <p className="font-medium">{className}</p>
+                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                    {subs.map((s) => (
+                      <label
+                        key={s.subject_id}
+                        className="flex items-center gap-2 text-sm"
+                      >
+                        <Checkbox
+                          name="subjects"
+                          value={s.subject_id}
+                          defaultChecked={preferredSubjects.has(s.subject_id)}
+                        />
+                        {s.subject_name} {branchLabel(s.subject_name, s.branch)}
+                      </label>
+                    ))}
+                  </div>
                 </div>
-              </details>
-            ))}
-            <Button type="submit" size="sm">
-              حفظ المواد
-            </Button>
-          </form>
-      </SectionCard>
+              ))}
+              <Button type="submit" size="sm">
+                حفظ المواد
+              </Button>
+            </form>
+          </CardContent>
+        </details>
+      </Card>
 
       <AdminEditLogCard targetType="teacher" targetId={teacherId} />
     </PageShell>
