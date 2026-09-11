@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getSession } from "@/lib/auth/session";
 import { summarizeGrades, type GradedRow } from "@/lib/grades";
-import { type ScheduleSlot } from "@/lib/schedule";
+import { type ScheduleSlot, filterSlotsForStudentBranch } from "@/lib/schedule";
 import { GraduationCap, ClipboardCheck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { PageShell } from "@/components/shared/PageShell";
@@ -35,7 +35,7 @@ export default async function ParentChildDetailPage({
 
   if (!child || child.parent_id !== session!.profile.id) notFound();
 
-  const [{ data: slots }, { data: assignments }, { data: submissions }] =
+  const [{ data: slots }, { data: assignments }, { data: submissions }, { data: enrolled }] =
     await Promise.all([
       supabase
         .from("class_assignments")
@@ -55,7 +55,13 @@ export default async function ParentChildDetailPage({
           "assignment_id, status, grade, is_late, graded_at, assignments(title, max_grade, subjects(subject_name))",
         )
         .eq("student_id", childId),
+      supabase
+        .from("student_subjects")
+        .select("subject_id")
+        .eq("student_id", childId)
+        .eq("is_active", true),
     ]);
+  const enrolledSubjectIds = new Set((enrolled ?? []).map((e) => e.subject_id));
 
   const submissionByAssignment = new Map(
     (submissions ?? []).map((s) => [s.assignment_id, s]),
@@ -83,10 +89,11 @@ export default async function ParentChildDetailPage({
   const allSlots = (slots ?? []) as (ScheduleSlot & {
     subjects: { subject_name: string; branch: string } | null;
   })[];
-  // Only the slots for the child's own branch (a class can hold both).
-  const typedSlots = child.branch
-    ? allSlots.filter((s) => s.subjects?.branch === child.branch)
-    : allSlots;
+  const typedSlots = filterSlotsForStudentBranch(
+    allSlots,
+    child.branch,
+    enrolledSubjectIds,
+  );
 
   return (
     <PageShell>

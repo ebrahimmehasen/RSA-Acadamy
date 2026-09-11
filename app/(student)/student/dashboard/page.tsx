@@ -1,7 +1,7 @@
 import { CalendarDays, BookOpen, GraduationCap } from "lucide-react";
 import { getSession } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
-import { type ScheduleSlot } from "@/lib/schedule";
+import { type ScheduleSlot, filterSlotsForStudentBranch } from "@/lib/schedule";
 import { summarizeGrades, type GradedRow } from "@/lib/grades";
 import { PageShell } from "@/components/shared/PageShell";
 import { PageHeader } from "@/components/shared/PageHeader";
@@ -22,7 +22,7 @@ export default async function StudentDashboard() {
     .eq("user_id", studentId)
     .maybeSingle();
 
-  const [{ data: slots }, { data: assignments }, { data: submissions }] =
+  const [{ data: slots }, { data: assignments }, { data: submissions }, { data: enrolled }] =
     await Promise.all([
       supabase
         .from("class_assignments")
@@ -33,14 +33,22 @@ export default async function StudentDashboard() {
         .from("assignment_submissions")
         .select("assignment_id, status, grade, is_late, graded_at, assignments(title, max_grade, subjects(subject_name))")
         .eq("student_id", studentId),
+      supabase
+        .from("student_subjects")
+        .select("subject_id")
+        .eq("student_id", studentId)
+        .eq("is_active", true),
     ]);
 
   const allSlots = (slots ?? []) as (ScheduleSlot & {
     subjects: { subject_name: string; branch: string } | null;
   })[];
-  const mySlots = student?.branch
-    ? allSlots.filter((s) => s.subjects?.branch === student.branch)
-    : allSlots;
+  const enrolledSubjectIds = new Set((enrolled ?? []).map((e) => e.subject_id));
+  const mySlots = filterSlotsForStudentBranch(
+    allSlots,
+    student?.branch ?? null,
+    enrolledSubjectIds,
+  );
 
   const submittedIds = new Set((submissions ?? []).map((s) => s.assignment_id));
   const pendingHomework = (assignments ?? []).filter(

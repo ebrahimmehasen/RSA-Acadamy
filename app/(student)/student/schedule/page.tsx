@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { getSession } from "@/lib/auth/session";
-import { type ScheduleSlot } from "@/lib/schedule";
+import { type ScheduleSlot, filterSlotsForStudentBranch } from "@/lib/schedule";
 import { CalendarX } from "lucide-react";
 import { PageShell } from "@/components/shared/PageShell";
 import { PageHeader } from "@/components/shared/PageHeader";
@@ -24,14 +24,21 @@ export default async function StudentSchedulePage() {
     .eq("user_id", session!.profile.id)
     .single();
 
+  const { data: enrolled } = await supabase
+    .from("student_subjects")
+    .select("subject_id")
+    .eq("student_id", session!.profile.id)
+    .eq("is_active", true);
+  const enrolledSubjectIds = new Set((enrolled ?? []).map((e) => e.subject_id));
+
   const allSlots = (slots ?? []) as (ScheduleSlot & {
     subjects: { subject_name: string; branch: string } | null;
   })[];
-  // A class can hold both branches (Arabic + Languages) — only show the
-  // slots for subjects in the student's own branch.
-  const typedSlots = student?.branch
-    ? allSlots.filter((s) => s.subjects?.branch === student.branch)
-    : allSlots;
+  const typedSlots = filterSlotsForStudentBranch(
+    allSlots,
+    student?.branch ?? null,
+    enrolledSubjectIds,
+  );
 
   if (!student?.class_id) {
     return (

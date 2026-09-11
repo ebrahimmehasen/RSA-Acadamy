@@ -34,6 +34,29 @@ export interface ScheduleSlot {
   is_active: boolean;
 }
 
+/**
+ * A class can hold both branches (Arabic + Languages), so a student's
+ * schedule must only show slots for subjects in their own branch —
+ * never the whole class's. `students.branch` is the normal source of
+ * truth; a hand-created account that skipped it falls back to the
+ * subjects the student is actually enrolled in (`student_subjects`),
+ * and only shows everything as a last resort when neither is known
+ * (better than an empty schedule).
+ */
+export function filterSlotsForStudentBranch<
+  T extends { subject_id: string; subjects?: { branch: string } | null },
+>(
+  slots: T[],
+  branch: string | null,
+  enrolledSubjectIds?: Set<string> | null,
+): T[] {
+  if (branch) return slots.filter((s) => s.subjects?.branch === branch);
+  if (enrolledSubjectIds && enrolledSubjectIds.size > 0) {
+    return slots.filter((s) => enrolledSubjectIds.has(s.subject_id));
+  }
+  return slots;
+}
+
 /** 14, 30 → "2:30 م" */
 export function formatHourMinute(h: number, m: number): string {
   const period = h >= 12 ? "م" : "ص";
