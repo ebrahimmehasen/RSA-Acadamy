@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ClipboardList } from "lucide-react";
+import { ClipboardList, Paperclip } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getSession } from "@/lib/auth/session";
 import { Badge } from "@/components/ui/badge";
@@ -13,7 +13,7 @@ import { PageShell } from "@/components/shared/PageShell";
 import { CARD_LINK_CLASS } from "@/lib/ui";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { EmptyState } from "@/components/shared/EmptyState";
-import { CreateAssignmentForm } from "./CreateAssignmentForm";
+import { CreateAssignmentToggle } from "./CreateAssignmentToggle";
 
 export default async function TeacherAssignmentsPage() {
   const session = await getSession();
@@ -28,7 +28,9 @@ export default async function TeacherAssignmentsPage() {
         .eq("is_active", true),
       supabase
         .from("assignments")
-        .select("id, title, due_date, max_grade, branch, classes(class_name), subjects(subject_name)")
+        .select(
+          "id, title, due_date, max_grade, branch, created_at, attachment_drive_ids, classes(class_name), subjects(subject_name)",
+        )
         .eq("teacher_id", session!.profile.id)
         .order("due_date", { ascending: false }),
       supabase
@@ -66,49 +68,72 @@ export default async function TeacherAssignmentsPage() {
     <PageShell>
       <PageHeader title="الواجبات" description={`${(assignments ?? []).length} واجب`} />
 
-      <CreateAssignmentForm slots={uniqueSlots} />
-
       <div className="grid gap-[var(--card-gap)]">
-        {(assignments ?? []).map((a) => (
-          <Link
-            key={a.id}
-            href={`/teacher/assignments/${a.id}`}
-            className={CARD_LINK_CLASS}
-          >
-            <Card className="transition-colors hover:bg-muted/40">
-              <CardHeader>
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <CardTitle className="min-w-0 flex-1 truncate text-base">
-                    {a.title}
-                  </CardTitle>
-                  <div className="flex items-center gap-2">
-                    {a.branch && (
-                      <Badge variant="info">
-                        {a.branch === "Arabic" ? "شعبة العربي فقط" : "شعبة اللغات فقط"}
+        {(assignments ?? []).map((a) => {
+          const isOpen = new Date(a.due_date) > new Date();
+          const attachmentCount = Array.isArray(a.attachment_drive_ids)
+            ? a.attachment_drive_ids.length
+            : 0;
+          return (
+            <Link
+              key={a.id}
+              href={`/teacher/assignments/${a.id}`}
+              className={CARD_LINK_CLASS}
+            >
+              <Card className="transition-colors hover:bg-muted/40">
+                <CardHeader>
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <CardTitle className="min-w-0 flex-1 truncate text-base">
+                      {a.title}
+                    </CardTitle>
+                    <div className="flex flex-wrap items-center gap-2">
+                      {a.branch && (
+                        <Badge variant="info">
+                          {a.branch === "Arabic" ? "شعبة العربي فقط" : "شعبة اللغات فقط"}
+                        </Badge>
+                      )}
+                      {(pendingCountByAssignment.get(a.id) ?? 0) > 0 && (
+                        <Badge variant="warning">
+                          {pendingCountByAssignment.get(a.id)} بانتظار التصحيح
+                        </Badge>
+                      )}
+                      <Badge variant={isOpen ? "success" : "secondary"}>
+                        {isOpen ? "مفتوح للتسليم" : "انتهى الموعد"}
                       </Badge>
-                    )}
-                    {(pendingCountByAssignment.get(a.id) ?? 0) > 0 && (
-                      <Badge variant="warning">
-                        {pendingCountByAssignment.get(a.id)} بانتظار التصحيح
-                      </Badge>
-                    )}
+                    </div>
                   </div>
-                </div>
-              </CardHeader>
-              <CardContent className="text-sm text-muted-foreground">
-                {(a.classes as unknown as { class_name: string })?.class_name}
-                {" · "}
-                {(a.subjects as unknown as { subject_name: string })?.subject_name}
-                {" · آخر موعد: "}
-                {new Date(a.due_date).toLocaleDateString("ar-EG")}
-              </CardContent>
-            </Card>
-          </Link>
-        ))}
+                </CardHeader>
+                <CardContent className="space-y-1 text-sm text-muted-foreground">
+                  <p>
+                    {(a.classes as unknown as { class_name: string })?.class_name}
+                    {" · "}
+                    {(a.subjects as unknown as { subject_name: string })?.subject_name}
+                    {" · الدرجة العظمى: "}
+                    {a.max_grade}
+                  </p>
+                  <p>
+                    {"تاريخ الإنشاء: "}
+                    {new Date(a.created_at).toLocaleDateString("ar-EG")}
+                    {" · آخر موعد: "}
+                    {new Date(a.due_date).toLocaleDateString("ar-EG")}
+                    {attachmentCount > 0 && (
+                      <span className="ms-2 inline-flex items-center gap-1">
+                        <Paperclip className="size-3.5" aria-hidden="true" />
+                        {attachmentCount}
+                      </span>
+                    )}
+                  </p>
+                </CardContent>
+              </Card>
+            </Link>
+          );
+        })}
         {(assignments ?? []).length === 0 && (
           <EmptyState icon={ClipboardList} title="لا توجد واجبات بعد" />
         )}
       </div>
+
+      <CreateAssignmentToggle slots={uniqueSlots} />
     </PageShell>
   );
 }
