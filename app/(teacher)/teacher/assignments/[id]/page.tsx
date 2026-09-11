@@ -5,7 +5,7 @@ import { getSession } from "@/lib/auth/session";
 import { Badge } from "@/components/ui/badge";
 import { GradeForm } from "./GradeForm";
 import { EditAssignmentForm } from "./EditAssignmentForm";
-import { FilePreviewGrid, type FileAttachment } from "../FilePreview";
+import { FilePreview, FilePreviewGrid, type FileAttachment } from "../FilePreview";
 import { PageShell } from "@/components/shared/PageShell";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { SectionCard } from "@/components/shared/SectionCard";
@@ -63,6 +63,29 @@ export default async function TeacherAssignmentDetailPage({
   }));
 
   const isOpenForEdits = new Date(assignment.due_date) > new Date();
+
+  // assignment_submissions has no mime_type/size of its own — resolve
+  // those from file_storage (matched by the unique drive_file_id) so
+  // submitted files can get a real preview instead of a plain link.
+  const submissionFileIds = (submissions ?? [])
+    .map((s) => s.file_drive_id)
+    .filter((id): id is string => Boolean(id));
+  const submissionFileMeta = new Map<
+    string,
+    { mimeType: string | null; sizeBytes: number | null }
+  >();
+  if (submissionFileIds.length > 0) {
+    const { data: submissionFileRows } = await createAdminClient()
+      .from("file_storage")
+      .select("drive_file_id, mime_type, file_size")
+      .in("drive_file_id", submissionFileIds);
+    for (const f of submissionFileRows ?? []) {
+      submissionFileMeta.set(f.drive_file_id, {
+        mimeType: f.mime_type,
+        sizeBytes: f.file_size,
+      });
+    }
+  }
 
   return (
     <PageShell>
@@ -138,13 +161,14 @@ export default async function TeacherAssignmentDetailPage({
                   </div>
                 </div>
                 {s.file_drive_id && (
-                  <a
-                    href={`/api/files/${s.file_drive_id}`}
-                    target="_blank"
-                    className="block text-sm text-primary underline underline-offset-4"
-                  >
-                    {s.file_name ?? "عرض الملف"}
-                  </a>
+                  <FilePreview
+                    file={{
+                      url: `/api/files/${s.file_drive_id}`,
+                      fileName: s.file_name ?? "ملف الطالب",
+                      mimeType: submissionFileMeta.get(s.file_drive_id)?.mimeType ?? null,
+                      sizeBytes: submissionFileMeta.get(s.file_drive_id)?.sizeBytes ?? null,
+                    }}
+                  />
                 )}
                 {s.text_answer && (
                   <p className="whitespace-pre-wrap rounded-md bg-muted p-2 text-sm">
