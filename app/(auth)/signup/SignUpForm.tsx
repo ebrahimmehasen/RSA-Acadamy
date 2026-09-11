@@ -401,12 +401,12 @@ export function SignUpForm({
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="cv">السيرة الذاتية (CV) — PDF أو Word</Label>
+                  <Label htmlFor="cv">السيرة الذاتية (CV) — PDF فقط</Label>
                   <Input
                     id="cv"
                     name="cv"
                     type="file"
-                    accept="application/pdf,.doc,.docx"
+                    accept="application/pdf,.pdf"
                     required
                   />
                 </div>

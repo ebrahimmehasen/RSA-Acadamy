@@ -60,11 +60,7 @@ export const UPLOAD_RULES = {
   },
   teacher_cv: {
     maxBytes: 10 * 1024 * 1024,
-    mimes: [
-      "application/pdf",
-      "application/msword",
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-    ],
+    mimes: ["application/pdf"],
   },
 } as const;
 

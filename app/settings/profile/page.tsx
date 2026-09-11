@@ -6,6 +6,7 @@ import { PageHeader } from "@/components/shared/PageHeader";
 import { SectionCard } from "@/components/shared/SectionCard";
 import { SignOutButton } from "@/components/shared/SignOutButton";
 import { ProfileForm } from "./ProfileForm";
+import { TeacherCvCard } from "./TeacherCvCard";
 
 export default async function ProfileSettingsPage() {
   const session = await getSession();
@@ -13,6 +14,16 @@ export default async function ProfileSettingsPage() {
 
   const supabase = await createClient();
   const { data: userData } = await supabase.auth.getUser();
+
+  let teacherCvDriveId: string | null = null;
+  if (session.profile.role === "teacher") {
+    const { data: teacher } = await supabase
+      .from("teachers")
+      .select("cv_drive_id")
+      .eq("user_id", session.profile.id)
+      .maybeSingle();
+    teacherCvDriveId = teacher?.cv_drive_id ?? null;
+  }
 
   return (
     <PageShell className="mx-auto max-w-xl">
@@ -23,6 +34,9 @@ export default async function ProfileSettingsPage() {
         email={userData.user?.email ?? ""}
         pictureDriveId={session.profile.profile_picture_drive_id}
       />
+      {session.profile.role === "teacher" && (
+        <TeacherCvCard cvDriveId={teacherCvDriveId} />
+      )}
       <SectionCard
         title="الجلسة"
         description="تسجيل الخروج من هذا الجهاز"
