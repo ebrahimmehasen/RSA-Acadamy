@@ -18,7 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Users, ClipboardList, FileQuestion } from "lucide-react";
+import { Users, ClipboardList, FileQuestion, ChevronDown } from "lucide-react";
 import { updateTeacherSubjects } from "../actions";
 import { createSlot, deleteSlot, updateSlot } from "../../classes/[classId]/actions";
 import { EditSlotForm } from "../../classes/[classId]/EditSlotForm";
@@ -327,12 +327,22 @@ export default async function AdminTeacherDetailPage({
         title="المواد التي يمكنه تدريسها"
         description="تساعد في اقتراح توزيع الجدول تلقائيًا، ويمكن للمسؤول تعديلها هنا"
       >
-          <form action={updateTeacherSubjects} className="space-y-6">
+          <form action={updateTeacherSubjects} className="space-y-3">
             <input type="hidden" name="teacher_id" value={teacherId} />
             {[...subjectsByClass.entries()].map(([className, subs]) => (
-              <div key={className} className="space-y-2">
-                <p className="font-medium">{className}</p>
-                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+              <details
+                key={className}
+                open={subs.some((s) => preferredSubjects.has(s.subject_id))}
+                className="group rounded-lg border"
+              >
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-2 p-2.5 text-sm font-medium outline-none [&::-webkit-details-marker]:hidden">
+                  {className}
+                  <ChevronDown
+                    className="size-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180"
+                    aria-hidden="true"
+                  />
+                </summary>
+                <div className="grid grid-cols-2 gap-2 border-t p-2.5 sm:grid-cols-3">
                   {subs.map((s) => (
                     <label
                       key={s.subject_id}
@@ -347,7 +357,7 @@ export default async function AdminTeacherDetailPage({
                     </label>
                   ))}
                 </div>
-              </div>
+              </details>
             ))}
             <Button type="submit" size="sm">
               حفظ المواد
