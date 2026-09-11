@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState, useTransition } from "react";
-import { DAYS, DAY_LABELS, PERIODS, formatTime, periodValue } from "@/lib/schedule";
+import { DAYS, DAY_LABELS, PERIODS, formatTime, periodValue, type DayOfWeek } from "@/lib/schedule";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,12 +13,17 @@ export function AddSlotForm({
   teachers,
   zoomAccounts,
   action,
+  defaultDay,
+  defaultPeriod,
 }: {
   classId: number;
   subjects: { id: string; label: string }[];
   teachers: { id: number; name: string }[];
   zoomAccounts: { id: number; label: string }[];
   action: (formData: FormData) => Promise<void>;
+  /** preselect day/period — used when "adding" starts from a specific grid cell */
+  defaultDay?: DayOfWeek;
+  defaultPeriod?: string;
 }) {
   const formRef = useRef<HTMLFormElement>(null);
   const [isPending, startTransition] = useTransition();
@@ -77,6 +82,7 @@ export function AddSlotForm({
           id="day_of_week"
           name="day_of_week"
           required
+          defaultValue={defaultDay}
           className={SELECT_CLASS}
         >
           {DAYS.map((d) => (
@@ -120,6 +126,7 @@ export function AddSlotForm({
             id="period"
             name="period"
             required
+            defaultValue={defaultPeriod}
             className={SELECT_CLASS}
           >
             {PERIODS.map((p) => (

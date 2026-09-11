@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Users, GraduationCap, UsersRound, UserCog } from "lucide-react";
 import { getSession } from "@/lib/auth/session";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -6,6 +7,7 @@ import { PageShell } from "@/components/shared/PageShell";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StatGrid } from "@/components/shared/StatGrid";
 import { StatCard } from "@/components/shared/StatCard";
+import { Button } from "@/components/ui/button";
 
 export default async function AdminDashboard() {
   const session = await getSession();
@@ -70,7 +72,16 @@ export default async function AdminDashboard() {
 
   return (
     <PageShell>
-      <PageHeader title={`أهلاً ${session?.profile.full_name} 👋`} />
+      <PageHeader
+        title={`أهلاً ${session?.profile.full_name} 👋`}
+        action={
+          <Button
+            variant="outline"
+            size="sm"
+            render={<Link href="/admin/schedule">الجدول الشامل 📅</Link>}
+          />
+        }
+      />
       <StatGrid cols={4}>
         {stats.map((stat) => (
           <StatCard

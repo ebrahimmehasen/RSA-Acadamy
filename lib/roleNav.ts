@@ -22,6 +22,7 @@ export const ROLE_NAV: Record<
       { href: "/admin/teachers", label: "المدرسون" },
       { href: "/admin/parents", label: "أولياء الأمور" },
       { href: "/admin/classes", label: "الفصول والجدول" },
+      { href: "/admin/schedule", label: "الجدول الشامل" },
       { href: "/admin/subjects", label: "المواد" },
       { href: "/admin/announcements", label: "الإعلانات" },
       { href: "/admin/zoom-accounts", label: "حسابات زووم" },
