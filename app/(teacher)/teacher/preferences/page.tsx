@@ -3,6 +3,7 @@ import { getSession } from "@/lib/auth/session";
 import { PageShell } from "@/components/shared/PageShell";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { SectionCard } from "@/components/shared/SectionCard";
+import { isSharedAcrossBranches } from "@/lib/subjects";
 import { PreferencesForm, type SubjectRow } from "./PreferencesForm";
 import { AvailabilityForm } from "./AvailabilityForm";
 
@@ -39,6 +40,12 @@ export default async function TeacherPreferencesPage() {
   // reveals just that class's two subject columns (عربي / لغات).
   const subjectsByClass: Record<number, { Arabic: SubjectRow[]; Languages: SubjectRow[] }> = {};
   for (const s of typedSubjects) {
+    // Subjects taught identically in both branches (Arabic language,
+    // religion) exist as one row per branch — only list them once,
+    // under "عربي", instead of the same name in both columns.
+    if (s.branch === "Languages" && isSharedAcrossBranches(s.subject_name)) {
+      continue;
+    }
     if (!subjectsByClass[s.class_id]) {
       subjectsByClass[s.class_id] = { Arabic: [], Languages: [] };
     }

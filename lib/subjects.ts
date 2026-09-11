@@ -11,8 +11,13 @@
  */
 const SHARED_ACROSS_BRANCHES = new Set(["اللغة العربية", "التربية الدينية"]);
 
+/** True for subjects taught the same in both branches (see note above). */
+export function isSharedAcrossBranches(subjectName: string): boolean {
+  return SHARED_ACROSS_BRANCHES.has(subjectName);
+}
+
 /** "(عربي)" / "(لغات)", or "" for subjects taught the same in both branches. */
 export function branchLabel(subjectName: string, branch: string): string {
-  if (SHARED_ACROSS_BRANCHES.has(subjectName)) return "";
+  if (isSharedAcrossBranches(subjectName)) return "";
   return branch === "Arabic" ? "(عربي)" : "(لغات)";
 }
