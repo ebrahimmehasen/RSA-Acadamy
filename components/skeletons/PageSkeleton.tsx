@@ -264,6 +264,7 @@ export function PageSkeleton({
   statCols = 3,
   tableCols = 5,
   sections = 2,
+  spotlight = false,
 }: {
   variant: Variant;
   /** wrap in mx-auto max-w-xl (settings pages) */
@@ -273,6 +274,8 @@ export function PageSkeleton({
   statCols?: 2 | 3 | 4;
   tableCols?: number;
   sections?: number;
+  /** dashboard pages with a "current/next class" box above the stats */
+  spotlight?: boolean;
 }) {
   const content = (() => {
     switch (variant) {
@@ -280,6 +283,7 @@ export function PageSkeleton({
         return (
           <>
             <HeaderSkeleton description={false} />
+            {spotlight && <Skeleton className="h-11 rounded-xl" />}
             <StatGridSkeleton cols={statCols} />
           </>
         );

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { type ReactNode } from "react";
 import {
   DAYS,
   DAY_LABELS,
@@ -15,6 +15,7 @@ import {
   timezoneLabel,
 } from "@/lib/timezone";
 import { cn } from "@/lib/utils";
+import { useViewerClock, ScheduleSpotlight } from "@/components/shared/ScheduleSpotlight";
 
 export interface ScheduleGridEntry {
   id: string | number;
@@ -43,53 +44,6 @@ const FALLBACK_DAYS: DayOfWeek[] = [
   "wednesday",
   "thursday",
 ];
-
-/**
- * Where the viewer's browser is — the school clock (for the "now"
- * highlight) and the viewer's own timezone (for displaying times).
- * Refreshed every minute.
- */
-function useViewerClock() {
-  const [clock, setClock] = useState<{
-    ready: boolean;
-    day: DayOfWeek | null;
-    minutes: number;
-    tz: string;
-  }>({ ready: false, day: null, minutes: 0, tz: SCHOOL_TIMEZONE });
-
-  useEffect(() => {
-    function compute() {
-      try {
-        const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-        const parts = new Intl.DateTimeFormat("en-US", {
-          timeZone: SCHOOL_TIMEZONE,
-          weekday: "long",
-          hour: "2-digit",
-          minute: "2-digit",
-          hourCycle: "h23",
-        }).formatToParts(new Date());
-        const wd = parts
-          .find((p) => p.type === "weekday")
-          ?.value.toLowerCase() as DayOfWeek | undefined;
-        const hh = Number(parts.find((p) => p.type === "hour")?.value ?? 0);
-        const mm = Number(parts.find((p) => p.type === "minute")?.value ?? 0);
-        setClock({
-          ready: true,
-          day: wd ?? null,
-          minutes: hh * 60 + mm,
-          tz: tz || SCHOOL_TIMEZONE,
-        });
-      } catch {
-        setClock((c) => ({ ...c, ready: false }));
-      }
-    }
-    compute();
-    const id = setInterval(compute, 60_000);
-    return () => clearInterval(id);
-  }, []);
-
-  return clock;
-}
 
 /**
  * The weekly timetable, drawn as an actual matrix: period columns across
@@ -168,22 +122,6 @@ export function ScheduleGrid({
   }
 
   // "Today at a glance" — the class running now (or the next one today).
-  const todayEntries = clock.day
-    ? entries
-        .filter((e) => e.day === clock.day)
-        .sort((a, b) => toMin(a.start) - toMin(b.start))
-    : [];
-  const activeEntry = todayEntries.find(
-    (e) => clock.minutes >= toMin(e.start) && clock.minutes < toMin(e.end),
-  );
-  const nextEntry = todayEntries.find((e) => toMin(e.start) > clock.minutes);
-  const spotlight = activeEntry ?? nextEntry;
-  const minsUntilSpotlight = spotlight
-    ? toMin(spotlight.start) - clock.minutes
-    : Infinity;
-  // The join link opens 15 minutes before the class starts.
-  const showJoinLink =
-    !!spotlight?.zoomLink && (!!activeEntry || minsUntilSpotlight <= 15);
   const dateLabel = clock.ready
     ? new Intl.DateTimeFormat("ar-EG", {
         timeZone: SCHOOL_TIMEZONE,
@@ -196,52 +134,15 @@ export function ScheduleGrid({
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex min-h-11 flex-wrap items-center gap-x-3 gap-y-1.5 rounded-xl border bg-primary/5 px-3 py-2 text-sm">
-        <span className="font-medium">
-          📅 {dateLabel ?? <span className="text-muted-foreground">…</span>}
-        </span>
-        {clock.ready && (
-          <>
-            {spotlight ? (
-              <>
-                <span
-                  className={cn(
-                    "rounded-full px-2 py-0.5 text-xs font-bold",
-                    activeEntry
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted text-muted-foreground",
-                  )}
-                >
-                  {activeEntry ? "الآن" : "القادمة"}
-                </span>
-                <span className="font-semibold">{spotlight.subject}</span>
-                {zoomLabel && showJoinLink && spotlight.zoomPasscode && (
-                  <span dir="ltr" className="text-xs text-muted-foreground">
-                    كلمة السر: {spotlight.zoomPasscode}
-                  </span>
-                )}
-                <span dir="ltr" className="text-xs text-muted-foreground">
-                  {localRange(spotlight.day, spotlight.start, spotlight.end)}
-                </span>
-                {zoomLabel && showJoinLink && (
-                  <a
-                    href={spotlight.zoomLink!}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground"
-                  >
-                    {zoomLabel} 🔗
-                  </a>
-                )}
-              </>
-            ) : (
-              <span className="text-muted-foreground">
-                لا توجد حصص أخرى اليوم
-              </span>
-            )}
-          </>
-        )}
-      </div>
+      <ScheduleSpotlight
+        entries={entries}
+        zoomLabel={zoomLabel}
+        prefix={
+          <span className="font-medium">
+            📅 {dateLabel ?? <span className="text-muted-foreground">…</span>}
+          </span>
+        }
+      />
 
       <div className="overflow-hidden rounded-xl bg-card ring-1 ring-foreground/10">
         <div className="overflow-x-auto">
