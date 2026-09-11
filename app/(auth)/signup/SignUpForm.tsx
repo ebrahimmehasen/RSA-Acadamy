@@ -333,6 +333,7 @@ export function SignUpForm({
                     <option value="">—</option>
                     <option value="Arabic">عربي</option>
                     <option value="Languages">لغات</option>
+                    <option value="Private">خاص (حصص فردية)</option>
                   </select>
                 </div>
                 {draft.branch === "Languages" && (

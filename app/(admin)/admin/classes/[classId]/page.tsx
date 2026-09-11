@@ -30,6 +30,7 @@ export default async function AdminClassSchedulePage({
     { data: subjects },
     { data: teachers },
     { data: zoomAccounts },
+    { data: privateStudents },
   ] = await Promise.all([
     supabase.from("classes").select("*").eq("id", id).single(),
     supabase
@@ -50,9 +51,21 @@ export default async function AdminClassSchedulePage({
       .select("user_id, profiles!inner(full_name)")
       .eq("is_active", true),
     supabase.from("zoom_accounts").select("id, label").order("id"),
+    supabase
+      .from("students")
+      .select("user_id, profiles!students_user_id_fkey(full_name)")
+      .eq("class_id", id)
+      .eq("branch", "Private"),
   ]);
 
   if (!cls) notFound();
+
+  const studentOptions = (privateStudents ?? []).map((s) => ({
+    id: s.user_id as number,
+    name:
+      (s.profiles as unknown as { full_name: string })?.full_name ??
+      `طالب #${s.user_id}`,
+  }));
 
   const teacherOptions = (teachers ?? []).map((t) => ({
     id: t.user_id as number,
@@ -74,16 +87,27 @@ export default async function AdminClassSchedulePage({
     label: subjectNameById.get(s.subject_id) ?? s.subject_id,
   }));
 
+  const studentNameById = new Map(studentOptions.map((s) => [s.id, s.name]));
+
   const gridEntries = typedSlots.map((slot) => ({
     id: slot.id,
     day: slot.day_of_week,
     start: slot.start_time,
     end: slot.end_time,
     subject: subjectNameById.get(slot.subject_id) ?? slot.subject_id,
-    sub: slot.teacher_id ? (
-      teacherNameById.get(slot.teacher_id) ?? "—"
-    ) : (
-      <span className="text-warning">غير محدد</span>
+    sub: (
+      <>
+        {slot.teacher_id ? (
+          teacherNameById.get(slot.teacher_id) ?? "—"
+        ) : (
+          <span className="text-warning">غير محدد</span>
+        )}
+        {slot.student_id != null && (
+          <span className="block text-info">
+            خاص: {studentNameById.get(slot.student_id) ?? `طالب #${slot.student_id}`}
+          </span>
+        )}
+      </>
     ),
     zoomLink: slot.zoom_link,
   }));
@@ -98,6 +122,7 @@ export default async function AdminClassSchedulePage({
           subjects={subjectOptions}
           teachers={teacherOptions}
           zoomAccounts={zoomAccounts ?? []}
+          students={studentOptions}
           action={updateSlot}
         />
         <ConfirmDeleteButton
@@ -143,6 +168,7 @@ export default async function AdminClassSchedulePage({
             subjects={subjectOptions}
             teachers={teacherOptions}
             zoomAccounts={zoomAccounts ?? []}
+            students={studentOptions}
             action={createSlot}
           />
         </CardContent>

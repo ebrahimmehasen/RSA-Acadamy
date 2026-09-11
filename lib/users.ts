@@ -252,14 +252,19 @@ export async function createStudent(options: {
   });
   if (error) throw new Error(error.message);
 
-  // auto-enroll in all active subjects of class+branch
-  const { data: enrolled, error: enrollError } = await supabase.rpc(
-    "enroll_student_in_class_subjects",
-    { p_student_id: profileId },
-  );
-  if (enrollError) throw new Error(enrollError.message);
+  // Private-lessons students skip class-wide auto-enrollment — the
+  // admin adds their subjects and schedule individually.
+  let enrolled = 0;
+  if (options.branch !== "Private") {
+    const { data, error: enrollError } = await supabase.rpc(
+      "enroll_student_in_class_subjects",
+      { p_student_id: profileId },
+    );
+    if (enrollError) throw new Error(enrollError.message);
+    enrolled = data ?? 0;
+  }
 
-  return { profileId, studentCode, email, password, enrolled: enrolled ?? 0 };
+  return { profileId, studentCode, email, password, enrolled };
 }
 
 export async function createTeacher(options: CreateUserBase & {

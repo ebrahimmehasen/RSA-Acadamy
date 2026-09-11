@@ -42,25 +42,50 @@ export default async function AdminSchedulePage({
 
   const supabase = createAdminClient();
 
-  const [{ data: classes }, { data: slots }, { data: subjects }, { data: teachers }, { data: zoomAccounts }] =
-    await Promise.all([
-      supabase.from("classes").select("id, class_name").order("id"),
-      supabase
-        .from("class_assignments")
-        .select("*")
-        .eq("day_of_week", day)
-        .order("start_time"),
-      supabase
-        .from("subjects")
-        .select("subject_id, subject_name, branch, class_id")
-        .eq("is_active", true)
-        .order("subject_name"),
-      supabase
-        .from("teachers")
-        .select("user_id, profiles!inner(full_name)")
-        .eq("is_active", true),
-      supabase.from("zoom_accounts").select("id, label").order("id"),
-    ]);
+  const [
+    { data: classes },
+    { data: slots },
+    { data: subjects },
+    { data: teachers },
+    { data: zoomAccounts },
+    { data: privateStudents },
+  ] = await Promise.all([
+    supabase.from("classes").select("id, class_name").order("id"),
+    supabase
+      .from("class_assignments")
+      .select("*")
+      .eq("day_of_week", day)
+      .order("start_time"),
+    supabase
+      .from("subjects")
+      .select("subject_id, subject_name, branch, class_id")
+      .eq("is_active", true)
+      .order("subject_name"),
+    supabase
+      .from("teachers")
+      .select("user_id, profiles!inner(full_name)")
+      .eq("is_active", true),
+    supabase.from("zoom_accounts").select("id, label").order("id"),
+    supabase
+      .from("students")
+      .select("user_id, class_id, profiles!students_user_id_fkey(full_name)")
+      .eq("branch", "Private"),
+  ]);
+
+  const studentNameById = new Map(
+    (privateStudents ?? []).map((s) => [
+      s.user_id as number,
+      (s.profiles as unknown as { full_name: string })?.full_name ?? `طالب #${s.user_id}`,
+    ]),
+  );
+  const studentsByClass: Record<number, { id: number; name: string }[]> = {};
+  for (const s of privateStudents ?? []) {
+    if (s.class_id == null) continue;
+    (studentsByClass[s.class_id] ??= []).push({
+      id: s.user_id as number,
+      name: studentNameById.get(s.user_id as number)!,
+    });
+  }
 
   const teacherOptions = (teachers ?? []).map((t) => ({
     id: t.user_id as number,
@@ -110,6 +135,11 @@ export default async function AdminSchedulePage({
             <span className="text-warning">غير محدد</span>
           )}
         </p>
+        {slot.student_id != null && (
+          <p className="font-medium text-info">
+            خاص: {studentNameById.get(slot.student_id) ?? `طالب #${slot.student_id}`}
+          </p>
+        )}
         <div className="flex flex-wrap gap-1">
           <EditSlotForm
             slot={slot}
@@ -117,6 +147,7 @@ export default async function AdminSchedulePage({
             subjects={subjectsByClass[classId] ?? []}
             teachers={teacherOptions}
             zoomAccounts={zoomAccounts ?? []}
+            students={studentsByClass[classId] ?? []}
             action={updateSlot}
           />
           <ConfirmDeleteButton
@@ -224,6 +255,7 @@ export default async function AdminSchedulePage({
                                 subjects={subjectsByClass[cls.id] ?? []}
                                 teachers={teacherOptions}
                                 zoomAccounts={zoomAccounts ?? []}
+                                students={studentsByClass[cls.id] ?? []}
                                 action={createSlot}
                               />
                             ) : (

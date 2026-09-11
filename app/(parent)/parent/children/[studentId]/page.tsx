@@ -11,6 +11,7 @@ import { SectionCard } from "@/components/shared/SectionCard";
 import { StatGrid } from "@/components/shared/StatGrid";
 import { StatCard } from "@/components/shared/StatCard";
 import { ScheduleGrid } from "@/components/shared/ScheduleGrid";
+import { studentBranchLabel } from "@/lib/subjects";
 
 export default async function ParentChildDetailPage({
   params,
@@ -101,7 +102,7 @@ export default async function ParentChildDetailPage({
         title={profile?.full_name}
         backHref="/parent/children"
         backLabel="رجوع للأبناء"
-        description={`${(child.classes as unknown as { class_name: string })?.class_name} · ${child.branch === "Arabic" ? "عربي" : "لغات"}`}
+        description={`${(child.classes as unknown as { class_name: string })?.class_name} · ${studentBranchLabel(child.branch)}`}
       />
 
       <StatGrid cols={2}>

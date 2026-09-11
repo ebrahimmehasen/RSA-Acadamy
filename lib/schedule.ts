@@ -32,6 +32,8 @@ export interface ScheduleSlot {
   zoom_meeting_id: string | null;
   zoom_passcode: string | null;
   is_active: boolean;
+  /** set = a private lesson for exactly this one student, not the whole class */
+  student_id: number | null;
 }
 
 /**
@@ -42,6 +44,10 @@ export interface ScheduleSlot {
  * subjects the student is actually enrolled in (`student_subjects`),
  * and only shows everything as a last resort when neither is known
  * (better than an empty schedule).
+ *
+ * A 'Private' student has no branch-wide subjects at all — RLS itself
+ * already scopes what comes back to just their own private slots
+ * (class_assignments.student_id), so no further filtering applies.
  */
 export function filterSlotsForStudentBranch<
   T extends { subject_id: string; subjects?: { branch: string } | null },
@@ -50,6 +56,7 @@ export function filterSlotsForStudentBranch<
   branch: string | null,
   enrolledSubjectIds?: Set<string> | null,
 ): T[] {
+  if (branch === "Private") return slots;
   if (branch) return slots.filter((s) => s.subjects?.branch === branch);
   if (enrolledSubjectIds && enrolledSubjectIds.size > 0) {
     return slots.filter((s) => enrolledSubjectIds.has(s.subject_id));

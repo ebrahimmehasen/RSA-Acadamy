@@ -57,7 +57,11 @@ export function CreateStudentForm({
             >
               <option value="Arabic">عربي</option>
               <option value="Languages">لغات</option>
+              <option value="Private">خاص</option>
             </select>
+            <p className="text-xs text-muted-foreground">
+              &quot;خاص&quot; = طالب حصص فردية — لن يُسجَّل تلقائيًا في مواد الفصل، وتضيف له المواد والجدول يدويًا
+            </p>
           </div>
           <div className="space-y-2">
             <Label htmlFor="phone">الهاتف (اختياري)</Label>

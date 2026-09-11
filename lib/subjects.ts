@@ -21,3 +21,11 @@ export function branchLabel(subjectName: string, branch: string): string {
   if (isSharedAcrossBranches(subjectName)) return "";
   return branch === "Arabic" ? "(عربي)" : "(لغات)";
 }
+
+/** A student's own branch, in Arabic — "عربي" / "لغات" / "خاص". */
+export function studentBranchLabel(branch: string | null): string {
+  if (branch === "Arabic") return "عربي";
+  if (branch === "Private") return "خاص";
+  if (branch === "Languages") return "لغات";
+  return "—";
+}

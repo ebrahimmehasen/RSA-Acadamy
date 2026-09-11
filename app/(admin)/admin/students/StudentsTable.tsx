@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ConfirmDeleteButton } from "@/components/shared/ConfirmDeleteButton";
 import { deleteStudent, toggleStudentActive } from "./actions";
+import { studentBranchLabel } from "@/lib/subjects";
 
 export interface StudentRow {
   user_id: number;
@@ -81,7 +82,7 @@ export function StudentsTable({ students }: { students: StudentRow[] }) {
                 {s.student_code}
               </TableCell>
               <TableCell>{s.class_name}</TableCell>
-              <TableCell>{s.branch === "Arabic" ? "عربي" : "لغات"}</TableCell>
+              <TableCell>{studentBranchLabel(s.branch)}</TableCell>
               <TableCell>
                 {s.parent_id ? (
                   <Badge>مربوط</Badge>

@@ -12,6 +12,7 @@ export function AddSlotForm({
   subjects,
   teachers,
   zoomAccounts,
+  students = [],
   action,
   defaultDay,
   defaultPeriod,
@@ -20,6 +21,8 @@ export function AddSlotForm({
   subjects: { id: string; label: string }[];
   teachers: { id: number; name: string }[];
   zoomAccounts: { id: number; label: string }[];
+  /** private-lessons students of this class — omit/empty to hide the field */
+  students?: { id: number; name: string }[];
   action: (formData: FormData) => Promise<void>;
   /** preselect day/period — used when "adding" starts from a specific grid cell */
   defaultDay?: DayOfWeek;
@@ -159,6 +162,20 @@ export function AddSlotForm({
             />
           </div>
         </>
+      )}
+
+      {students.length > 0 && (
+        <div className="space-y-2">
+          <Label htmlFor="student_id">طالب معيّن (حصة خاصة، اختياري)</Label>
+          <select id="student_id" name="student_id" className={SELECT_CLASS}>
+            <option value="">كل الفصل</option>
+            {students.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.name}
+              </option>
+            ))}
+          </select>
+        </div>
       )}
 
       <div className="space-y-2">

@@ -22,6 +22,7 @@ export function EditSlotForm({
   subjects,
   teachers,
   zoomAccounts,
+  students = [],
   action,
 }: {
   slot: {
@@ -31,11 +32,14 @@ export function EditSlotForm({
     day_of_week: (typeof DAYS)[number];
     start_time: string;
     end_time: string;
+    student_id?: number | null;
   };
   classId: number;
   subjects: { id: string; label: string }[];
   teachers: { id: number; name: string }[];
   zoomAccounts: { id: number; label: string }[];
+  /** private-lessons students of this class — omit/empty to hide the field */
+  students?: { id: number; name: string }[];
   action: (formData: FormData) => Promise<void>;
 }) {
   const [open, setOpen] = useState(false);
@@ -186,6 +190,25 @@ export function EditSlotForm({
                 />
               </div>
             </>
+          )}
+
+          {students.length > 0 && (
+            <div className="space-y-2 sm:col-span-2">
+              <Label htmlFor={`student_id-${slot.id}`}>طالب معيّن (حصة خاصة، اختياري)</Label>
+              <select
+                id={`student_id-${slot.id}`}
+                name="student_id"
+                defaultValue={slot.student_id ?? ""}
+                className={SELECT_CLASS}
+              >
+                <option value="">كل الفصل</option>
+                {students.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.name}
+                  </option>
+                ))}
+              </select>
+            </div>
           )}
 
           <div className="space-y-2 sm:col-span-2">

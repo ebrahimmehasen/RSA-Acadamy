@@ -20,6 +20,7 @@ export function QuickAddSlotButton({
   subjects,
   teachers,
   zoomAccounts,
+  students = [],
   action,
 }: {
   classId: number;
@@ -29,6 +30,7 @@ export function QuickAddSlotButton({
   subjects: { id: string; label: string }[];
   teachers: { id: number; name: string }[];
   zoomAccounts: { id: number; label: string }[];
+  students?: { id: number; name: string }[];
   action: (formData: FormData) => Promise<void>;
 }) {
   const [open, setOpen] = useState(false);
@@ -60,6 +62,7 @@ export function QuickAddSlotButton({
           subjects={subjects}
           teachers={teachers}
           zoomAccounts={zoomAccounts}
+          students={students}
           action={addAndClose}
           defaultDay={day}
           defaultPeriod={period}

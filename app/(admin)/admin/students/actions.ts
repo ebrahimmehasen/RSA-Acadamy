@@ -15,7 +15,7 @@ import { logAdminEdit } from "@/lib/adminLog";
 const createStudentSchema = z.object({
   full_name: z.string().min(3),
   class_id: z.coerce.number().int().positive(),
-  branch: z.enum(["Arabic", "Languages"]),
+  branch: z.enum(["Arabic", "Languages", "Private"]),
   phone: z.string().optional(),
 });
 
@@ -86,7 +86,7 @@ const editSchema = z.object({
   email: z.email(),
   phone: z.string().optional(),
   class_id: z.coerce.number().int().positive().optional(),
-  branch: z.enum(["Arabic", "Languages"]).optional(),
+  branch: z.enum(["Arabic", "Languages", "Private"]).optional(),
   parent_id: z.coerce.number().int().positive().optional(),
 });
 

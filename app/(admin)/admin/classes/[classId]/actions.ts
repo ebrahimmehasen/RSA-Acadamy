@@ -16,6 +16,8 @@ const slotSchema = z.object({
   custom_start_time: z.string().regex(/^\d{2}:\d{2}$/).optional(),
   custom_end_time: z.string().regex(/^\d{2}:\d{2}$/).optional(),
   zoom_account_id: z.coerce.number().int().positive().nullable(),
+  // set = a private lesson for exactly this one student, not the class
+  student_id: z.coerce.number().int().positive().nullable(),
 });
 
 export async function createSlot(formData: FormData) {
@@ -31,6 +33,7 @@ export async function createSlot(formData: FormData) {
     custom_start_time: formData.get("custom_start_time") || undefined,
     custom_end_time: formData.get("custom_end_time") || undefined,
     zoom_account_id: formData.get("zoom_account_id") || null,
+    student_id: formData.get("student_id") || null,
   });
 
   let slot: { start: string; end: string };
@@ -76,6 +79,7 @@ export async function createSlot(formData: FormData) {
     zoom_meeting_id: zoomMeetingId,
     zoom_passcode: zoomPasscode,
     assigned_by: session.profile.id,
+    student_id: parsed.student_id,
   });
   if (error) throw new Error(error.message);
 
@@ -106,6 +110,7 @@ export async function updateSlot(formData: FormData) {
     custom_start_time: formData.get("custom_start_time") || undefined,
     custom_end_time: formData.get("custom_end_time") || undefined,
     zoom_account_id: rawZoom === "keep" || rawZoom === "none" ? rawZoom : rawZoom || "keep",
+    student_id: formData.get("student_id") || null,
   });
 
   let slot: { start: string; end: string };
@@ -133,6 +138,7 @@ export async function updateSlot(formData: FormData) {
     start_time: slot.start,
     end_time: slot.end,
     assigned_by: session.profile.id,
+    student_id: parsed.student_id,
   };
 
   if (parsed.zoom_account_id === "none") {

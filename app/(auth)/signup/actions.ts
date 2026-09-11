@@ -54,7 +54,11 @@ export async function signUpAction(
 
     if (parsed.role === "student") {
       const classId = formData.get("class_id");
-      const branch = formData.get("branch") as "Arabic" | "Languages" | null;
+      const branch = formData.get("branch") as
+        | "Arabic"
+        | "Languages"
+        | "Private"
+        | null;
       const dateOfBirth = formData.get("date_of_birth") as string | null;
       const secondLanguage = formData.get("second_language") as
         | "French"

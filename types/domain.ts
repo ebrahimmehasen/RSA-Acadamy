@@ -21,7 +21,10 @@ export interface ClassRow {
   class_type: string | null;
 }
 
-export type Branch = "Arabic" | "Languages";
+// "Private" = a private-lessons student: skips class-wide subject
+// auto-enrollment and the shared class schedule — the admin builds
+// both individually for them (see docs on class_assignments.student_id).
+export type Branch = "Arabic" | "Languages" | "Private";
 
 export interface StudentRow {
   user_id: number;

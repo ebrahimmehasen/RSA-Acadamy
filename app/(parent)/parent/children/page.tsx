@@ -13,6 +13,7 @@ import { CARD_LINK_CLASS } from "@/lib/ui";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { LinkChildForm } from "./LinkChildForm";
+import { studentBranchLabel } from "@/lib/subjects";
 
 export default async function ParentChildrenPage() {
   const session = await getSession();
@@ -48,7 +49,7 @@ export default async function ParentChildrenPage() {
                   </CardTitle>
                   <CardDescription>
                     {cls?.class_name} ·{" "}
-                    {child.branch === "Arabic" ? "عربي" : "لغات"} · كود:{" "}
+                    {studentBranchLabel(child.branch)} · كود:{" "}
                     <span dir="ltr" className="font-mono">
                       {child.student_code}
                     </span>

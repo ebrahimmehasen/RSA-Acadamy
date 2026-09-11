@@ -13,6 +13,7 @@ import { PageHeader } from "@/components/shared/PageHeader";
 import { SectionCard } from "@/components/shared/SectionCard";
 import { SignOutButton } from "@/components/shared/SignOutButton";
 import { ProfileForm } from "@/app/settings/profile/ProfileForm";
+import { studentBranchLabel } from "@/lib/subjects";
 
 export default async function StudentProfilePage() {
   const session = await getSession();
@@ -58,7 +59,7 @@ export default async function StudentProfilePage() {
             الصف:{" "}
             {(student?.classes as unknown as { class_name: string })?.class_name}
           </p>
-          <p>الشعبة: {student?.branch === "Arabic" ? "عربي" : "لغات"}</p>
+          <p>الشعبة: {studentBranchLabel(student?.branch ?? null)}</p>
           <p>
             ولي الأمر:{" "}
             {student?.parent_id ? (

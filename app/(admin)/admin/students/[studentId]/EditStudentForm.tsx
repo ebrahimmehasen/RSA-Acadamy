@@ -119,6 +119,7 @@ export function EditStudentForm({
               <option value="">—</option>
               <option value="Arabic">عربي</option>
               <option value="Languages">لغات</option>
+              <option value="Private">خاص</option>
             </select>
           </div>
           <div className="space-y-2">

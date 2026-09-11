@@ -11,6 +11,7 @@ export function TeacherAddSlotForm({
   teacherId,
   classes,
   subjectsByClass,
+  studentsByClass,
   zoomAccounts,
   action,
   defaultDay,
@@ -20,6 +21,8 @@ export function TeacherAddSlotForm({
   teacherId: number;
   classes: { id: number; class_name: string }[];
   subjectsByClass: Record<number, { id: string; label: string }[]>;
+  /** private-lessons students, keyed by class id */
+  studentsByClass?: Record<number, { id: number; name: string }[]>;
   zoomAccounts: { id: number; label: string }[];
   action: (formData: FormData) => Promise<void>;
   defaultDay?: DayOfWeek;
@@ -32,6 +35,7 @@ export function TeacherAddSlotForm({
   const [timingMode, setTimingMode] = useState<"period" | "custom">("period");
   const [classId, setClassId] = useState<number | "">(classes[0]?.id ?? "");
   const subjectOptions = classId ? (subjectsByClass[classId] ?? []) : [];
+  const studentOptions = classId ? (studentsByClass?.[classId] ?? []) : [];
 
   return (
     <form
@@ -161,6 +165,20 @@ export function TeacherAddSlotForm({
             />
           </div>
         </>
+      )}
+
+      {studentOptions.length > 0 && (
+        <div className="space-y-2 sm:col-span-2">
+          <Label htmlFor="student_id">طالب معيّن (حصة خاصة، اختياري)</Label>
+          <select id="student_id" name="student_id" className={SELECT_CLASS}>
+            <option value="">كل الفصل</option>
+            {studentOptions.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.name}
+              </option>
+            ))}
+          </select>
+        </div>
       )}
 
       <div className="space-y-2 sm:col-span-2">

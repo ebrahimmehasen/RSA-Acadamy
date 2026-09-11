@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/table";
 import { PageShell } from "@/components/shared/PageShell";
 import { PageHeader } from "@/components/shared/PageHeader";
+import { studentBranchLabel } from "@/lib/subjects";
 import { SectionCard } from "@/components/shared/SectionCard";
 import { StatGrid } from "@/components/shared/StatGrid";
 import { StatCard } from "@/components/shared/StatCard";
@@ -102,7 +103,7 @@ export default async function TeacherStudentSheetPage({
             <span className="font-mono" dir="ltr">
               {student.student_code}
             </span>{" "}
-            · {className} · {student.branch === "Arabic" ? "عربي" : "لغات"}
+            · {className} · {studentBranchLabel(student.branch)}
             {profile?.phone && (
               <>
                 {" · "}
