@@ -15,9 +15,9 @@ export default async function TeacherPreferencesPage() {
       supabase.from("classes").select("id, class_name").order("id"),
       supabase
         .from("subjects")
-        .select("subject_id, subject_name, branch, classes(class_name)")
+        .select("subject_id, subject_name, branch, class_id")
         .eq("is_active", true)
-        .order("class_id"),
+        .order("subject_name"),
       supabase
         .from("teacher_preferences")
         .select("subjects, classes")
@@ -29,24 +29,24 @@ export default async function TeacherPreferencesPage() {
         .eq("teacher_id", session!.profile.id),
     ]);
 
-  const typedSubjects = (subjects ?? []) as unknown as {
+  const typedSubjects = (subjects ?? []) as {
     subject_id: string;
     subject_name: string;
     branch: "Arabic" | "Languages";
-    classes: { class_name: string } | null;
+    class_id: number;
   }[];
-  const subjectsByBranch: { Arabic: SubjectRow[]; Languages: SubjectRow[] } = {
-    Arabic: [],
-    Languages: [],
-  };
+  // Subjects grouped per class, then per branch — so picking a class
+  // reveals just that class's two subject columns (عربي / لغات).
+  const subjectsByClass: Record<number, { Arabic: SubjectRow[]; Languages: SubjectRow[] }> = {};
   for (const s of typedSubjects) {
-    const row: SubjectRow = {
+    if (!subjectsByClass[s.class_id]) {
+      subjectsByClass[s.class_id] = { Arabic: [], Languages: [] };
+    }
+    subjectsByClass[s.class_id][s.branch].push({
       subject_id: s.subject_id,
       subject_name: s.subject_name,
       branch: s.branch,
-      class_name: s.classes?.class_name ?? "",
-    };
-    subjectsByBranch[s.branch].push(row);
+    });
   }
 
   const initialSlots = new Set(
@@ -57,10 +57,13 @@ export default async function TeacherPreferencesPage() {
     <PageShell>
       <PageHeader title="التفضيلات" />
 
-      <SectionCard title="التخصص والفصول">
+      <SectionCard
+        title="الفصول والمواد"
+        description="اختر الفصول التي تفضّل التدريس فيها، ثم اختر مواد كل فصل — عربي أو لغات"
+      >
         <PreferencesForm
-          subjectsByBranch={subjectsByBranch}
           classes={classes ?? []}
+          subjectsByClass={subjectsByClass}
           initialSubjects={(prefs?.subjects as string[]) ?? []}
           initialClasses={(prefs?.classes as number[]) ?? []}
         />
