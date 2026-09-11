@@ -20,8 +20,13 @@ import { formatFileSize } from "@/lib/uploadLimits";
 import { cn } from "@/lib/utils";
 
 export interface FileAttachment {
-  /** Google Drive file id — used to build the authenticated /api/files/[id] URL */
-  id: string;
+  /**
+   * Fully-resolved, ready-to-embed URL — either the authenticated
+   * `/api/files/[id]` route for an already-uploaded file, or a local
+   * `URL.createObjectURL(file)` blob URL for a file the teacher just
+   * picked and hasn't submitted yet. Also used as the React key.
+   */
+  url: string;
   fileName: string;
   mimeType: string | null;
   sizeBytes: number | null;
@@ -63,7 +68,7 @@ export function FilePreview({ file }: { file: FileAttachment }) {
   const [imageStatus, setImageStatus] = useState<"loading" | "loaded" | "error">(
     "loading",
   );
-  const url = `/api/files/${file.id}`;
+  const url = file.url;
   const category = categorize(file.mimeType);
   const previewable = category === "image" || category === "pdf" || category === "video";
 
@@ -180,7 +185,7 @@ export function FilePreviewGrid({ files }: { files: FileAttachment[] }) {
   return (
     <div className="flex flex-wrap gap-2">
       {files.map((f) => (
-        <FilePreview key={f.id} file={f} />
+        <FilePreview key={f.url} file={f} />
       ))}
     </div>
   );

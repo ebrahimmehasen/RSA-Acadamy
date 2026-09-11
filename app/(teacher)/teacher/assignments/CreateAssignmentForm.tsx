@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState, useRef, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
+import { UploadCloud } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,6 +14,7 @@ import {
   formatFileSize,
   validateAssignmentAttachmentBatch,
 } from "@/lib/uploadLimits";
+import { FilePreviewGrid, type FileAttachment } from "./FilePreview";
 import { createAssignment, type ActionResult } from "./actions";
 
 export function CreateAssignmentForm({
@@ -28,8 +30,32 @@ export function CreateAssignmentForm({
   const [dueLocal, setDueLocal] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  // Local (not-yet-uploaded) preview URLs — kept in lockstep with
+  // selectedFiles (same length, same order) so no ref access is needed
+  // during render to look one up.
+  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [fileError, setFileError] = useState<string | null>(null);
   const totalBytes = selectedFiles.reduce((sum, f) => sum + f.size, 0);
+  const previewFiles: FileAttachment[] = selectedFiles.map((f, i) => ({
+    url: previewUrls[i],
+    fileName: f.name,
+    mimeType: f.type || null,
+    sizeBytes: f.size,
+  }));
+
+  // Revoke every blob URL still outstanding when the form unmounts.
+  // Tracked via a ref (updated from an effect, read only in an effect
+  // cleanup) rather than closing over `previewUrls` directly, since that
+  // would freeze the empty initial array in the cleanup's closure.
+  const latestPreviewUrlsRef = useRef<string[]>([]);
+  useEffect(() => {
+    latestPreviewUrlsRef.current = previewUrls;
+  }, [previewUrls]);
+  useEffect(() => {
+    return () => {
+      latestPreviewUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
+    };
+  }, []);
 
   // Native <input type=file multiple> REPLACES its selection every time
   // the picker reopens, so re-syncing input.files to the merged list
@@ -55,12 +81,15 @@ export function CreateAssignmentForm({
       return;
     }
     setSelectedFiles(merged);
+    setPreviewUrls((prev) => [...prev, ...picked.map((f) => URL.createObjectURL(f))]);
     setFileError(null);
     syncInputFiles(merged);
   }
 
   function clearFiles() {
+    previewUrls.forEach((url) => URL.revokeObjectURL(url));
     setSelectedFiles([]);
+    setPreviewUrls([]);
     setFileError(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
   }
@@ -175,16 +204,32 @@ export function CreateAssignmentForm({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="attachments">
-              مرفقات (حد أقصى {ASSIGNMENT_ATTACHMENT_LIMITS.maxFiles} ملفات،{" "}
-              {formatFileSize(ASSIGNMENT_ATTACHMENT_LIMITS.maxTotalBytes)} إجمالي)
-            </Label>
+            <Label htmlFor="attachments">مرفقات (اختياري)</Label>
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="flex w-full flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-input bg-muted/20 px-6 py-8 text-center transition-colors hover:border-primary hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+            >
+              <span className="flex size-11 items-center justify-center rounded-full bg-primary/10 text-primary">
+                <UploadCloud className="size-5" aria-hidden="true" />
+              </span>
+              <span className="font-heading text-sm font-semibold">
+                اضغط هنا لاختيار الملفات
+              </span>
+              <span className="text-xs text-muted-foreground">
+                حتى {ASSIGNMENT_ATTACHMENT_LIMITS.maxFiles} ملفات،{" "}
+                {formatFileSize(ASSIGNMENT_ATTACHMENT_LIMITS.maxTotalBytes)} إجمالي — يمكنك
+                الإضافة على أكثر من دفعة
+              </span>
+            </button>
             <Input
               ref={fileInputRef}
               id="attachments"
               name="attachments"
               type="file"
               multiple
+              className="sr-only"
+              tabIndex={-1}
               onChange={(e) => {
                 const picked = Array.from(e.target.files ?? []);
                 handleFilesPicked(picked);
@@ -210,6 +255,7 @@ export function CreateAssignmentForm({
                 {fileError}
               </p>
             )}
+            <FilePreviewGrid files={previewFiles} />
           </div>
 
           {result && (

@@ -49,7 +49,7 @@ export default async function TeacherAssignmentDetailPage({
     .is("deleted_at", null)
     .order("uploaded_at");
   const attachments: FileAttachment[] = (attachmentRows ?? []).map((f) => ({
-    id: f.drive_file_id,
+    url: `/api/files/${f.drive_file_id}`,
     fileName: f.file_name,
     mimeType: f.mime_type,
     sizeBytes: f.file_size,
