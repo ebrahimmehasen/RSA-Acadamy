@@ -1,5 +1,5 @@
 import { PageSkeleton } from "@/components/skeletons/PageSkeleton";
 
 export default function Loading() {
-  return <PageSkeleton variant="dashboard" />;
+  return <PageSkeleton variant="dashboard" spotlight />;
 }
