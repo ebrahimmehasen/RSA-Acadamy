@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useRef, useState } from "react";
-import { UploadCloud } from "lucide-react";
+import { UploadCloud, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -57,6 +57,13 @@ export function CreateAssignmentForm({
     };
   }, []);
 
+  // A successful create() means these files are now the assignment's
+  // saved attachments — clear the picker so it's ready for a next one.
+  useEffect(() => {
+    if (result?.ok) clearFiles();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [result]);
+
   // Native <input type=file multiple> REPLACES its selection every time
   // the picker reopens, so re-syncing input.files to the merged list
   // (via DataTransfer) is what actually lets the teacher add files "on
@@ -95,8 +102,23 @@ export function CreateAssignmentForm({
   }
 
   return (
-    <SectionCard title="إنشاء واجب جديد">
+    <>
+      {isPending && (
+        <div
+          role="status"
+          aria-live="assertive"
+          className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-3 bg-background/80 backdrop-blur-sm"
+        >
+          <Loader2 className="size-8 animate-spin text-primary" aria-hidden="true" />
+          <p className="font-heading text-sm font-semibold">جاري إنشاء الواجب…</p>
+          <p className="text-xs text-muted-foreground">
+            يرجى الانتظار وعدم إغلاق الصفحة أو تحديثها
+          </p>
+        </div>
+      )}
+      <SectionCard title="إنشاء واجب جديد">
         <form action={formAction} className="space-y-4">
+        <fieldset disabled={isPending} className="space-y-4 disabled:opacity-60">
           <div className="space-y-2">
             <Label htmlFor="slot">الفصل والمادة</Label>
             <select
@@ -270,7 +292,9 @@ export function CreateAssignmentForm({
           <Button type="submit" disabled={isPending}>
             {isPending ? "جاري الإنشاء…" : "إنشاء الواجب"}
           </Button>
+        </fieldset>
         </form>
-    </SectionCard>
+      </SectionCard>
+    </>
   );
 }
