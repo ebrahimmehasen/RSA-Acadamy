@@ -35,6 +35,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { NotificationBell } from "@/components/shared/NotificationBell";
 import { Logo } from "@/components/shared/Logo";
@@ -44,6 +45,8 @@ import { SignOutButton } from "@/components/shared/SignOutButton";
 export interface NavItem {
   href: string;
   label: string;
+  /** Shown but not yet clickable — pairs with a "قريبًا" badge. */
+  comingSoon?: boolean;
 }
 
 const ICON_BY_SEGMENT: Record<string, LucideIcon> = {
@@ -128,6 +131,26 @@ export function RoleShell({
   function renderNavLink(item: NavItem, opts?: { onClick?: () => void }) {
     const Icon = iconForHref(item.href);
     const active = item.href === current;
+
+    if (item.comingSoon) {
+      return (
+        <div
+          key={item.href}
+          aria-disabled="true"
+          className="flex min-h-11 min-w-0 cursor-not-allowed items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-sidebar-foreground/40 md:min-h-0"
+        >
+          <Icon className="size-4 shrink-0" aria-hidden="true" />
+          <span className="min-w-0 flex-1 truncate">{item.label}</span>
+          <Badge
+            variant="secondary"
+            className="h-4 shrink-0 px-1.5 text-[10px] font-semibold"
+          >
+            قريبًا
+          </Badge>
+        </div>
+      );
+    }
+
     return (
       <Link
         key={item.href}
