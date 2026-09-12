@@ -5,7 +5,6 @@ import { PageShell } from "@/components/shared/PageShell";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ScheduleGrid } from "@/components/shared/ScheduleGrid";
-import { TeacherZoomForm } from "./TeacherZoomForm";
 
 export default async function TeacherClassesPage() {
   const supabase = await createClient();
@@ -22,25 +21,9 @@ export default async function TeacherClassesPage() {
     classes: { class_name: string } | null;
   })[];
 
-  const entryActions = Object.fromEntries(
-    typedSlots.map((slot) => [
-      slot.id,
-      <TeacherZoomForm
-        key={slot.id}
-        slotId={slot.id}
-        zoomLink={slot.zoom_link}
-        zoomMeetingId={slot.zoom_meeting_id}
-        zoomPasscode={slot.zoom_passcode}
-      />,
-    ]),
-  );
-
   return (
     <PageShell>
-      <PageHeader
-        title="فصولك وجدولك الأسبوعي"
-        description="اضغط «إضافة رابط» جنب أي حصة لضبط رابط Zoom الخاص بها"
-      />
+      <PageHeader title="فصولك وجدولك الأسبوعي" />
       {typedSlots.length === 0 ? (
         <EmptyState
           icon={CalendarX}
@@ -50,7 +33,6 @@ export default async function TeacherClassesPage() {
       ) : (
         <ScheduleGrid
           zoomLabel="بدء الحصة"
-          entryActions={entryActions}
           entries={typedSlots.map((slot) => ({
             id: slot.id,
             day: slot.day_of_week,
