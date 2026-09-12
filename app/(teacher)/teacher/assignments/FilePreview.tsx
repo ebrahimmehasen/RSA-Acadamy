@@ -131,7 +131,9 @@ export function FilePreview({ file }: { file: FileAttachment }) {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-3xl">
           <DialogHeader>
-            <DialogTitle className="truncate">{file.fileName}</DialogTitle>
+            <DialogTitle dir="ltr" className="truncate pe-8 text-left">
+            {file.fileName}
+          </DialogTitle>
           </DialogHeader>
           {previewable ? (
             <div className="overflow-hidden rounded-lg border bg-muted/30">
