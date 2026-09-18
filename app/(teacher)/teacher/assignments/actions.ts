@@ -4,11 +4,12 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireRole } from "@/lib/auth/guards";
 import { createAdminClient } from "@/lib/supabase/admin";
-import {
-  uploadTeacherAttachment,
-  validateUpload,
-} from "@/lib/googleDrive/upload";
 import { validateAssignmentAttachmentBatch } from "@/lib/uploadLimits";
+import {
+  attachPendingToAssignment,
+  loadPendingAttachments,
+  parseFileIds,
+} from "@/lib/teacherAttachments";
 import { createNotification, getNotificationSettings } from "@/lib/notifications/create";
 import { sendEmail } from "@/lib/email/resend";
 import { assignmentGradedEmail } from "@/lib/email/templates";
@@ -77,22 +78,23 @@ export async function createAssignment(
       return { ok: false, message: "يجب السماح بإرفاق ملف أو كتابة إجابة نصية على الأقل" };
     }
 
-    const files = formData
-      .getAll("attachments")
-      .filter((f): f is File => f instanceof File && f.size > 0);
-
-    // Aggregate cap (Task 1: 10 files / 5GB per assignment) — this is a
-    // brand-new assignment, so "existing" is empty; the same helper is
-    // reused when attachments are added later to an existing one.
-    const batchError = validateAssignmentAttachmentBatch(0, 0, files);
-    if (batchError) return { ok: false, message: batchError };
-
-    for (const file of files) {
-      const err = validateUpload("teacher_attachment", file.type, file.size);
-      if (err) return { ok: false, message: `${file.name}: ${err}` };
+    // Files are uploaded in chunks BEFORE this action (see
+    // /api/uploads/teacher-attachment); a raw file here means a stale page.
+    if (formData.getAll("attachments").some((f) => f instanceof File && f.size > 0)) {
+      return { ok: false, message: "حدّث الصفحة ثم أعد المحاولة" };
     }
+    const newIds = parseFileIds(formData.get("new_file_ids"));
 
     const supabase = createAdminClient();
+
+    // Aggregate cap (10 files / 5GB) — a brand-new assignment, so nothing
+    // is attached yet; sizes/names come from the upload registry.
+    const pendingFiles = await loadPendingAttachments(supabase, session.profile.id, newIds);
+    if (!pendingFiles) {
+      return { ok: false, message: "تعذّر التحقق من الملفات المرفوعة — أعد رفعها" };
+    }
+    const batchError = validateAssignmentAttachmentBatch(0, 0, pendingFiles.map((f) => ({ size: f.size })));
+    if (batchError) return { ok: false, message: batchError };
 
     // The teacher must actually teach this class+subject — and for a
     // private assignment, that exact private student — so a hand-crafted
@@ -147,22 +149,11 @@ export async function createAssignment(
       .single();
     if (error) return { ok: false, message: error.message };
 
-    if (files.length > 0) {
-      const driveIds: string[] = [];
-      for (const file of files) {
-        const buffer = Buffer.from(await file.arrayBuffer());
-        const uploaded = await uploadTeacherAttachment({
-          buffer,
-          fileName: file.name,
-          mimeType: file.type,
-          uploadedBy: session.profile.id,
-          assignmentId: assignment.id,
-        });
-        driveIds.push(uploaded.fileId);
-      }
+    await attachPendingToAssignment(supabase, session.profile.id, newIds, assignment.id);
+    if (newIds.length > 0) {
       await supabase
         .from("assignments")
-        .update({ attachment_drive_ids: driveIds })
+        .update({ attachment_drive_ids: newIds })
         .eq("id", assignment.id);
     }
 
@@ -214,9 +205,14 @@ export async function updateAssignment(
     }
 
     const removeIds = formData.getAll("remove_attachment_ids").map(String);
-    const newFiles = formData
-      .getAll("attachments")
-      .filter((f): f is File => f instanceof File && f.size > 0);
+    if (formData.getAll("attachments").some((f) => f instanceof File && f.size > 0)) {
+      return { ok: false, message: "حدّث الصفحة ثم أعد المحاولة" };
+    }
+    const newIds = parseFileIds(formData.get("new_file_ids"));
+    const pendingFiles = await loadPendingAttachments(supabase, session.profile.id, newIds);
+    if (!pendingFiles) {
+      return { ok: false, message: "تعذّر التحقق من الملفات المرفوعة — أعد رفعها" };
+    }
 
     const { data: currentFiles } = await supabase
       .from("file_storage")
@@ -232,14 +228,9 @@ export async function updateAssignment(
     const batchError = validateAssignmentAttachmentBatch(
       remaining.length,
       remainingBytes,
-      newFiles,
+      pendingFiles.map((f) => ({ size: f.size })),
     );
     if (batchError) return { ok: false, message: batchError };
-
-    for (const file of newFiles) {
-      const err = validateUpload("teacher_attachment", file.type, file.size);
-      if (err) return { ok: false, message: `${file.name}: ${err}` };
-    }
 
     if (removeIds.length > 0) {
       await supabase
@@ -250,18 +241,8 @@ export async function updateAssignment(
         .in("drive_file_id", removeIds);
     }
 
-    const newDriveIds: string[] = [];
-    for (const file of newFiles) {
-      const buffer = Buffer.from(await file.arrayBuffer());
-      const uploaded = await uploadTeacherAttachment({
-        buffer,
-        fileName: file.name,
-        mimeType: file.type,
-        uploadedBy: session.profile.id,
-        assignmentId: parsed.assignment_id,
-      });
-      newDriveIds.push(uploaded.fileId);
-    }
+    await attachPendingToAssignment(supabase, session.profile.id, newIds, parsed.assignment_id);
+    const newDriveIds = newIds;
 
     const { error } = await supabase
       .from("assignments")

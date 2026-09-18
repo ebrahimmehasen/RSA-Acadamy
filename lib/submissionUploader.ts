@@ -1,7 +1,7 @@
 /**
- * Browser-side chunked uploader for a student's answer files. Talks only to
- * our own /api/uploads/submission route (see that file for the protocol).
- * Client-safe: no server imports.
+ * Browser-side chunked uploader (student answers and teacher attachments).
+ * Talks only to our own /api/uploads/* routes (see those files for the
+ * protocol). Client-safe: no server imports.
  */
 export interface UploadedFileInfo {
   id: string;
@@ -23,7 +23,8 @@ export class UploadError extends Error {
   }
 }
 
-const ENDPOINT = "/api/uploads/submission";
+const SUBMISSION_ENDPOINT = "/api/uploads/submission";
+const TEACHER_ENDPOINT = "/api/uploads/teacher-attachment";
 
 async function readJson<T>(res: Response): Promise<T> {
   const body = (await res.json().catch(() => null)) as
@@ -43,14 +44,35 @@ export interface UploadOptions {
   signal?: AbortSignal;
 }
 
+/** A student's answer file for an assignment. */
+export function uploadSubmissionFile(
+  file: File,
+  assignmentId: number,
+  onProgress: (uploadedBytes: number) => void,
+  opts: UploadOptions = {},
+): Promise<UploadedFileInfo> {
+  return uploadFileChunked(file, SUBMISSION_ENDPOINT, { assignmentId }, onProgress, opts);
+}
+
+/** A teacher's assignment attachment (assignmentId when editing an existing one). */
+export function uploadTeacherAttachmentFile(
+  file: File,
+  assignmentId: number | null,
+  onProgress: (uploadedBytes: number) => void,
+  opts: UploadOptions = {},
+): Promise<UploadedFileInfo> {
+  return uploadFileChunked(file, TEACHER_ENDPOINT, { assignmentId }, onProgress, opts);
+}
+
 /**
  * Uploads one file in chunks. Survives dropped connections: on a
  * transient error it asks the server how much Drive already holds and
  * carries on from there instead of restarting the file.
  */
-export async function uploadSubmissionFile(
+async function uploadFileChunked(
   file: File,
-  assignmentId: number,
+  endpoint: string,
+  extraInit: Record<string, unknown>,
   onProgress: (uploadedBytes: number) => void,
   opts: UploadOptions = {},
 ): Promise<UploadedFileInfo> {
@@ -62,11 +84,11 @@ export async function uploadSubmissionFile(
   if (file.size <= 0) throw new UploadError(`${file.name}: الملف فارغ`, 400);
 
   const init = await readJson<{ token: string; chunkBytes: number }>(
-    await doFetch(ENDPOINT, {
+    await doFetch(endpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        assignmentId,
+        ...extraInit,
         fileName: file.name,
         mimeType: file.type,
         size: file.size,
@@ -74,7 +96,7 @@ export async function uploadSubmissionFile(
       signal,
     }),
   );
-  const url = `${ENDPOINT}?token=${encodeURIComponent(init.token)}`;
+  const url = `${endpoint}?token=${encodeURIComponent(init.token)}`;
 
   let offset = 0;
   let attempts = 0;

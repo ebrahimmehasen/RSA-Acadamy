@@ -7,15 +7,12 @@ import { createResumableSession } from "@/lib/googleDrive/resumable";
 import { registerFile } from "@/lib/googleDrive/upload";
 import { relayChunk, relayStatus } from "@/lib/chunkRelay";
 import {
-  SUBMISSION_ALLOWED_MIMES,
-  SUBMISSION_LIMITS,
-  validateSubmissionBatch,
+  ASSIGNMENT_ATTACHMENT_LIMITS,
+  TEACHER_ATTACHMENT_ALLOWED_MIMES,
+  TEACHER_UPLOAD_CHUNK_BYTES,
+  validateAssignmentAttachmentBatch,
 } from "@/lib/uploadLimits";
-import {
-  checkStudentCanSubmit,
-  studentAssignmentUsage,
-  submissionFilesOf,
-} from "@/lib/submissions";
+import { pendingTeacherEntityId, teacherAttachmentUsage } from "@/lib/teacherAttachments";
 import {
   signUploadSession,
   verifyUploadSession,
@@ -23,21 +20,19 @@ import {
 } from "@/lib/uploadSession";
 
 /**
- * Chunked upload of a student's answer files.
- *   POST  {assignmentId, fileName, mimeType, size}  → {token}   (validates + opens a Drive session)
- *   PUT   ?token&offset  (raw bytes ≤ chunkBytes)   → {done:false,nextOffset} | {done:true,file}
- *   GET   ?token                                    → same shape (resume: how much does Drive have)
- * The browser only ever talks to this route; Drive credentials and the
- * session URI stay server-side.
+ * Chunked upload of a teacher's assignment attachments — same protocol as
+ * /api/uploads/submission. Files are recorded as `pending:<teacherId>`
+ * until createAssignment/updateAssignment attaches them to an assignment.
+ *   POST {fileName, mimeType, size, assignmentId?}  (assignmentId = editing an existing one)
  */
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
 const initSchema = z.object({
-  assignmentId: z.number().int().positive(),
   fileName: z.string().trim().min(1).max(200),
   mimeType: z.string().min(1).max(150),
   size: z.number().int().positive(),
+  assignmentId: z.number().int().positive().nullable().optional(),
 });
 
 const fail = (message: string, status = 400) =>
@@ -45,82 +40,72 @@ const fail = (message: string, status = 400) =>
 
 export async function POST(request: Request) {
   try {
-    const session = await requireRole("student");
+    const session = await requireRole("teacher");
     const parsed = initSchema.safeParse(await request.json().catch(() => null));
     if (!parsed.success) return fail("بيانات الملف غير صحيحة");
-    const { assignmentId, fileName, mimeType, size } = parsed.data;
+    const { fileName, mimeType, size } = parsed.data;
+    const assignmentId = parsed.data.assignmentId ?? null;
 
-    if (!(SUBMISSION_ALLOWED_MIMES as readonly string[]).includes(mimeType)) {
+    if (!(TEACHER_ATTACHMENT_ALLOWED_MIMES as readonly string[]).includes(mimeType)) {
       return fail(`${fileName}: نوع الملف غير مسموح به`);
     }
-    if (size > SUBMISSION_LIMITS.maxTotalBytes) {
+    if (size > ASSIGNMENT_ATTACHMENT_LIMITS.maxTotalBytes) {
       return fail(`${fileName}: الملف أكبر من الحد الأقصى المسموح به`);
     }
 
     const supabase = createAdminClient();
-    const studentId = session.profile.id;
+    const teacherId = session.profile.id;
 
-    const eligible = await checkStudentCanSubmit(supabase, studentId, assignmentId);
-    if (!eligible.ok) return fail(eligible.message, 403);
-    if (!eligible.assignment.allow_file) {
-      return fail("هذا الواجب لا يقبل الملفات — يرجى كتابة إجابة نصية", 403);
+    if (assignmentId != null) {
+      const { data: assignment } = await supabase
+        .from("assignments")
+        .select("teacher_id, due_date")
+        .eq("id", assignmentId)
+        .maybeSingle();
+      if (!assignment || assignment.teacher_id !== teacherId) {
+        return fail("لا يمكنك تعديل واجب ليس واجبك", 403);
+      }
+      if (new Date(assignment.due_date) <= new Date()) {
+        return fail("لا يمكن تعديل الواجب بعد انتهاء الموعد", 403);
+      }
     }
 
-    const { data: existing } = await supabase
-      .from("assignment_submissions")
-      .select("status, files, file_drive_id, file_name")
-      .eq("assignment_id", assignmentId)
-      .eq("student_id", studentId)
-      .maybeSingle();
-    if (existing?.status === "graded") {
-      return fail("تم تصحيح هذا الواجب بالفعل — لا يمكن تعديل التسليم", 403);
-    }
-
-    const usage = await studentAssignmentUsage(
-      supabase,
-      studentId,
-      assignmentId,
-      existing ? submissionFilesOf(existing).map((f) => f.id) : [],
-    );
-    const limitError = validateSubmissionBatch(usage.count, usage.bytes, [{ size }]);
+    const usage = await teacherAttachmentUsage(supabase, teacherId, assignmentId);
+    const limitError = validateAssignmentAttachmentBatch(usage.count, usage.bytes, [{ size }]);
     if (limitError) return fail(limitError);
 
-    const folderId = await getOrCreateFolder(
-      `Assignment_Files/Student_Submissions/${studentId}`,
-    );
+    const folderId = await getOrCreateFolder("Assignment_Files/Teacher_Attachments");
     const sessionUri = await createResumableSession({
-      name: `Assignment_${assignmentId}_${fileName}`,
+      name: `Attachment_${assignmentId ?? "new"}_${fileName}`,
       mimeType,
       size,
       folderId,
     });
 
     const token = signUploadSession({
-      u: studentId,
-      k: "submission",
-      a: assignmentId,
+      u: teacherId,
+      k: "teacher",
+      a: assignmentId ?? 0,
       s: sessionUri,
       t: size,
       n: fileName,
       m: mimeType,
       e: Date.now() + 24 * 60 * 60 * 1000,
     });
-    return NextResponse.json({ token, chunkBytes: SUBMISSION_LIMITS.chunkBytes });
+    return NextResponse.json({ token, chunkBytes: TEACHER_UPLOAD_CHUNK_BYTES });
   } catch (error) {
     return toErrorResponse(error);
   }
 }
 
 async function authorize(request: Request) {
-  const session = await requireRole("student");
+  const session = await requireRole("teacher");
   const token = new URL(request.url).searchParams.get("token") ?? "";
   const payload = verifyUploadSession(token);
-  if (!payload || payload.u !== session.profile.id) return null;
-  if ((payload.k ?? "submission") !== "submission") return null;
+  if (!payload || payload.u !== session.profile.id || payload.k !== "teacher") return null;
   return payload;
 }
 
-/** Records a finished Drive upload in file_storage (idempotent — a resumed upload may finish twice). */
 async function finalizeUpload(payload: UploadSessionPayload, driveFileId: string) {
   const supabase = createAdminClient();
   const { data: existing } = await supabase
@@ -134,8 +119,8 @@ async function finalizeUpload(payload: UploadSessionPayload, driveFileId: string
       fileName: payload.n,
       mimeType: payload.m,
       sizeBytes: payload.t,
-      entityType: "assignment",
-      entityId: String(payload.a),
+      entityType: "teacher_attachment",
+      entityId: pendingTeacherEntityId(payload.u),
       uploadedBy: payload.u,
     });
   }

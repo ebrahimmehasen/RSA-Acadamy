@@ -1,7 +1,13 @@
 "use client";
 
-import { useActionState, useEffect, useRef, useState } from "react";
-import { Pencil, UploadCloud, X } from "lucide-react";
+import {
+  useActionState,
+  useEffect,
+  useState,
+  useTransition,
+  type FormEvent,
+} from "react";
+import { Loader2, Pencil, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,10 +16,12 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { SectionCard } from "@/components/shared/SectionCard";
 import {
   ASSIGNMENT_ATTACHMENT_LIMITS,
-  formatFileSize,
+  TEACHER_ATTACHMENT_ALLOWED_MIMES,
   validateAssignmentAttachmentBatch,
 } from "@/lib/uploadLimits";
-import { FilePreview, type FileAttachment } from "../FilePreview";
+import { uploadTeacherAttachmentFile } from "@/lib/submissionUploader";
+import { AttachmentDropzone, useAttachmentQueue } from "@/components/shared/AttachmentUploader";
+import { FilePreview } from "../FilePreview";
 import { updateAssignment, type ActionResult } from "../actions";
 
 interface ExistingAttachment {
@@ -73,60 +81,40 @@ export function EditAssignmentForm({
     0,
   );
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
-  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
-  const [fileError, setFileError] = useState<string | null>(null);
-  const newFilesBytes = selectedFiles.reduce((sum, f) => sum + f.size, 0);
-  const newPreviewFiles: FileAttachment[] = selectedFiles.map((f, i) => ({
-    url: previewUrls[i],
-    fileName: f.name,
-    mimeType: f.type || null,
-    sizeBytes: f.size,
-  }));
+  const queue = useAttachmentQueue({
+    allowedMimes: TEACHER_ATTACHMENT_ALLOWED_MIMES,
+    baseCount: remainingExisting.length,
+    baseBytes: remainingExistingBytes,
+    validateBatch: validateAssignmentAttachmentBatch,
+  });
+  const [, startTransition] = useTransition();
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const busy = isPending || queue.uploading;
 
-  const latestPreviewUrlsRef = useRef<string[]>([]);
+  // a saved edit made the queued files real attachments
   useEffect(() => {
-    latestPreviewUrlsRef.current = previewUrls;
-  }, [previewUrls]);
-  useEffect(() => {
-    return () => {
-      latestPreviewUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
-    };
-  }, []);
+    if (result?.ok) queue.clear();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [result]);
 
-  function syncInputFiles(list: File[]) {
-    if (!fileInputRef.current) return;
-    const dataTransfer = new DataTransfer();
-    list.forEach((f) => dataTransfer.items.add(f));
-    fileInputRef.current.files = dataTransfer.files;
-  }
-
-  function handleFilesPicked(picked: File[]) {
-    if (picked.length === 0) return;
-    const merged = [...selectedFiles, ...picked];
-    const error = validateAssignmentAttachmentBatch(
-      remainingExisting.length,
-      remainingExistingBytes,
-      merged,
-    );
-    if (error) {
-      setFileError(error);
-      syncInputFiles(selectedFiles);
+  // Chunked upload first (a server action can't carry more than a few MB),
+  // then the action just receives the uploaded files' ids.
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (busy) return;
+    const formData = new FormData(e.currentTarget);
+    setUploadError(null);
+    let ids: string[];
+    try {
+      ids = await queue.uploadAll((file, onProgress) =>
+        uploadTeacherAttachmentFile(file, assignment.id, onProgress),
+      );
+    } catch (error) {
+      setUploadError(error instanceof Error ? error.message : "فشل رفع الملفات");
       return;
     }
-    setSelectedFiles(merged);
-    setPreviewUrls((prev) => [...prev, ...picked.map((f) => URL.createObjectURL(f))]);
-    setFileError(null);
-    syncInputFiles(merged);
-  }
-
-  function clearNewFiles() {
-    previewUrls.forEach((url) => URL.revokeObjectURL(url));
-    setSelectedFiles([]);
-    setPreviewUrls([]);
-    setFileError(null);
-    if (fileInputRef.current) fileInputRef.current.value = "";
+    formData.set("new_file_ids", JSON.stringify(ids));
+    startTransition(() => formAction(formData));
   }
 
   if (!open) {
@@ -140,12 +128,12 @@ export function EditAssignmentForm({
 
   return (
     <SectionCard title="تعديل الواجب">
-      <form action={formAction} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-4">
         <input type="hidden" name="assignment_id" value={assignment.id} />
         {[...removedIds].map((id) => (
           <input key={id} type="hidden" name="remove_attachment_ids" value={id} />
         ))}
-        <fieldset disabled={isPending} className="space-y-4 disabled:opacity-60">
+        <fieldset disabled={busy} className="space-y-4 disabled:opacity-60">
           <div className="space-y-2">
             <Label htmlFor="edit-title">عنوان الواجب</Label>
             <Input id="edit-title" name="title" defaultValue={assignment.title} required />
@@ -255,58 +243,32 @@ export function EditAssignmentForm({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="edit-attachments">إضافة مرفقات جديدة</Label>
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              className="flex w-full flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-input bg-muted/20 px-6 py-6 text-center transition-colors hover:border-primary hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
-            >
-              <span className="flex size-9 items-center justify-center rounded-full bg-primary/10 text-primary">
-                <UploadCloud className="size-4" aria-hidden="true" />
-              </span>
-              <span className="text-sm font-semibold">اضغط هنا لاختيار الملفات</span>
-              <span className="text-xs text-muted-foreground">
-                حتى {ASSIGNMENT_ATTACHMENT_LIMITS.maxFiles} ملفات إجمالاً،{" "}
-                {formatFileSize(ASSIGNMENT_ATTACHMENT_LIMITS.maxTotalBytes)} إجمالي
-              </span>
-            </button>
-            <Input
-              ref={fileInputRef}
-              id="edit-attachments"
-              name="attachments"
-              type="file"
-              multiple
-              className="sr-only"
-              tabIndex={-1}
-              onChange={(e) => handleFilesPicked(Array.from(e.target.files ?? []))}
+            <Label>إضافة مرفقات جديدة</Label>
+            <AttachmentDropzone
+              queue={queue}
+              disabled={busy}
+              accept={[...TEACHER_ATTACHMENT_ALLOWED_MIMES, ".pdf", ".docx", ".txt", ".zip", ".mp4"].join(",")}
+              maxFiles={ASSIGNMENT_ATTACHMENT_LIMITS.maxFiles}
+              maxTotalBytes={ASSIGNMENT_ATTACHMENT_LIMITS.maxTotalBytes}
+              baseCount={remainingExisting.length}
+              baseBytes={remainingExistingBytes}
             />
-            {selectedFiles.length > 0 && (
-              <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                <span>
-                  {selectedFiles.length} ملف جديد · {formatFileSize(newFilesBytes)}
-                </span>
-                <button
-                  type="button"
-                  onClick={clearNewFiles}
-                  className="text-destructive underline underline-offset-2"
-                >
-                  مسح الجديد
-                </button>
-              </div>
-            )}
-            {fileError && (
-              <p className="text-sm text-destructive" aria-live="polite">
-                {fileError}
-              </p>
-            )}
-            {newPreviewFiles.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {newPreviewFiles.map((f) => (
-                  <FilePreview key={f.url} file={f} />
-                ))}
-              </div>
-            )}
           </div>
+
+          {busy && (
+            <p className="flex items-center gap-2 text-sm text-muted-foreground" role="status" aria-live="polite">
+              <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+              {queue.uploading
+                ? `جاري رفع «${queue.currentName ?? ""}» — لا تغلق الصفحة`
+                : "جاري حفظ التعديلات…"}
+            </p>
+          )}
+
+          {uploadError && (
+            <p className="text-sm text-destructive" aria-live="polite">
+              {uploadError}
+            </p>
+          )}
 
           {result && !result.ok && (
             <p className="text-sm text-destructive" aria-live="polite">
@@ -315,8 +277,8 @@ export function EditAssignmentForm({
           )}
 
           <div className="flex gap-2">
-            <Button type="submit" disabled={isPending}>
-              {isPending ? "جاري الحفظ…" : "حفظ التعديلات"}
+            <Button type="submit" disabled={busy}>
+              {busy ? "جاري الحفظ…" : "حفظ التعديلات"}
             </Button>
             <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
               إلغاء

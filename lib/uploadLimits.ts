@@ -35,6 +35,23 @@ export const SUBMISSION_ALLOWED_MIMES = [
   "application/x-zip-compressed",
 ] as const;
 
+/** Types a teacher may attach to an assignment (shared by client + server). */
+export const TEACHER_ATTACHMENT_ALLOWED_MIMES = [
+  "image/jpeg",
+  "image/png",
+  "image/gif",
+  "image/webp",
+  "application/pdf",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "text/plain",
+  "application/zip",
+  "application/x-zip-compressed",
+  "video/mp4",
+] as const;
+
+/** Chunk size for teacher uploads — same protocol/limits as SUBMISSION_LIMITS. */
+export const TEACHER_UPLOAD_CHUNK_BYTES = 4 * 1024 * 1024;
+
 /** Bytes → a human-readable "X.XX GB" / "X MB" / "X KB" string. */
 export function formatFileSize(bytes: number): string {
   if (bytes >= 1024 ** 3) return `${(bytes / 1024 ** 3).toFixed(2)} GB`;

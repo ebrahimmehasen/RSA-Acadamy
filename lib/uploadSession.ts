@@ -7,9 +7,11 @@ import { createHmac, timingSafeEqual } from "node:crypto";
  * never has to trust the browser about any of them.
  */
 export interface UploadSessionPayload {
-  /** student profile id */
+  /** uploader's profile id (student or teacher) */
   u: number;
-  /** assignment id */
+  /** what is being uploaded — a token for one kind is useless on the other route (absent = "submission") */
+  k?: "submission" | "teacher";
+  /** assignment id (0 = a teacher's new, not-yet-created assignment) */
   a: number;
   /** Drive resumable session URI */
   s: string;

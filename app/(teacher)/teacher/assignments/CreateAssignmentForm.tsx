@@ -1,7 +1,13 @@
 "use client";
 
-import { useActionState, useEffect, useRef, useState } from "react";
-import { UploadCloud, Loader2 } from "lucide-react";
+import {
+  useActionState,
+  useEffect,
+  useState,
+  useTransition,
+  type FormEvent,
+} from "react";
+import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,10 +17,11 @@ import { SectionCard } from "@/components/shared/SectionCard";
 import { SELECT_CLASS } from "@/lib/ui";
 import {
   ASSIGNMENT_ATTACHMENT_LIMITS,
-  formatFileSize,
+  TEACHER_ATTACHMENT_ALLOWED_MIMES,
   validateAssignmentAttachmentBatch,
 } from "@/lib/uploadLimits";
-import { FilePreviewGrid, type FileAttachment } from "./FilePreview";
+import { uploadTeacherAttachmentFile } from "@/lib/submissionUploader";
+import { AttachmentDropzone, useAttachmentQueue } from "@/components/shared/AttachmentUploader";
 import { createAssignment, type ActionResult } from "./actions";
 
 export function CreateAssignmentForm({
@@ -38,97 +45,70 @@ export function CreateAssignmentForm({
   const [selClassId = "", selSubjectId = "", selStudentId = ""] = selection.split("|");
   const isPrivateSlot = selStudentId !== "";
   const [dueLocal, setDueLocal] = useState("");
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
-  // Local (not-yet-uploaded) preview URLs — kept in lockstep with
-  // selectedFiles (same length, same order) so no ref access is needed
-  // during render to look one up.
-  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
-  const [fileError, setFileError] = useState<string | null>(null);
-  const totalBytes = selectedFiles.reduce((sum, f) => sum + f.size, 0);
-  const previewFiles: FileAttachment[] = selectedFiles.map((f, i) => ({
-    url: previewUrls[i],
-    fileName: f.name,
-    mimeType: f.type || null,
-    sizeBytes: f.size,
-  }));
+  const queue = useAttachmentQueue({
+    allowedMimes: TEACHER_ATTACHMENT_ALLOWED_MIMES,
+    baseCount: 0,
+    baseBytes: 0,
+    validateBatch: validateAssignmentAttachmentBatch,
+  });
+  const [, startTransition] = useTransition();
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const busy = isPending || queue.uploading;
 
-  // Revoke every blob URL still outstanding when the form unmounts.
-  // Tracked via a ref (updated from an effect, read only in an effect
-  // cleanup) rather than closing over `previewUrls` directly, since that
-  // would freeze the empty initial array in the cleanup's closure.
-  const latestPreviewUrlsRef = useRef<string[]>([]);
-  useEffect(() => {
-    latestPreviewUrlsRef.current = previewUrls;
-  }, [previewUrls]);
-  useEffect(() => {
-    return () => {
-      latestPreviewUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
-    };
-  }, []);
-
-  // A successful create() means these files are now the assignment's
+  // A successful create() means the queued files are now the assignment's
   // saved attachments — clear the picker so it's ready for a next one.
   useEffect(() => {
-    if (result?.ok) clearFiles();
+    if (result?.ok) queue.clear();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [result]);
 
-  // Native <input type=file multiple> REPLACES its selection every time
-  // the picker reopens, so re-syncing input.files to the merged list
-  // (via DataTransfer) is what actually lets the teacher add files "on
-  // top of" what's already picked across several picker opens, instead
-  // of losing the earlier batch.
-  function syncInputFiles(list: File[]) {
-    if (!fileInputRef.current) return;
-    const dataTransfer = new DataTransfer();
-    list.forEach((f) => dataTransfer.items.add(f));
-    fileInputRef.current.files = dataTransfer.files;
-  }
-
-  function handleFilesPicked(picked: File[]) {
-    if (picked.length === 0) return;
-    const merged = [...selectedFiles, ...picked];
-    const error = validateAssignmentAttachmentBatch(0, 0, merged);
-    if (error) {
-      // Reject only this new pick — keep whatever was already validly
-      // selected (re-sync the input so the rejected pick isn't left in it).
-      setFileError(error);
-      syncInputFiles(selectedFiles);
+  // Files go up in chunks first (a server action can't carry more than a
+  // few MB), then the action just receives their ids.
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (busy) return;
+    const formData = new FormData(e.currentTarget);
+    setUploadError(null);
+    let ids: string[];
+    try {
+      ids = await queue.uploadAll((file, onProgress) =>
+        uploadTeacherAttachmentFile(file, null, onProgress),
+      );
+    } catch (error) {
+      setUploadError(error instanceof Error ? error.message : "فشل رفع الملفات");
       return;
     }
-    setSelectedFiles(merged);
-    setPreviewUrls((prev) => [...prev, ...picked.map((f) => URL.createObjectURL(f))]);
-    setFileError(null);
-    syncInputFiles(merged);
-  }
-
-  function clearFiles() {
-    previewUrls.forEach((url) => URL.revokeObjectURL(url));
-    setSelectedFiles([]);
-    setPreviewUrls([]);
-    setFileError(null);
-    if (fileInputRef.current) fileInputRef.current.value = "";
+    formData.set("new_file_ids", JSON.stringify(ids));
+    startTransition(() => formAction(formData));
   }
 
   return (
     <>
-      {isPending && (
+      {busy && (
         <div
           role="status"
           aria-live="assertive"
           className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-3 bg-background/80 backdrop-blur-sm"
         >
           <Loader2 className="size-8 animate-spin text-primary" aria-hidden="true" />
-          <p className="font-heading text-sm font-semibold">جاري إنشاء الواجب…</p>
+          <p className="font-heading text-sm font-semibold">
+            {queue.uploading
+              ? `جاري رفع الملفات (${queue.doneCount}/${queue.items.length})…`
+              : "جاري إنشاء الواجب…"}
+          </p>
+          {queue.uploading && queue.currentName && (
+            <p className="max-w-xs truncate text-xs text-muted-foreground" dir="ltr">
+              {queue.currentName}
+            </p>
+          )}
           <p className="text-xs text-muted-foreground">
             يرجى الانتظار وعدم إغلاق الصفحة أو تحديثها
           </p>
         </div>
       )}
       <SectionCard title="إنشاء واجب جديد">
-        <form action={formAction} className="space-y-4">
-        <fieldset disabled={isPending} className="space-y-4 disabled:opacity-60">
+        <form onSubmit={handleSubmit} className="space-y-4">
+        <fieldset disabled={busy} className="space-y-4 disabled:opacity-60">
           <div className="space-y-2">
             <Label htmlFor="slot">الفصل والمادة</Label>
             <select
@@ -237,59 +217,23 @@ export function CreateAssignmentForm({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="attachments">مرفقات (اختياري)</Label>
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              className="flex w-full flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-input bg-muted/20 px-6 py-8 text-center transition-colors hover:border-primary hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
-            >
-              <span className="flex size-11 items-center justify-center rounded-full bg-primary/10 text-primary">
-                <UploadCloud className="size-5" aria-hidden="true" />
-              </span>
-              <span className="font-heading text-sm font-semibold">
-                اضغط هنا لاختيار الملفات
-              </span>
-              <span className="text-xs text-muted-foreground">
-                حتى {ASSIGNMENT_ATTACHMENT_LIMITS.maxFiles} ملفات،{" "}
-                {formatFileSize(ASSIGNMENT_ATTACHMENT_LIMITS.maxTotalBytes)} إجمالي — يمكنك
-                الإضافة على أكثر من دفعة
-              </span>
-            </button>
-            <Input
-              ref={fileInputRef}
-              id="attachments"
-              name="attachments"
-              type="file"
-              multiple
-              className="sr-only"
-              tabIndex={-1}
-              onChange={(e) => {
-                const picked = Array.from(e.target.files ?? []);
-                handleFilesPicked(picked);
-              }}
+            <Label>مرفقات (اختياري)</Label>
+            <AttachmentDropzone
+              queue={queue}
+              disabled={busy}
+              accept={[...TEACHER_ATTACHMENT_ALLOWED_MIMES, ".pdf", ".docx", ".txt", ".zip", ".mp4"].join(",")}
+              maxFiles={ASSIGNMENT_ATTACHMENT_LIMITS.maxFiles}
+              maxTotalBytes={ASSIGNMENT_ATTACHMENT_LIMITS.maxTotalBytes}
+              baseCount={0}
+              baseBytes={0}
             />
-            {selectedFiles.length > 0 && (
-              <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                <span>
-                  {selectedFiles.length} ملف · {formatFileSize(totalBytes)} من
-                  أصل {formatFileSize(ASSIGNMENT_ATTACHMENT_LIMITS.maxTotalBytes)}
-                </span>
-                <button
-                  type="button"
-                  onClick={clearFiles}
-                  className="text-destructive underline underline-offset-2"
-                >
-                  مسح الكل
-                </button>
-              </div>
-            )}
-            {fileError && (
-              <p className="text-sm text-destructive" aria-live="polite">
-                {fileError}
-              </p>
-            )}
-            <FilePreviewGrid files={previewFiles} />
           </div>
+
+          {uploadError && (
+            <p className="text-sm text-destructive" aria-live="polite">
+              {uploadError}
+            </p>
+          )}
 
           {result && (
             <p
@@ -300,8 +244,8 @@ export function CreateAssignmentForm({
             </p>
           )}
 
-          <Button type="submit" disabled={isPending}>
-            {isPending ? "جاري الإنشاء…" : "إنشاء الواجب"}
+          <Button type="submit" disabled={busy}>
+            {busy ? "جاري الإنشاء…" : "إنشاء الواجب"}
           </Button>
         </fieldset>
         </form>

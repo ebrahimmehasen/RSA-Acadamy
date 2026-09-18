@@ -7,6 +7,7 @@ import {
   ASSIGNMENT_ATTACHMENT_LIMITS,
   SUBMISSION_ALLOWED_MIMES,
   SUBMISSION_LIMITS,
+  TEACHER_ATTACHMENT_ALLOWED_MIMES,
 } from "@/lib/uploadLimits";
 
 export interface UploadResult {
@@ -31,14 +32,7 @@ export const UPLOAD_RULES = {
     // single file can't exceed it anyway once the aggregate check runs,
     // this just avoids a redundant lower ceiling.
     maxBytes: ASSIGNMENT_ATTACHMENT_LIMITS.maxTotalBytes,
-    mimes: [
-      "image/jpeg", "image/png", "image/gif",
-      "application/pdf",
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-      "text/plain",
-      "application/zip", "application/x-zip-compressed",
-      "video/mp4",
-    ],
+    mimes: TEACHER_ATTACHMENT_ALLOWED_MIMES,
   },
   session: {
     maxBytes: 1024 * 1024 * 1024, // 1GB
