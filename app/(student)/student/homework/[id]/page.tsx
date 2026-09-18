@@ -1,7 +1,9 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { getSession } from "@/lib/auth/session";
+import { AttachmentGallery, type GalleryFile } from "@/components/shared/AttachmentGallery";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { SubmitForm } from "./SubmitForm";
@@ -46,6 +48,40 @@ export default async function AssignmentDetailPage({
   if (!assignment) notFound();
 
   const graded = submission?.status === "graded";
+
+  // file_storage is admin-only under RLS. Safe here: the assignment (and
+  // the student's own submission) were just fetched through the RLS-scoped
+  // client, so these ids are already ones this student may see. Files are
+  // still served only via the authenticated /api/files route.
+  const attachmentIds = (assignment.attachment_drive_ids as string[] | null) ?? [];
+  const submissionFileId = submission?.file_drive_id ?? null;
+  const lookupIds = [...attachmentIds, ...(submissionFileId ? [submissionFileId] : [])];
+  const fileMeta = new Map<
+    string,
+    { name: string; mimeType: string | null; sizeBytes: number | null }
+  >();
+  if (lookupIds.length > 0) {
+    const { data: metaRows } = await createAdminClient()
+      .from("file_storage")
+      .select("drive_file_id, file_name, mime_type, file_size")
+      .in("drive_file_id", lookupIds);
+    for (const f of metaRows ?? []) {
+      fileMeta.set(f.drive_file_id, {
+        name: f.file_name,
+        mimeType: f.mime_type,
+        sizeBytes: f.file_size,
+      });
+    }
+  }
+  const toGalleryFile = (driveId: string, fallbackName: string): GalleryFile => ({
+    url: `/api/files/${driveId}`,
+    fileName: fileMeta.get(driveId)?.name ?? fallbackName,
+    mimeType: fileMeta.get(driveId)?.mimeType ?? null,
+    sizeBytes: fileMeta.get(driveId)?.sizeBytes ?? null,
+  });
+  const teacherFiles = attachmentIds.map((driveId, i) =>
+    toGalleryFile(driveId, `مرفق ${i + 1}`),
+  );
 
   return (
     <PageShell>
@@ -98,18 +134,9 @@ export default async function AssignmentDetailPage({
         </SectionCard>
       )}
 
-      {(assignment.attachment_drive_ids as string[])?.length > 0 && (
-        <SectionCard title="مرفقات المدرس" contentClassName="flex flex-wrap gap-2">
-          {(assignment.attachment_drive_ids as string[]).map((driveId, index) => (
-            <a
-              key={driveId}
-              href={`/api/files/${driveId}`}
-              target="_blank"
-              className="text-sm text-primary underline underline-offset-4"
-            >
-              مرفق {index + 1}
-            </a>
-          ))}
+      {teacherFiles.length > 0 && (
+        <SectionCard title={`مرفقات المدرس (${teacherFiles.length})`}>
+          <AttachmentGallery files={teacherFiles} />
         </SectionCard>
       )}
 
@@ -136,16 +163,14 @@ export default async function AssignmentDetailPage({
                 {new Date(submission.submitted_at).toLocaleString("ar-EG")}
               </p>
               {submission.file_drive_id && (
-                <p>
-                  الملف:{" "}
-                  <a
-                    href={`/api/files/${submission.file_drive_id}`}
-                    target="_blank"
-                    className="text-primary underline underline-offset-4"
-                  >
-                    {submission.file_name ?? "عرض الملف"}
-                  </a>
-                </p>
+                <AttachmentGallery
+                  files={[
+                    {
+                      ...toGalleryFile(submission.file_drive_id, "ملف التسليم"),
+                      fileName: submission.file_name ?? "ملف التسليم",
+                    },
+                  ]}
+                />
               )}
               {submission.text_answer && (
                 <p className="whitespace-pre-wrap">{submission.text_answer}</p>
