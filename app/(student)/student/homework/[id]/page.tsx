@@ -184,12 +184,25 @@ export default async function AssignmentDetailPage({
             </div>
           )}
 
-          {!graded && (
-            <SubmitForm
-              assignmentId={assignmentId}
-              allowFile={assignment.allow_file}
-              allowText={assignment.allow_text}
-            />
+          {graded ? (
+            <p className="text-sm text-muted-foreground">
+              تم تصحيح حلك، ولا يمكن تعديله بعد ذلك.
+            </p>
+          ) : (
+            <div className="space-y-2">
+              {submission && (
+                <h3 className="font-heading text-sm font-semibold">تعديل حلّك</h3>
+              )}
+              <SubmitForm
+                key={submission?.submitted_at ?? "new"}
+                assignmentId={assignmentId}
+                allowFile={assignment.allow_file}
+                allowText={assignment.allow_text}
+                mode={submission ? "update" : "create"}
+                defaultText={submission?.text_answer ?? ""}
+                hasExistingFile={!!submission?.file_drive_id}
+              />
+            </div>
           )}
       </SectionCard>
     </PageShell>

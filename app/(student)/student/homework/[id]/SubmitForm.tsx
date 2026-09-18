@@ -11,23 +11,36 @@ export function SubmitForm({
   assignmentId,
   allowFile,
   allowText,
+  mode = "create",
+  defaultText = "",
+  hasExistingFile = false,
 }: {
   assignmentId: number;
   allowFile: boolean;
   allowText: boolean;
+  /** "update" edits the student's existing (not yet graded) submission */
+  mode?: "create" | "update";
+  defaultText?: string;
+  hasExistingFile?: boolean;
 }) {
   const [result, formAction, isPending] = useActionState<
     SubmitResult | null,
     FormData
   >(submitAssignment, null);
+  const editing = mode === "update";
 
   return (
     <form action={formAction} className="space-y-4">
       <input type="hidden" name="assignment_id" defaultValue={assignmentId} />
+      <input type="hidden" name="intent" value={mode} />
 
       {allowFile && (
         <div className="space-y-2">
-          <Label htmlFor="file">ملف الإجابة (حد أقصى 25MB)</Label>
+          <Label htmlFor="file">
+            {editing && hasExistingFile
+              ? "استبدال الملف (اتركه فارغًا للاحتفاظ بالملف الحالي)"
+              : "ملف الإجابة (حد أقصى 25MB)"}
+          </Label>
           <Input
             id="file"
             name="file"
@@ -44,6 +57,7 @@ export function SubmitForm({
             id="text_answer"
             name="text_answer"
             rows={6}
+            defaultValue={defaultText}
             placeholder="اكتب إجابتك هنا…"
           />
         </div>
@@ -59,7 +73,13 @@ export function SubmitForm({
       )}
 
       <Button type="submit" disabled={isPending}>
-        {isPending ? "جاري التسليم…" : "تسليم الواجب"}
+        {isPending
+          ? editing
+            ? "جاري الحفظ…"
+            : "جاري التسليم…"
+          : editing
+            ? "حفظ التعديل"
+            : "تسليم الواجب"}
       </Button>
     </form>
   );
