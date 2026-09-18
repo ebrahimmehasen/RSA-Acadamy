@@ -63,6 +63,7 @@ export function ScheduleGrid({
   zoomLabel,
   entryActions,
   caption,
+  renderEmptyCell,
 }: {
   entries: ScheduleGridEntry[];
   /** when set, the "today" box shows a join link with this label */
@@ -71,10 +72,20 @@ export function ScheduleGrid({
   entryActions?: Record<string | number, ReactNode>;
   /** an extra note shown before the auto timezone line */
   caption?: ReactNode;
+  /**
+   * When set, empty cells render this (e.g. a "+" quick-add button)
+   * instead of "—", and every regular school day is shown even if it has
+   * no lessons yet so there's somewhere to add the first one.
+   */
+  renderEmptyCell?: (day: DayOfWeek, periodStart: string) => ReactNode;
 }) {
   const clock = useViewerClock();
 
-  const days = DAYS.filter((d) => entries.some((e) => e.day === d));
+  const days = DAYS.filter(
+    (d) =>
+      entries.some((e) => e.day === d) ||
+      (renderEmptyCell != null && FALLBACK_DAYS.includes(d)),
+  );
   const shownDays = days.length > 0 ? days : FALLBACK_DAYS;
   const refDay = clock.day ?? shownDays[0] ?? "sunday";
 
@@ -216,7 +227,11 @@ export function ScheduleGrid({
                           )}
                         >
                           {cell.length === 0 ? (
-                            <span className="text-muted-foreground/40">—</span>
+                            renderEmptyCell ? (
+                              renderEmptyCell(d, p.start)
+                            ) : (
+                              <span className="text-muted-foreground/40">—</span>
+                            )
                           ) : (
                             <div className="space-y-1.5">
                               {cell.map((entry) => (

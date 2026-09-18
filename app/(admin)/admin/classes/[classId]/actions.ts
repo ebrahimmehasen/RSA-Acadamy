@@ -84,6 +84,7 @@ export async function createSlot(formData: FormData) {
   if (error) throw new Error(error.message);
 
   revalidatePath(`/admin/classes/${parsed.class_id}`);
+  revalidatePath(`/admin/teachers/${parsed.teacher_id}`);
 }
 
 const updateSlotSchema = slotSchema.extend({

@@ -24,7 +24,7 @@ import { updateTeacherSubjects } from "../actions";
 import { createSlot, deleteSlot, updateSlot } from "../../classes/[classId]/actions";
 import { EditSlotForm } from "../../classes/[classId]/EditSlotForm";
 import { ConfirmDeleteButton } from "@/components/shared/ConfirmDeleteButton";
-import { ScheduleGrid } from "@/components/shared/ScheduleGrid";
+import { TeacherScheduleGrid } from "./TeacherScheduleGrid";
 import { EditTeacherForm } from "./EditTeacherForm";
 import { TeacherAddSlotForm } from "./TeacherAddSlotForm";
 import { PageShell } from "@/components/shared/PageShell";
@@ -301,13 +301,18 @@ export default async function AdminTeacherDetailPage({
 
       <SectionCard
         title="الجدول الحالي"
-        description="نفس الجدول الذي يظهر للطالب — اضغط ✏️ لتعديل حصة أو 🗑️ لحذفها"
+        description="اضغط + في أي خانة فاضية لإضافة حصة، أو ✏️ لتعديل حصة و🗑️ لحذفها"
       >
-        {typedSchedule.length === 0 ? (
-          <p className="text-sm text-muted-foreground">لا توجد حصص مسندة بعد</p>
-        ) : (
-          <ScheduleGrid entries={gridEntries} entryActions={gridEntryActions} />
-        )}
+        <TeacherScheduleGrid
+          entries={gridEntries}
+          entryActions={gridEntryActions}
+          teacherId={teacherId}
+          classes={classesAll ?? []}
+          subjectsByClass={subjectOptionsByClassId}
+          studentsByClass={studentsByClassId}
+          zoomAccounts={zoomAccounts ?? []}
+          action={createSlot}
+        />
       </SectionCard>
 
       <Card>
