@@ -35,7 +35,7 @@ export async function submitAssignment(
 
     const { data: assignment } = await supabase
       .from("assignments")
-      .select("id, class_id, due_date, allow_file, allow_text, is_published")
+      .select("id, class_id, branch, student_id, due_date, allow_file, allow_text, is_published")
       .eq("id", assignmentId)
       .single();
     if (!assignment || !assignment.is_published) {
@@ -44,10 +44,25 @@ export async function submitAssignment(
 
     const { data: student } = await supabase
       .from("students")
-      .select("class_id")
+      .select("class_id, branch")
       .eq("user_id", session.profile.id)
       .single();
     if (student?.class_id !== assignment.class_id) {
+      return { ok: false, message: "هذا الواجب ليس لفصلك" };
+    }
+    // Private and normal assignments never cross: a private assignment is
+    // only for its own student; a normal one is never for a 'Private'
+    // student and still respects its Arabic/Languages branch targeting.
+    // (Same rule as the assignments RLS policy — enforced here too because
+    // this action writes with the service-role client.)
+    if (assignment.student_id != null) {
+      if (assignment.student_id !== session.profile.id) {
+        return { ok: false, message: "هذا الواجب ليس لك" };
+      }
+    } else if (
+      student?.branch === "Private" ||
+      (assignment.branch != null && assignment.branch !== student?.branch)
+    ) {
       return { ok: false, message: "هذا الواجب ليس لفصلك" };
     }
 

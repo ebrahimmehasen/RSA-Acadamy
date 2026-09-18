@@ -14,7 +14,14 @@ import { CreateAssignmentForm } from "./CreateAssignmentForm";
 export function CreateAssignmentToggle({
   slots,
 }: {
-  slots: { classId: number; className: string; subjectId: string; subjectName: string }[];
+  slots: {
+    classId: number;
+    className: string;
+    subjectId: string;
+    subjectName: string;
+    studentId: number | null;
+    studentName: string | null;
+  }[];
 }) {
   const [open, setOpen] = useState(false);
 

@@ -20,13 +20,23 @@ import { createAssignment, type ActionResult } from "./actions";
 export function CreateAssignmentForm({
   slots,
 }: {
-  slots: { classId: number; className: string; subjectId: string; subjectName: string }[];
+  slots: {
+    classId: number;
+    className: string;
+    subjectId: string;
+    subjectName: string;
+    /** set for a Private-lesson slot — the assignment then targets only that student */
+    studentId: number | null;
+    studentName: string | null;
+  }[];
 }) {
   const [result, formAction, isPending] = useActionState<
     ActionResult | null,
     FormData
   >(createAssignment, null);
   const [selection, setSelection] = useState("");
+  const [selClassId = "", selSubjectId = "", selStudentId = ""] = selection.split("|");
+  const isPrivateSlot = selStudentId !== "";
   const [dueLocal, setDueLocal] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
@@ -131,38 +141,39 @@ export function CreateAssignmentForm({
               <option value="">اختر…</option>
               {slots.map((s) => (
                 <option
-                  key={`${s.classId}-${s.subjectId}`}
-                  value={`${s.classId}|${s.subjectId}`}
+                  key={`${s.classId}-${s.subjectId}-${s.studentId ?? ""}`}
+                  value={`${s.classId}|${s.subjectId}|${s.studentId ?? ""}`}
                 >
                   {s.className} — {s.subjectName}
+                  {s.studentId != null &&
+                    ` — خاص: ${s.studentName ?? `طالب #${s.studentId}`}`}
                 </option>
               ))}
             </select>
-            <input
-              type="hidden"
-              name="class_id"
-              value={selection.split("|")[0] ?? ""}
-            />
-            <input
-              type="hidden"
-              name="subject_id"
-              value={selection.split("|")[1] ?? ""}
-            />
+            <input type="hidden" name="class_id" value={selClassId} />
+            <input type="hidden" name="subject_id" value={selSubjectId} />
+            <input type="hidden" name="student_id" value={selStudentId} />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="branch">الشعبة المستهدفة</Label>
-            <select
-              id="branch"
-              name="branch"
-              defaultValue=""
-              className={SELECT_CLASS}
-            >
-              <option value="">الفصل كله (الشعبتين)</option>
-              <option value="Arabic">شعبة العربي فقط</option>
-              <option value="Languages">شعبة اللغات فقط</option>
-            </select>
-          </div>
+          {isPrivateSlot ? (
+            <p className="rounded-lg border border-info/30 bg-info/10 p-3 text-sm text-info">
+              واجب خاص: سيظهر لهذا الطالب فقط، ولن يراه باقي طلاب الفصل.
+            </p>
+          ) : (
+            <div className="space-y-2">
+              <Label htmlFor="branch">الشعبة المستهدفة</Label>
+              <select
+                id="branch"
+                name="branch"
+                defaultValue=""
+                className={SELECT_CLASS}
+              >
+                <option value="">الفصل كله (الشعبتين)</option>
+                <option value="Arabic">شعبة العربي فقط</option>
+                <option value="Languages">شعبة اللغات فقط</option>
+              </select>
+            </div>
+          )}
 
           <div className="space-y-2">
             <Label htmlFor="title">عنوان الواجب</Label>

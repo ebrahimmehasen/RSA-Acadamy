@@ -29,6 +29,9 @@ const schema = z.object({
   // covering a shared subject like Arabic/Religion for a mixed class
   // may want to target only one branch's half).
   branch: z.enum(["Arabic", "Languages"]).nullable(),
+  // set = a private assignment for exactly this 'Private'-branch student
+  // (never shown to the rest of the class); null = a normal class assignment.
+  student_id: z.coerce.number().int().positive().nullable(),
 });
 
 // Class/subject/branch targeting is intentionally not editable — changing
@@ -67,6 +70,7 @@ export async function createAssignment(
       allow_file: formData.get("allow_file") === "on",
       allow_text: formData.get("allow_text") === "on",
       branch: (formData.get("branch") as "Arabic" | "Languages" | "") || null,
+      student_id: formData.get("student_id") || null,
     });
 
     if (!parsed.allow_file && !parsed.allow_text) {
@@ -89,6 +93,38 @@ export async function createAssignment(
     }
 
     const supabase = createAdminClient();
+
+    // The teacher must actually teach this class+subject — and for a
+    // private assignment, that exact private student — so a hand-crafted
+    // request can't target another class/student.
+    let slotQuery = supabase
+      .from("class_assignments")
+      .select("id")
+      .eq("teacher_id", session.profile.id)
+      .eq("class_id", parsed.class_id)
+      .eq("subject_id", parsed.subject_id)
+      .eq("is_active", true);
+    slotQuery =
+      parsed.student_id != null
+        ? slotQuery.eq("student_id", parsed.student_id)
+        : slotQuery.is("student_id", null);
+    const { data: slotRows } = await slotQuery.limit(1);
+    if (!slotRows || slotRows.length === 0) {
+      return { ok: false, message: "أنت لا تُدرّس هذه المادة لهذا الفصل/الطالب" };
+    }
+    if (parsed.student_id != null) {
+      const { data: privateStudent } = await supabase
+        .from("students")
+        .select("user_id")
+        .eq("user_id", parsed.student_id)
+        .eq("class_id", parsed.class_id)
+        .eq("branch", "Private")
+        .maybeSingle();
+      if (!privateStudent) {
+        return { ok: false, message: "الطالب المحدد ليس طالب حصص خاصة في هذا الفصل" };
+      }
+    }
+
     const { data: assignment, error } = await supabase
       .from("assignments")
       .insert({
@@ -102,7 +138,10 @@ export async function createAssignment(
         max_grade: parsed.max_grade,
         allow_file: parsed.allow_file,
         allow_text: parsed.allow_text,
-        branch: parsed.branch,
+        // a private assignment targets one student, never a branch
+        branch: parsed.student_id != null ? null : parsed.branch,
+        // only sent when set, so normal assignments never depend on the column
+        ...(parsed.student_id != null ? { student_id: parsed.student_id } : {}),
       })
       .select("id")
       .single();
