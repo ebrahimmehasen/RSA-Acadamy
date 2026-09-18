@@ -42,6 +42,15 @@ function buildAuth() {
   });
 }
 
-export const drive = google.drive({ version: "v3", auth: buildAuth() });
+const driveAuth = buildAuth();
+export const drive = google.drive({ version: "v3", auth: driveAuth });
+
+/** A fresh OAuth access token — for raw resumable-upload requests. */
+export async function getDriveAccessToken(): Promise<string> {
+  const t = (await driveAuth.getAccessToken()) as string | { token?: string | null } | null | undefined;
+  const token = typeof t === "string" ? t : t?.token;
+  if (!token) throw new Error("Drive auth failed");
+  return token;
+}
 
 export const ROOT_FOLDER_ID = process.env.GOOGLE_DRIVE_ROOT_FOLDER_ID!;

@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getSession } from "@/lib/auth/session";
 import { AttachmentGallery, type GalleryFile } from "@/components/shared/AttachmentGallery";
+import { submissionFilesOf } from "@/lib/submissions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { SubmitForm } from "./SubmitForm";
@@ -54,8 +55,8 @@ export default async function AssignmentDetailPage({
   // client, so these ids are already ones this student may see. Files are
   // still served only via the authenticated /api/files route.
   const attachmentIds = (assignment.attachment_drive_ids as string[] | null) ?? [];
-  const submissionFileId = submission?.file_drive_id ?? null;
-  const lookupIds = [...attachmentIds, ...(submissionFileId ? [submissionFileId] : [])];
+  const submissionFiles = submission ? submissionFilesOf(submission) : [];
+  const lookupIds = [...attachmentIds, ...submissionFiles.map((f) => f.id)];
   const fileMeta = new Map<
     string,
     { name: string; mimeType: string | null; sizeBytes: number | null }
@@ -162,14 +163,12 @@ export default async function AssignmentDetailPage({
                 آخر تسليم:{" "}
                 {new Date(submission.submitted_at).toLocaleString("ar-EG")}
               </p>
-              {submission.file_drive_id && (
+              {submissionFiles.length > 0 && (
                 <AttachmentGallery
-                  files={[
-                    {
-                      ...toGalleryFile(submission.file_drive_id, "ملف التسليم"),
-                      fileName: submission.file_name ?? "ملف التسليم",
-                    },
-                  ]}
+                  files={submissionFiles.map((f) => ({
+                    ...toGalleryFile(f.id, f.name),
+                    fileName: f.name,
+                  }))}
                 />
               )}
               {submission.text_answer && (
@@ -200,7 +199,12 @@ export default async function AssignmentDetailPage({
                 allowText={assignment.allow_text}
                 mode={submission ? "update" : "create"}
                 defaultText={submission?.text_answer ?? ""}
-                hasExistingFile={!!submission?.file_drive_id}
+                existingFiles={submissionFiles.map((f) => ({
+                  id: f.id,
+                  name: f.name,
+                  mimeType: fileMeta.get(f.id)?.mimeType ?? null,
+                  sizeBytes: fileMeta.get(f.id)?.sizeBytes ?? null,
+                }))}
               />
             </div>
           )}

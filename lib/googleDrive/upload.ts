@@ -3,7 +3,11 @@ import { drive } from "./client";
 import { getOrCreateFolder } from "./folders";
 import { getFileUrl } from "./files";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { ASSIGNMENT_ATTACHMENT_LIMITS } from "@/lib/uploadLimits";
+import {
+  ASSIGNMENT_ATTACHMENT_LIMITS,
+  SUBMISSION_ALLOWED_MIMES,
+  SUBMISSION_LIMITS,
+} from "@/lib/uploadLimits";
 
 export interface UploadResult {
   fileId: string;
@@ -17,14 +21,10 @@ export const UPLOAD_RULES = {
     mimes: ["image/jpeg", "image/png", "image/gif", "image/webp"],
   },
   assignment: {
-    maxBytes: 25 * 1024 * 1024,
-    mimes: [
-      "image/jpeg", "image/png", "image/gif",
-      "application/pdf",
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-      "text/plain",
-      "application/zip", "application/x-zip-compressed",
-    ],
+    // student answers: per-file cap == the whole-answer cap (5GB); the
+    // aggregate limit is enforced separately (see SUBMISSION_LIMITS)
+    maxBytes: SUBMISSION_LIMITS.maxTotalBytes,
+    mimes: SUBMISSION_ALLOWED_MIMES,
   },
   teacher_attachment: {
     // per-file cap == the whole-assignment cap (lib/uploadLimits.ts) — a
@@ -103,7 +103,7 @@ export async function uploadFileFromBuffer(
   return { fileId: data.id, fileUrl: getFileUrl(data.id) };
 }
 
-async function registerFile(options: {
+export async function registerFile(options: {
   driveFileId: string;
   fileName: string;
   mimeType: string;

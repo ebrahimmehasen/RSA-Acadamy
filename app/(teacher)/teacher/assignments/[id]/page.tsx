@@ -4,8 +4,9 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { getSession } from "@/lib/auth/session";
 import { Badge } from "@/components/ui/badge";
 import { GradeForm } from "./GradeForm";
+import { submissionFilesOf } from "@/lib/submissions";
 import { EditAssignmentForm } from "./EditAssignmentForm";
-import { FilePreview, FilePreviewGrid, type FileAttachment } from "../FilePreview";
+import { FilePreviewGrid, type FileAttachment } from "../FilePreview";
 import { PageShell } from "@/components/shared/PageShell";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { SectionCard } from "@/components/shared/SectionCard";
@@ -67,9 +68,9 @@ export default async function TeacherAssignmentDetailPage({
   // assignment_submissions has no mime_type/size of its own — resolve
   // those from file_storage (matched by the unique drive_file_id) so
   // submitted files can get a real preview instead of a plain link.
-  const submissionFileIds = (submissions ?? [])
-    .map((s) => s.file_drive_id)
-    .filter((id): id is string => Boolean(id));
+  const submissionFileIds = (submissions ?? []).flatMap((s) =>
+    submissionFilesOf(s).map((f) => f.id),
+  );
   const submissionFileMeta = new Map<
     string,
     { mimeType: string | null; sizeBytes: number | null }
@@ -160,14 +161,14 @@ export default async function TeacherAssignmentDetailPage({
                     )}
                   </div>
                 </div>
-                {s.file_drive_id && (
-                  <FilePreview
-                    file={{
-                      url: `/api/files/${s.file_drive_id}`,
-                      fileName: s.file_name ?? "ملف الطالب",
-                      mimeType: submissionFileMeta.get(s.file_drive_id)?.mimeType ?? null,
-                      sizeBytes: submissionFileMeta.get(s.file_drive_id)?.sizeBytes ?? null,
-                    }}
+                {submissionFilesOf(s).length > 0 && (
+                  <FilePreviewGrid
+                    files={submissionFilesOf(s).map((f) => ({
+                      url: `/api/files/${f.id}`,
+                      fileName: f.name,
+                      mimeType: submissionFileMeta.get(f.id)?.mimeType ?? null,
+                      sizeBytes: submissionFileMeta.get(f.id)?.sizeBytes ?? null,
+                    }))}
                   />
                 )}
                 {s.text_answer && (

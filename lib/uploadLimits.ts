@@ -9,12 +9,56 @@ export const ASSIGNMENT_ATTACHMENT_LIMITS = {
   maxTotalBytes: 5 * 1024 * 1024 * 1024, // 5 GB
 } as const;
 
+/**
+ * A student's answer to one assignment: several files (photos of the
+ * notebook, a PDF, …) up to 5GB in total. Uploaded in chunks straight
+ * through /api/uploads/submission, because a single server-action
+ * request can't carry more than a few MB on the host.
+ */
+export const SUBMISSION_LIMITS = {
+  maxFiles: 20,
+  maxTotalBytes: 5 * 1024 * 1024 * 1024, // 5 GB per assignment
+  /** must be a multiple of 256 KiB (Drive resumable protocol) and < 4.5 MB */
+  chunkBytes: 4 * 1024 * 1024,
+} as const;
+
+/** Types a student may attach to an answer (shared by client + server). */
+export const SUBMISSION_ALLOWED_MIMES = [
+  "image/jpeg",
+  "image/png",
+  "image/gif",
+  "image/webp",
+  "application/pdf",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "text/plain",
+  "application/zip",
+  "application/x-zip-compressed",
+] as const;
+
 /** Bytes → a human-readable "X.XX GB" / "X MB" / "X KB" string. */
 export function formatFileSize(bytes: number): string {
   if (bytes >= 1024 ** 3) return `${(bytes / 1024 ** 3).toFixed(2)} GB`;
   if (bytes >= 1024 ** 2) return `${(bytes / 1024 ** 2).toFixed(1)} MB`;
   if (bytes >= 1024) return `${(bytes / 1024).toFixed(0)} KB`;
   return `${bytes} بايت`;
+}
+
+/** Same shape as validateAssignmentAttachmentBatch, for a student's answer. */
+export function validateSubmissionBatch(
+  existingCount: number,
+  existingTotalBytes: number,
+  newFiles: { size: number }[],
+): string | null {
+  if (existingCount + newFiles.length > SUBMISSION_LIMITS.maxFiles) {
+    return `الحد الأقصى لعدد ملفات الحل هو ${SUBMISSION_LIMITS.maxFiles} ملفًا`;
+  }
+  const total = existingTotalBytes + newFiles.reduce((s, f) => s + f.size, 0);
+  if (total > SUBMISSION_LIMITS.maxTotalBytes) {
+    return `الحجم الإجمالي لملفات الحل تجاوز الحد الأقصى (${formatFileSize(
+      SUBMISSION_LIMITS.maxTotalBytes,
+    )}) لهذا الواجب`;
+  }
+  return null;
 }
 
 /**
