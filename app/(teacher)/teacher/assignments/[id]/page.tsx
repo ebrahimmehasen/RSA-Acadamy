@@ -4,6 +4,8 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { getSession } from "@/lib/auth/session";
 import { Badge } from "@/components/ui/badge";
 import { GradeForm } from "./GradeForm";
+import { ConfirmDeleteButton } from "@/components/shared/ConfirmDeleteButton";
+import { deleteAssignment } from "../actions";
 import { submissionFilesOf } from "@/lib/submissions";
 import { EditAssignmentForm } from "./EditAssignmentForm";
 import { FilePreviewGrid, type FileAttachment } from "../FilePreview";
@@ -100,6 +102,24 @@ export default async function TeacherAssignmentDetailPage({
         title={assignment.title}
         backHref="/teacher/assignments"
         backLabel="رجوع للواجبات"
+        action={
+          <ConfirmDeleteButton
+            action={deleteAssignment}
+            hiddenFields={{ assignment_id: assignment.id }}
+            label="حذف الواجب"
+            confirmMessage={
+              `هل أنت متأكد من حذف الواجب «${assignment.title}» نهائيًا؟` +
+              ((submissions ?? []).length > 0
+                ? ` سيتم حذف ${(submissions ?? []).length} تسليم من الطلاب معه` +
+                  ((submissions ?? []).some((s) => s.status === "graded")
+                    ? ` (منها ${(submissions ?? []).filter((s) => s.status === "graded").length} تم تصحيحه بدرجاته)`
+                    : "") +
+                  "."
+                : "") +
+              " لا يمكن التراجع عن هذا الإجراء."
+            }
+          />
+        }
         description={`${(assignment.classes as unknown as { class_name: string })?.class_name} · ${(assignment.subjects as unknown as { subject_name: string })?.subject_name} · الدرجة العظمى: ${assignment.max_grade}`}
       />
 

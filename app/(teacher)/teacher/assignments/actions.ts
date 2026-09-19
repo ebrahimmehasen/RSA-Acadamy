@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireRole } from "@/lib/auth/guards";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -271,6 +272,49 @@ export async function updateAssignment(
       message: error instanceof Error ? error.message : "حدث خطأ",
     };
   }
+}
+
+/**
+ * Deletes an assignment the signed-in teacher created. Ownership is checked
+ * against the row itself (this uses the service-role client). Student
+ * submissions go with it (FK cascade) and any linked quiz is just
+ * unlinked (FK set null). The uploaded files stay in Drive — only their
+ * registry rows are soft-deleted so they stop showing up / counting.
+ */
+export async function deleteAssignment(formData: FormData): Promise<void> {
+  const session = await requireRole("teacher");
+  const assignmentId = z.coerce
+    .number()
+    .int()
+    .positive()
+    .parse(formData.get("assignment_id"));
+
+  const supabase = createAdminClient();
+  const { data: assignment } = await supabase
+    .from("assignments")
+    .select("id, teacher_id")
+    .eq("id", assignmentId)
+    .maybeSingle();
+  if (!assignment || assignment.teacher_id !== session.profile.id) {
+    throw new Error("لا يمكنك حذف واجب ليس واجبك");
+  }
+
+  const { error } = await supabase
+    .from("assignments")
+    .delete()
+    .eq("id", assignmentId)
+    .eq("teacher_id", session.profile.id);
+  if (error) throw new Error(error.message);
+
+  await supabase
+    .from("file_storage")
+    .update({ deleted_at: new Date().toISOString() })
+    .in("entity_type", ["teacher_attachment", "assignment"])
+    .eq("entity_id", String(assignmentId))
+    .is("deleted_at", null);
+
+  revalidatePath("/teacher/assignments");
+  redirect("/teacher/assignments");
 }
 
 export async function gradeSubmission(
