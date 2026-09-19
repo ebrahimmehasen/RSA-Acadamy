@@ -211,3 +211,59 @@ export async function submitAssignment(
     };
   }
 }
+
+/**
+ * A student may withdraw their own answer until it has been graded. The
+ * submission row is removed (so they can submit again), its files are
+ * soft-deleted in the registry (they stop counting toward the 5GB; the
+ * bytes stay in Drive). Graded answers are locked — the status guard on
+ * the DELETE also closes the race with the teacher grading meanwhile.
+ */
+export async function deleteSubmission(assignmentId: number): Promise<SubmitResult> {
+  try {
+    const session = await requireRole("student");
+    const studentId = session.profile.id;
+    const id = z.number().int().positive().parse(assignmentId);
+    const supabase = createAdminClient();
+
+    const { data: existing } = await supabase
+      .from("assignment_submissions")
+      .select("id, status")
+      .eq("assignment_id", id)
+      .eq("student_id", studentId)
+      .maybeSingle();
+    if (!existing) return { ok: false, message: "لا يوجد حل لحذفه" };
+    if (existing.status === "graded") {
+      return { ok: false, message: "تم تصحيح هذا الواجب — لا يمكن حذف الحل" };
+    }
+
+    const { data: deleted, error } = await supabase
+      .from("assignment_submissions")
+      .delete()
+      .eq("id", existing.id)
+      .eq("student_id", studentId)
+      .eq("status", "submitted")
+      .select("id");
+    if (error) return { ok: false, message: error.message };
+    if (!deleted || deleted.length === 0) {
+      return { ok: false, message: "تم تصحيح هذا الواجب — لا يمكن حذف الحل" };
+    }
+
+    await supabase
+      .from("file_storage")
+      .update({ deleted_at: new Date().toISOString() })
+      .eq("entity_type", "assignment")
+      .eq("entity_id", String(id))
+      .eq("uploaded_by", studentId)
+      .is("deleted_at", null);
+
+    revalidatePath(`/student/homework/${id}`);
+    revalidatePath("/student/homework");
+    return { ok: true, message: "تم حذف حلك" };
+  } catch (error) {
+    return {
+      ok: false,
+      message: error instanceof Error ? error.message : "حدث خطأ",
+    };
+  }
+}

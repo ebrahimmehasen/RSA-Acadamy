@@ -8,6 +8,7 @@ import { submissionFilesOf } from "@/lib/submissions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { SubmitForm } from "./SubmitForm";
+import { DeleteSubmissionButton } from "./DeleteSubmissionButton";
 import { PageShell } from "@/components/shared/PageShell";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { SectionCard } from "@/components/shared/SectionCard";
@@ -190,7 +191,10 @@ export default async function AssignmentDetailPage({
           ) : (
             <div className="space-y-2">
               {submission && (
-                <h3 className="font-heading text-sm font-semibold">تعديل حلّك</h3>
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <h3 className="font-heading text-sm font-semibold">تعديل حلّك</h3>
+                  <DeleteSubmissionButton assignmentId={assignmentId} />
+                </div>
               )}
               <SubmitForm
                 key={submission?.submitted_at ?? "new"}
