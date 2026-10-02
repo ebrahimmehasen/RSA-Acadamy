@@ -2,7 +2,7 @@ name: Vercel deploy
 
 # Deploys through the Vercel CLI so the project doesn't depend on the Vercel
 # GitHub App being installed on this repo's owner account.
-# Required repo secrets: VERCEL_TOKEN, VERCEL_ORG_ID, VERCEL_PROJECT_ID
+# Required repo secret: VERCEL_TOKEN
 
 on:
   push:
@@ -13,8 +13,9 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+  # identifiers, not credentials (also visible in .vercel/project.json)
+  VERCEL_ORG_ID: team_MX35AMYPZzFEmurDlu2hV2Qx
+  VERCEL_PROJECT_ID: prj_vxQ9CQids1HwepEzM7yW2ZFwReDA
 
 jobs:
   deploy:
