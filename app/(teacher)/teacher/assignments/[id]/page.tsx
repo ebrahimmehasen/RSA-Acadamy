@@ -7,6 +7,7 @@ import { GradeForm } from "./GradeForm";
 import { ConfirmDeleteButton } from "@/components/shared/ConfirmDeleteButton";
 import { deleteAssignment } from "../actions";
 import { submissionFilesOf } from "@/lib/submissions";
+import { fileUrl } from "@/lib/signedFileUrl";
 import { EditAssignmentForm } from "./EditAssignmentForm";
 import { FilePreviewGrid, type FileAttachment } from "../FilePreview";
 import { PageShell } from "@/components/shared/PageShell";
@@ -53,13 +54,14 @@ export default async function TeacherAssignmentDetailPage({
     .is("deleted_at", null)
     .order("uploaded_at");
   const attachments: FileAttachment[] = (attachmentRows ?? []).map((f) => ({
-    url: `/api/files/${f.drive_file_id}`,
+    url: fileUrl(f.drive_file_id),
     fileName: f.file_name,
     mimeType: f.mime_type,
     sizeBytes: f.file_size,
   }));
   const existingAttachmentsForEdit = (attachmentRows ?? []).map((f) => ({
     driveId: f.drive_file_id,
+    url: fileUrl(f.drive_file_id),
     fileName: f.file_name,
     mimeType: f.mime_type,
     sizeBytes: f.file_size,
@@ -184,7 +186,7 @@ export default async function TeacherAssignmentDetailPage({
                 {submissionFilesOf(s).length > 0 && (
                   <FilePreviewGrid
                     files={submissionFilesOf(s).map((f) => ({
-                      url: `/api/files/${f.id}`,
+                      url: fileUrl(f.id),
                       fileName: f.name,
                       mimeType: submissionFileMeta.get(f.id)?.mimeType ?? null,
                       sizeBytes: submissionFileMeta.get(f.id)?.sizeBytes ?? null,

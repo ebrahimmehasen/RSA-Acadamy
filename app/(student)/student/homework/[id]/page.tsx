@@ -5,6 +5,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { getSession } from "@/lib/auth/session";
 import { AttachmentGallery, type GalleryFile } from "@/components/shared/AttachmentGallery";
 import { submissionFilesOf } from "@/lib/submissions";
+import { fileUrl } from "@/lib/signedFileUrl";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { SubmitForm } from "./SubmitForm";
@@ -76,7 +77,7 @@ export default async function AssignmentDetailPage({
     }
   }
   const toGalleryFile = (driveId: string, fallbackName: string): GalleryFile => ({
-    url: `/api/files/${driveId}`,
+    url: fileUrl(driveId),
     fileName: fileMeta.get(driveId)?.name ?? fallbackName,
     mimeType: fileMeta.get(driveId)?.mimeType ?? null,
     sizeBytes: fileMeta.get(driveId)?.sizeBytes ?? null,

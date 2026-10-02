@@ -5,10 +5,10 @@ import { recordView } from "./actions";
 
 export function VideoTracker({
   sessionId,
-  driveId,
+  src,
 }: {
   sessionId: number;
-  driveId: string;
+  src: string;
 }) {
   const reportedRef = useRef(0);
 
@@ -23,7 +23,7 @@ export function VideoTracker({
 
   return (
     <video
-      src={`/api/files/${driveId}`}
+      src={src}
       controls
       width={1280}
       height={720}

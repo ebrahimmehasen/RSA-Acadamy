@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth/session";
 import { RoleShell } from "@/components/shared/RoleShell";
+import { fileUrl } from "@/lib/signedFileUrl";
 import { ROLE_NAV } from "@/lib/roleNav";
 
 // Every page here is per-user and session-gated — never prerender.
@@ -23,6 +24,11 @@ export default async function AdminLayout({
       fullName={session.profile.full_name}
       profileId={session.profile.id}
       pictureDriveId={session.profile.profile_picture_drive_id}
+      pictureUrl={
+        session.profile.profile_picture_drive_id
+          ? fileUrl(session.profile.profile_picture_drive_id)
+          : null
+      }
       nav={nav}
       density={density}
     >

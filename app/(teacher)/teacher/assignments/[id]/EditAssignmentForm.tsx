@@ -26,6 +26,7 @@ import { updateAssignment, type ActionResult } from "../actions";
 
 interface ExistingAttachment {
   driveId: string;
+  url: string;
   fileName: string;
   mimeType: string | null;
   sizeBytes: number | null;
@@ -211,7 +212,7 @@ export function EditAssignmentForm({
                   <div key={a.driveId} className="relative">
                     <FilePreview
                       file={{
-                        url: `/api/files/${a.driveId}`,
+                        url: a.url,
                         fileName: a.fileName,
                         mimeType: a.mimeType,
                         sizeBytes: a.sizeBytes,

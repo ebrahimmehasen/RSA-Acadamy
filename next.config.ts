@@ -3,6 +3,11 @@ import type { NextConfig } from "next";
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
 const supabaseOrigin = supabaseUrl ? new URL(supabaseUrl).origin : "";
 const supabaseWsOrigin = supabaseOrigin.replace(/^http/, "ws");
+// Cloudflare Worker that serves signed file links (workers/files-proxy). Images
+// are already covered by `img-src https:`; PDFs (iframe) and videos need it too.
+const filesWorkerOrigin = process.env.FILES_WORKER_URL
+  ? new URL(process.env.FILES_WORKER_URL).origin
+  : "";
 
 const csp = [
   `default-src 'self'`,
@@ -11,6 +16,8 @@ const csp = [
   `script-src 'self' 'unsafe-inline' 'unsafe-eval'`,
   `style-src 'self' 'unsafe-inline'`,
   `img-src 'self' data: blob: https:`,
+  `media-src 'self' blob: ${filesWorkerOrigin}`.trim(),
+  `frame-src 'self' ${filesWorkerOrigin}`.trim(),
   `font-src 'self' data:`,
   `connect-src 'self' ${supabaseOrigin} ${supabaseWsOrigin} https://www.googleapis.com`,
   `frame-ancestors 'none'`,

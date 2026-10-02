@@ -3,6 +3,8 @@ import { createClient } from "@/lib/supabase/server";
 import { getSession } from "@/lib/auth/session";
 import { Button } from "@/components/ui/button";
 import { VideoTracker } from "./VideoTracker";
+import { fileUrl } from "@/lib/signedFileUrl";
+import { withDownload } from "@/lib/fileLinks";
 import { RatingForm } from "./RatingForm";
 import { PageShell } from "@/components/shared/PageShell";
 import { PageHeader } from "@/components/shared/PageHeader";
@@ -51,14 +53,14 @@ export default async function StudentSessionDetailPage({
         }`}
       />
 
-      <VideoTracker sessionId={sessionId} driveId={recordedSession.video_drive_id} />
+      <VideoTracker sessionId={sessionId} src={fileUrl(recordedSession.video_drive_id)} />
 
       <Button
         variant="outline"
         size="sm"
         render={
           <a
-            href={`/api/files/${recordedSession.video_drive_id}`}
+            href={withDownload(fileUrl(recordedSession.video_drive_id))}
             download={`${recordedSession.title}.mp4`}
           >
             تحميل الفيديو 📥

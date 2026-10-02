@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { formatFileSize } from "@/lib/uploadLimits";
+import { withDownload } from "@/lib/fileLinks";
 import { cn } from "@/lib/utils";
 
 export interface GalleryFile {
@@ -160,7 +161,7 @@ export function AttachmentGallery({ files }: { files: GalleryFile[] }) {
                   )}
                 </div>
                 <a
-                  href={file.url}
+                  href={withDownload(file.url)}
                   download={file.fileName}
                   aria-label={`تحميل ${file.fileName}`}
                   className="flex size-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
@@ -237,7 +238,7 @@ export function AttachmentGallery({ files }: { files: GalleryFile[] }) {
                 </div>
                 <div className="flex items-center gap-3 text-sm">
                   <a
-                    href={current.url}
+                    href={withDownload(current.url)}
                     download={current.fileName}
                     className="inline-flex items-center gap-1.5 text-primary underline underline-offset-4"
                   >

@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
 import { RoleShell } from "@/components/shared/RoleShell";
+import { fileUrl } from "@/lib/signedFileUrl";
 import { PendingActivation } from "@/components/shared/PendingActivation";
 import { ProfileWarningBanner } from "@/components/shared/ProfileWarningBanner";
 import { getTeacherProfileWarnings } from "@/lib/profileCompleteness";
@@ -56,6 +57,11 @@ export default async function TeacherLayout({
       fullName={session.profile.full_name}
       profileId={session.profile.id}
       pictureDriveId={session.profile.profile_picture_drive_id}
+      pictureUrl={
+        session.profile.profile_picture_drive_id
+          ? fileUrl(session.profile.profile_picture_drive_id)
+          : null
+      }
       nav={nav}
       density={density}
       banner={<ProfileWarningBanner items={warnings} />}
