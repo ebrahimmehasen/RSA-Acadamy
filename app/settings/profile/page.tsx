@@ -5,6 +5,7 @@ import { PageShell } from "@/components/shared/PageShell";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { SectionCard } from "@/components/shared/SectionCard";
 import { SignOutButton } from "@/components/shared/SignOutButton";
+import { fileUrl } from "@/lib/signedFileUrl";
 import { ProfileForm } from "./ProfileForm";
 import { TeacherCvCard } from "./TeacherCvCard";
 
@@ -32,10 +33,17 @@ export default async function ProfileSettingsPage() {
         fullName={session.profile.full_name}
         phone={session.profile.phone}
         email={userData.user?.email ?? ""}
-        pictureDriveId={session.profile.profile_picture_drive_id}
+        pictureUrl={
+          session.profile.profile_picture_drive_id
+            ? fileUrl(session.profile.profile_picture_drive_id)
+            : null
+        }
       />
       {session.profile.role === "teacher" && (
-        <TeacherCvCard cvDriveId={teacherCvDriveId} />
+        <TeacherCvCard
+          cvDriveId={teacherCvDriveId}
+          cvUrl={teacherCvDriveId ? fileUrl(teacherCvDriveId) : null}
+        />
       )}
       <SectionCard
         title="الجلسة"

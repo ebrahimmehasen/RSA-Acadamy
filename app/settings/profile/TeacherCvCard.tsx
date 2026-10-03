@@ -9,7 +9,13 @@ import { SectionCard } from "@/components/shared/SectionCard";
 import { updateTeacherCv, type UpdateTeacherCvResult } from "./actions";
 
 /** Teacher-only: upload/replace the CV — mandatory, PDF only. */
-export function TeacherCvCard({ cvDriveId }: { cvDriveId: string | null }) {
+export function TeacherCvCard({
+  cvDriveId,
+  cvUrl,
+}: {
+  cvDriveId: string | null;
+  cvUrl: string | null;
+}) {
   const [result, formAction, isPending] = useActionState<
     UpdateTeacherCvResult | null,
     FormData
@@ -23,7 +29,7 @@ export function TeacherCvCard({ cvDriveId }: { cvDriveId: string | null }) {
       <form action={formAction} className="space-y-3" encType="multipart/form-data">
         {cvDriveId && (
           <a
-            href={`/api/files/${cvDriveId}`}
+            href={cvUrl ?? `/api/files/${cvDriveId}`}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1.5 text-sm text-primary underline-offset-2 hover:underline"

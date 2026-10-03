@@ -17,12 +17,12 @@ export function ProfileForm({
   fullName,
   phone,
   email,
-  pictureDriveId,
+  pictureUrl,
 }: {
   fullName: string;
   phone: string | null;
   email: string;
-  pictureDriveId: string | null;
+  pictureUrl: string | null;
 }) {
   const [result, formAction, isPending] = useActionState<
     UpdateProfileResult | null,
@@ -36,9 +36,9 @@ export function ProfileForm({
       </CardHeader>
       <CardContent>
         <form action={formAction} className="space-y-4" encType="multipart/form-data">
-          {pictureDriveId && (
+          {pictureUrl && (
             <Image
-              src={`/api/files/${pictureDriveId}`}
+              src={pictureUrl}
               alt={fullName}
               width={80}
               height={80}
