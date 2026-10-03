@@ -25,6 +25,8 @@ export async function createResumableSession(opts: {
   mimeType: string;
   size: number;
   folderId: string;
+  /** browser Origin allowed to PUT chunks straight to the session URI (direct upload) */
+  origin?: string;
 }): Promise<string> {
   const res = await fetch(
     `${UPLOAD_BASE}/upload/drive/v3/files?uploadType=resumable&fields=id,name,mimeType,size`,
@@ -35,6 +37,7 @@ export async function createResumableSession(opts: {
         "Content-Type": "application/json; charset=UTF-8",
         "X-Upload-Content-Type": opts.mimeType,
         "X-Upload-Content-Length": String(opts.size),
+        ...(opts.origin ? { Origin: opts.origin } : {}),
       },
       body: JSON.stringify({ name: opts.name, parents: [opts.folderId] }),
     },

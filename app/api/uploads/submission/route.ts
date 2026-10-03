@@ -5,6 +5,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { getOrCreateFolder } from "@/lib/googleDrive/folders";
 import { createResumableSession } from "@/lib/googleDrive/resumable";
 import { registerFile } from "@/lib/googleDrive/upload";
+import { DIRECT_CHUNK_BYTES, directUploadOrigin } from "@/lib/directUpload";
 import { relayChunk, relayStatus } from "@/lib/chunkRelay";
 import {
   SUBMISSION_ALLOWED_MIMES,
@@ -88,11 +89,13 @@ export async function POST(request: Request) {
     const folderId = await getOrCreateFolder(
       `Assignment_Files/Student_Submissions/${studentId}`,
     );
+    const origin = directUploadOrigin(request);
     const sessionUri = await createResumableSession({
       name: `Assignment_${assignmentId}_${fileName}`,
       mimeType,
       size,
       folderId,
+      origin: origin ?? undefined,
     });
 
     const token = signUploadSession({
@@ -105,7 +108,15 @@ export async function POST(request: Request) {
       m: mimeType,
       e: Date.now() + 24 * 60 * 60 * 1000,
     });
-    return NextResponse.json({ token, chunkBytes: SUBMISSION_LIMITS.chunkBytes });
+    return NextResponse.json(
+      origin
+        ? {
+            token,
+            chunkBytes: SUBMISSION_LIMITS.chunkBytes,
+            direct: { url: sessionUri, chunkBytes: DIRECT_CHUNK_BYTES },
+          }
+        : { token, chunkBytes: SUBMISSION_LIMITS.chunkBytes },
+    );
   } catch (error) {
     return toErrorResponse(error);
   }

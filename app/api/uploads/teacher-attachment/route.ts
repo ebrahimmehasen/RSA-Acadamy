@@ -5,6 +5,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { getOrCreateFolder } from "@/lib/googleDrive/folders";
 import { createResumableSession } from "@/lib/googleDrive/resumable";
 import { registerFile } from "@/lib/googleDrive/upload";
+import { DIRECT_CHUNK_BYTES, directUploadOrigin } from "@/lib/directUpload";
 import { relayChunk, relayStatus } from "@/lib/chunkRelay";
 import {
   ASSIGNMENT_ATTACHMENT_LIMITS,
@@ -75,11 +76,13 @@ export async function POST(request: Request) {
     if (limitError) return fail(limitError);
 
     const folderId = await getOrCreateFolder("Assignment_Files/Teacher_Attachments");
+    const origin = directUploadOrigin(request);
     const sessionUri = await createResumableSession({
       name: `Attachment_${assignmentId ?? "new"}_${fileName}`,
       mimeType,
       size,
       folderId,
+      origin: origin ?? undefined,
     });
 
     const token = signUploadSession({
@@ -92,7 +95,11 @@ export async function POST(request: Request) {
       m: mimeType,
       e: Date.now() + 24 * 60 * 60 * 1000,
     });
-    return NextResponse.json({ token, chunkBytes: TEACHER_UPLOAD_CHUNK_BYTES });
+    return NextResponse.json(
+      origin
+        ? { token, chunkBytes: TEACHER_UPLOAD_CHUNK_BYTES, direct: { url: sessionUri, chunkBytes: DIRECT_CHUNK_BYTES } }
+        : { token, chunkBytes: TEACHER_UPLOAD_CHUNK_BYTES },
+    );
   } catch (error) {
     return toErrorResponse(error);
   }

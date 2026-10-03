@@ -65,6 +65,40 @@ export function uploadTeacherAttachmentFile(
 }
 
 /**
+ * One chunk straight to Drive. Drive answers 308 (+ `Range`) until the last
+ * byte, then 200; on 200 we ask our own server to confirm with Drive itself
+ * and record the file, so a client can never claim a file it didn't upload.
+ */
+async function putDirect(
+  doFetch: typeof fetch,
+  directUrl: string,
+  blob: Blob,
+  offset: number,
+  total: number,
+  finalizeUrl: string,
+  signal?: AbortSignal,
+): Promise<ChunkResponse> {
+  const res = await doFetch(directUrl, {
+    method: "PUT",
+    headers: {
+      "Content-Range": `bytes ${offset}-${offset + blob.size - 1}/${total}`,
+      "Content-Type": "application/octet-stream",
+    },
+    body: blob,
+    signal,
+  });
+  if (res.status === 308) {
+    const range = res.headers.get("range"); // "bytes=0-8388607"
+    const last = range ? Number(range.split("-")[1]) : NaN;
+    return { done: false, nextOffset: Number.isFinite(last) ? last + 1 : offset };
+  }
+  if (res.status === 200 || res.status === 201) {
+    return readJson<ChunkResponse>(await doFetch(finalizeUrl, { signal }));
+  }
+  throw new UploadError("فشل رفع الملف", res.status >= 500 ? 502 : res.status);
+}
+
+/**
  * Uploads one file in chunks. Survives dropped connections: on a
  * transient error it asks the server how much Drive already holds and
  * carries on from there instead of restarting the file.
@@ -83,7 +117,12 @@ async function uploadFileChunked(
 
   if (file.size <= 0) throw new UploadError(`${file.name}: الملف فارغ`, 400);
 
-  const init = await readJson<{ token: string; chunkBytes: number }>(
+  const init = await readJson<{
+    token: string;
+    chunkBytes: number;
+    /** present when the browser may PUT chunks straight to Drive (skips Vercel) */
+    direct?: { url: string; chunkBytes: number };
+  }>(
     await doFetch(endpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -101,17 +140,21 @@ async function uploadFileChunked(
   let offset = 0;
   let attempts = 0;
   let stalls = 0;
+  let direct = init.direct ?? null;
   for (;;) {
-    const blob = file.slice(offset, Math.min(offset + init.chunkBytes, file.size));
+    const chunkBytes = direct ? direct.chunkBytes : init.chunkBytes;
+    const blob = file.slice(offset, Math.min(offset + chunkBytes, file.size));
     try {
-      const res = await readJson<ChunkResponse>(
-        await doFetch(`${url}&offset=${offset}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/octet-stream" },
-          body: blob,
-          signal,
-        }),
-      );
+      const res = direct
+        ? await putDirect(doFetch, direct.url, blob, offset, file.size, url, signal)
+        : await readJson<ChunkResponse>(
+            await doFetch(`${url}&offset=${offset}`, {
+              method: "PUT",
+              headers: { "Content-Type": "application/octet-stream" },
+              body: blob,
+              signal,
+            }),
+          );
       attempts = 0;
       if (res.done) {
         onProgress(file.size);
@@ -124,6 +167,12 @@ async function uploadFileChunked(
       offset = res.nextOffset;
       onProgress(Math.min(offset, file.size));
     } catch (error) {
+      // Browser-level failure talking to Drive (CORS / blocked / offline):
+      // finish through our relay instead, from wherever Drive got to.
+      if (direct && !(error instanceof UploadError) && !signal?.aborted) {
+        direct = null;
+        attempts = 0;
+      }
       const permanent =
         error instanceof UploadError && error.status >= 400 && error.status < 500;
       if (signal?.aborted || permanent || ++attempts > retries) throw error;
