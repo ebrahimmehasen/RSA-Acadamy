@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { getSession } from "@/lib/auth/session";
+import { fileUrl } from "@/lib/signedFileUrl";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -41,7 +42,11 @@ export default async function StudentProfilePage() {
         fullName={session!.profile.full_name}
         phone={session!.profile.phone}
         email={authData.user?.email ?? ""}
-        pictureDriveId={session!.profile.profile_picture_drive_id}
+        pictureUrl={
+          session!.profile.profile_picture_drive_id
+            ? fileUrl(session!.profile.profile_picture_drive_id)
+            : null
+        }
       />
 
       <Card>
