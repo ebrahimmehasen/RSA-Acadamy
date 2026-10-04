@@ -1,5 +1,6 @@
 import { Megaphone } from "lucide-react";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { fileUrl } from "@/lib/signedFileUrl";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -60,7 +61,7 @@ export default async function AdminAnnouncementsPage() {
                   {(a.attachment_drive_ids as string[]).map((id, i) => (
                     <a
                       key={id}
-                      href={`/api/files/${id}`}
+                      href={fileUrl(id)}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-primary underline underline-offset-4"

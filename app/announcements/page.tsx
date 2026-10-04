@@ -6,6 +6,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { PageShell } from "@/components/shared/PageShell";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { EmptyState } from "@/components/shared/EmptyState";
+import { fileUrl } from "@/lib/signedFileUrl";
 import { AnnouncementCard } from "./AnnouncementCard";
 
 // Per-user, session-gated — never prerender.
@@ -67,7 +68,7 @@ export default async function AnnouncementsPage() {
             title={a.title_ar}
             content={a.content_ar}
             publishedAt={a.published_at}
-            attachmentIds={(a.attachment_drive_ids as string[]) ?? []}
+            attachmentUrls={((a.attachment_drive_ids as string[]) ?? []).map((id) => fileUrl(id))}
           />
         ))}
         {relevant.length === 0 && (

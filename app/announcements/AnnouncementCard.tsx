@@ -14,13 +14,13 @@ export function AnnouncementCard({
   title,
   content,
   publishedAt,
-  attachmentIds,
+  attachmentUrls,
 }: {
   id: number;
   title: string;
   content: string;
   publishedAt: string;
-  attachmentIds: string[];
+  attachmentUrls: string[];
 }) {
   useEffect(() => {
     // supabase-js query/rpc builders are thenable but lazy — calling
@@ -37,12 +37,12 @@ export function AnnouncementCard({
       </CardHeader>
       <CardContent className="space-y-2 text-sm">
         <p className="whitespace-pre-wrap break-words">{content}</p>
-        {attachmentIds.length > 0 && (
+        {attachmentUrls.length > 0 && (
           <div className="flex flex-wrap gap-2">
-            {attachmentIds.map((driveId, i) => (
+            {attachmentUrls.map((url, i) => (
               <a
-                key={driveId}
-                href={`/api/files/${driveId}`}
+                key={url}
+                href={url}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-primary underline underline-offset-4"

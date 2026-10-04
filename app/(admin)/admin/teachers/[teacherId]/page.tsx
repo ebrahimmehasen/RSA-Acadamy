@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { fileUrl } from "@/lib/signedFileUrl";
 import { DAYS, DAY_LABELS, formatTime, type ScheduleSlot } from "@/lib/schedule";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -250,7 +251,7 @@ export default async function AdminTeacherDetailPage({
         action={
           teacher.cv_drive_id ? (
             <a
-              href={`/api/files/${teacher.cv_drive_id}`}
+              href={fileUrl(teacher.cv_drive_id)}
               target="_blank"
               rel="noopener noreferrer"
               className="text-sm text-primary underline underline-offset-4"
