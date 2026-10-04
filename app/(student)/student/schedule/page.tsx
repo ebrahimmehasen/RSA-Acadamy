@@ -14,7 +14,7 @@ export default async function StudentSchedulePage() {
   // RLS scopes rows to the student's own class
   const { data: slots } = await supabase
     .from("class_assignments")
-    .select("*, subjects(subject_name, branch)")
+    .select("*, subjects(subject_name, branch, branch_scope)")
     .eq("is_active", true)
     .order("start_time");
 

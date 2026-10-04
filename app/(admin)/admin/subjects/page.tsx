@@ -24,6 +24,8 @@ import { SectionCard } from "@/components/shared/SectionCard";
 import { SELECT_CLASS } from "@/lib/ui";
 import { AddSubjectForm } from "./AddSubjectForm";
 import { EditSubjectName } from "./EditSubjectName";
+import { SubjectScopeSelect } from "./SubjectScopeSelect";
+import type { BranchScope } from "@/lib/subjects";
 import { toggleSubject } from "./actions";
 
 const PAGE_SIZE = 30;
@@ -72,7 +74,7 @@ export default async function AdminSubjectsPage({
     (() => {
       let query = supabase
         .from("subjects")
-        .select("subject_id, subject_name, branch, is_active, classes(class_name)", {
+        .select("subject_id, subject_name, branch, branch_scope, is_active, classes(class_name)", {
           count: "exact",
         })
         .order("class_id")
@@ -181,6 +183,7 @@ export default async function AdminSubjectsPage({
                 <TableHead>المادة</TableHead>
                 <TableHead>الصف</TableHead>
                 <TableHead>الشعبة</TableHead>
+                <TableHead>يدرسها</TableHead>
                 <TableHead>الكود</TableHead>
                 <TableHead>الحالة</TableHead>
                 <TableHead />
@@ -199,6 +202,13 @@ export default async function AdminSubjectsPage({
                     {(s.classes as unknown as { class_name: string })?.class_name}
                   </TableCell>
                   <TableCell>{s.branch === "Arabic" ? "عربي" : "لغات"}</TableCell>
+                  <TableCell>
+                    <SubjectScopeSelect
+                      subjectId={s.subject_id}
+                      subjectName={s.subject_name}
+                      scope={s.branch_scope as BranchScope}
+                    />
+                  </TableCell>
                   <TableCell dir="ltr" className="text-start font-mono text-xs">
                     {s.subject_id}
                   </TableCell>
@@ -226,7 +236,7 @@ export default async function AdminSubjectsPage({
               ))}
               {subjects.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={6} className="py-8 text-center text-muted-foreground">
+                  <TableCell colSpan={7} className="py-8 text-center text-muted-foreground">
                     لا توجد نتائج مطابقة
                   </TableCell>
                 </TableRow>

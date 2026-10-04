@@ -1,3 +1,5 @@
+import { scopeIncludes } from "@/lib/subjects";
+
 export const DAYS = [
   "saturday",
   "sunday",
@@ -38,7 +40,8 @@ export interface ScheduleSlot {
 
 /**
  * A class can hold both branches (Arabic + Languages), so a student's
- * schedule must only show slots for subjects in their own branch —
+ * schedule must only show slots for subjects their branch studies
+ * (subjects.branch_scope: own branch or "Both") —
  * never the whole class's. `students.branch` is the normal source of
  * truth; a hand-created account that skipped it falls back to the
  * subjects the student is actually enrolled in (`student_subjects`),
@@ -50,14 +53,21 @@ export interface ScheduleSlot {
  * (class_assignments.student_id), so no further filtering applies.
  */
 export function filterSlotsForStudentBranch<
-  T extends { subject_id: string; subjects?: { branch: string } | null },
+  T extends {
+    subject_id: string;
+    subjects?: { branch: string; branch_scope?: string | null } | null;
+  },
 >(
   slots: T[],
   branch: string | null,
   enrolledSubjectIds?: Set<string> | null,
 ): T[] {
   if (branch === "Private") return slots;
-  if (branch) return slots.filter((s) => s.subjects?.branch === branch);
+  if (branch) {
+    return slots.filter((s) =>
+      scopeIncludes(s.subjects?.branch_scope ?? s.subjects?.branch, branch),
+    );
+  }
   if (enrolledSubjectIds && enrolledSubjectIds.size > 0) {
     return slots.filter((s) => enrolledSubjectIds.has(s.subject_id));
   }

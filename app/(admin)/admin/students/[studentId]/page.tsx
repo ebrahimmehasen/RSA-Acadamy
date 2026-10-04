@@ -50,7 +50,7 @@ export default async function AdminStudentDetailPage({
       .order("user_id"),
     supabase
       .from("student_subjects")
-      .select("subject_id, subjects(subject_name, branch)")
+      .select("subject_id, subjects(subject_name, branch, branch_scope)")
       .eq("student_id", studentId)
       .eq("is_active", true),
     supabase

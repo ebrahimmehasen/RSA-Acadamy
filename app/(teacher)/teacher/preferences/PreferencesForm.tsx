@@ -10,6 +10,7 @@ export interface SubjectRow {
   subject_id: string;
   subject_name: string;
   branch: "Arabic" | "Languages";
+  branch_scope: string;
 }
 
 export function PreferencesForm({
@@ -75,7 +76,7 @@ export function PreferencesForm({
                   }
                 />
                 <span className="min-w-0 truncate">
-                  {s.subject_name} {branchLabel(s.subject_name, s.branch)}
+                  {s.subject_name} {branchLabel(s.branch_scope)}
                 </span>
               </label>
             ))}

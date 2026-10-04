@@ -52,6 +52,7 @@ interface SubjectRow {
   subject_id: string;
   subject_name: string;
   branch: string;
+  branch_scope: string;
   class_name: string;
 }
 
@@ -442,7 +443,7 @@ export function SignUpForm({
                                 }
                               />
                               {s.subject_name}{" "}
-                              {branchLabel(s.subject_name, s.branch)}
+                              {branchLabel(s.branch_scope)}
                             </label>
                           ))}
                         </div>

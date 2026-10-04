@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireRole } from "@/lib/auth/guards";
 import { createAdminClient } from "@/lib/supabase/admin";
+import type { BranchScope } from "@/lib/subjects";
 
 const schema = z.object({
   class_id: z.coerce.number().int().positive(),
@@ -72,4 +73,43 @@ export async function toggleSubject(formData: FormData) {
   if (error) throw new Error(error.message);
 
   revalidatePath("/admin/subjects");
+}
+
+export interface SubjectScopeResult {
+  ok: boolean;
+  message: string;
+}
+
+/**
+ * Who studies this subject (Arabic / Languages / both). Students'
+ * enrollments are updated in the same DB transaction
+ * (set_subject_branch_scope, migration 0031).
+ */
+export async function setSubjectScope(
+  subjectId: string,
+  scope: BranchScope,
+): Promise<SubjectScopeResult> {
+  try {
+    await requireRole("admin");
+    const parsed = z
+      .object({ subjectId: z.string().min(1), scope: z.enum(["Arabic", "Languages", "Both"]) })
+      .parse({ subjectId, scope });
+
+    const supabase = createAdminClient();
+    const { data, error } = await supabase.rpc("set_subject_branch_scope", {
+      p_subject_id: parsed.subjectId,
+      p_scope: parsed.scope,
+    });
+    if (error) throw new Error(error.message);
+
+    const { enrolled = 0, removed = 0 } = (data ?? {}) as { enrolled?: number; removed?: number };
+    revalidatePath("/admin/subjects");
+    revalidatePath("/admin/schedule");
+    return {
+      ok: true,
+      message: `تم — أُضيف ${enrolled} طالب، وأُزيل ${removed}`,
+    };
+  } catch (error) {
+    return { ok: false, message: error instanceof Error ? error.message : "حدث خطأ" };
+  }
 }

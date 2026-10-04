@@ -40,7 +40,7 @@ export default async function ParentChildDetailPage({
     await Promise.all([
       supabase
         .from("class_assignments")
-        .select("*, subjects(subject_name, branch)")
+        .select("*, subjects(subject_name, branch, branch_scope)")
         .eq("class_id", child.class_id!)
         .eq("is_active", true)
         .order("start_time"),

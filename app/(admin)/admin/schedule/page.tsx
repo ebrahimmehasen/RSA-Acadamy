@@ -58,7 +58,7 @@ export default async function AdminSchedulePage({
       .order("start_time"),
     supabase
       .from("subjects")
-      .select("subject_id, subject_name, branch, class_id")
+      .select("subject_id, subject_name, branch, branch_scope, class_id")
       .eq("is_active", true)
       .order("subject_name"),
     supabase
@@ -98,7 +98,7 @@ export default async function AdminSchedulePage({
   const subjectNameById = new Map<string, string>();
   const subjectsByClass: Record<number, { id: string; label: string }[]> = {};
   for (const s of subjects ?? []) {
-    const suffix = branchLabel(s.subject_name, s.branch);
+    const suffix = branchLabel(s.branch_scope);
     const label = suffix ? `${s.subject_name} ${suffix}` : s.subject_name;
     subjectNameById.set(s.subject_id, label);
     (subjectsByClass[s.class_id] ??= []).push({ id: s.subject_id, label });

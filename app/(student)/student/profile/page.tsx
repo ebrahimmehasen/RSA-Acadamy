@@ -28,7 +28,7 @@ export default async function StudentProfilePage() {
       .single(),
     supabase
       .from("student_subjects")
-      .select("subject_id, subjects(subject_name, branch)")
+      .select("subject_id, subjects(subject_name, branch, branch_scope)")
       .eq("student_id", session!.profile.id)
       .eq("is_active", true),
     supabase.auth.getUser(),

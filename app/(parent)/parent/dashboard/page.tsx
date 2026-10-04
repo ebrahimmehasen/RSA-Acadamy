@@ -12,6 +12,7 @@ import { SectionCard } from "@/components/shared/SectionCard";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ScheduleSpotlight } from "@/components/shared/ScheduleSpotlight";
 import { CARD_LINK_CLASS } from "@/lib/ui";
+import { scopeIncludes } from "@/lib/subjects";
 
 export default async function ParentDashboard() {
   const session = await getSession();
@@ -40,7 +41,7 @@ export default async function ParentDashboard() {
     classIds.length
       ? supabase
           .from("class_assignments")
-          .select("*, subjects(subject_name, branch)")
+          .select("*, subjects(subject_name, branch, branch_scope)")
           .in("class_id", classIds)
           .eq("is_active", true)
       : Promise.resolve({ data: [] }),
@@ -53,7 +54,7 @@ export default async function ParentDashboard() {
   ]);
 
   const typedSlots = (slots ?? []) as (ScheduleSlot & {
-    subjects: { subject_name: string; branch: string } | null;
+    subjects: { subject_name: string; branch: string; branch_scope?: string | null } | null;
   })[];
 
   const gradedRows: GradedRow[] = (submissions ?? [])
@@ -107,7 +108,8 @@ export default async function ParentDashboard() {
             const childSlots = typedSlots.filter(
               (s) =>
                 s.class_id === child.class_id &&
-                (!child.branch || s.subjects?.branch === child.branch),
+                (!child.branch ||
+                  scopeIncludes(s.subjects?.branch_scope ?? s.subjects?.branch, child.branch)),
             );
             return (
               <div key={child.user_id} className="space-y-1.5">

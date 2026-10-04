@@ -3,7 +3,6 @@ import { getSession } from "@/lib/auth/session";
 import { PageShell } from "@/components/shared/PageShell";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { SectionCard } from "@/components/shared/SectionCard";
-import { isSharedAcrossBranches } from "@/lib/subjects";
 import { PreferencesForm, type SubjectRow } from "./PreferencesForm";
 import { AvailabilityForm } from "./AvailabilityForm";
 
@@ -16,7 +15,7 @@ export default async function TeacherPreferencesPage() {
       supabase.from("classes").select("id, class_name").order("id"),
       supabase
         .from("subjects")
-        .select("subject_id, subject_name, branch, class_id")
+        .select("subject_id, subject_name, branch, branch_scope, class_id")
         .eq("is_active", true)
         .order("subject_name"),
       supabase
@@ -34,18 +33,15 @@ export default async function TeacherPreferencesPage() {
     subject_id: string;
     subject_name: string;
     branch: "Arabic" | "Languages";
+    branch_scope: string;
     class_id: number;
   }[];
   // Subjects grouped per class, then per branch — so picking a class
   // reveals just that class's two subject columns (عربي / لغات).
   const subjectsByClass: Record<number, { Arabic: SubjectRow[]; Languages: SubjectRow[] }> = {};
   for (const s of typedSubjects) {
-    // Subjects taught identically in both branches (Arabic language,
-    // religion) exist as one row per branch — only list them once,
-    // under "عربي", instead of the same name in both columns.
-    if (s.branch === "Languages" && isSharedAcrossBranches(s.subject_name)) {
-      continue;
-    }
+    // a subject studied by both branches is one row (its twin is switched
+    // off), so it's listed once — under the column of its own branch
     if (!subjectsByClass[s.class_id]) {
       subjectsByClass[s.class_id] = { Arabic: [], Languages: [] };
     }
@@ -53,6 +49,7 @@ export default async function TeacherPreferencesPage() {
       subject_id: s.subject_id,
       subject_name: s.subject_name,
       branch: s.branch,
+      branch_scope: s.branch_scope,
     });
   }
 

@@ -74,7 +74,7 @@ export default async function AdminTeacherDetailPage({
       .maybeSingle(),
     supabase
       .from("subjects")
-      .select("subject_id, subject_name, branch, class_id, classes(class_name)")
+      .select("subject_id, subject_name, branch, branch_scope, class_id, classes(class_name)")
       .eq("is_active", true)
       .order("class_id"),
     supabase
@@ -142,7 +142,7 @@ export default async function AdminTeacherDetailPage({
 
   const subjectsByClass = new Map<
     string,
-    { subject_id: string; subject_name: string; branch: string }[]
+    { subject_id: string; subject_name: string; branch: string; branch_scope: string }[]
   >();
   for (const s of subjects ?? []) {
     const className = (s.classes as unknown as { class_name: string })?.class_name ?? "—";
@@ -151,6 +151,7 @@ export default async function AdminTeacherDetailPage({
       subject_id: s.subject_id,
       subject_name: s.subject_name,
       branch: s.branch,
+      branch_scope: s.branch_scope,
     });
   }
 
@@ -159,7 +160,7 @@ export default async function AdminTeacherDetailPage({
   // can be reassigned without leaving this page.
   const subjectOptionsByClassId: Record<number, { id: string; label: string }[]> = {};
   for (const s of subjects ?? []) {
-    const suffix = branchLabel(s.subject_name, s.branch);
+    const suffix = branchLabel(s.branch_scope);
     const label = suffix ? `${s.subject_name} ${suffix}` : s.subject_name;
     (subjectOptionsByClassId[s.class_id] ??= []).push({ id: s.subject_id, label });
   }
@@ -393,7 +394,7 @@ export default async function AdminTeacherDetailPage({
                           value={s.subject_id}
                           defaultChecked={preferredSubjects.has(s.subject_id)}
                         />
-                        {s.subject_name} {branchLabel(s.subject_name, s.branch)}
+                        {s.subject_name} {branchLabel(s.branch_scope)}
                       </label>
                     ))}
                   </div>

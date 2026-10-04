@@ -26,7 +26,7 @@ export default async function StudentDashboard() {
     await Promise.all([
       supabase
         .from("class_assignments")
-        .select("*, subjects(subject_name, branch)")
+        .select("*, subjects(subject_name, branch, branch_scope)")
         .eq("is_active", true),
       supabase.from("assignments").select("id"),
       supabase

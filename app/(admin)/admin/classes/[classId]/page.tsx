@@ -41,7 +41,7 @@ export default async function AdminClassSchedulePage({
       .order("start_time"),
     supabase
       .from("subjects")
-      .select("subject_id, subject_name, branch")
+      .select("subject_id, subject_name, branch, branch_scope")
       .eq("class_id", id)
       .eq("is_active", true)
       .order("branch")
@@ -76,7 +76,7 @@ export default async function AdminClassSchedulePage({
   const teacherNameById = new Map(teacherOptions.map((t) => [t.id, t.name]));
   const subjectNameById = new Map(
     (subjects ?? []).map((s) => {
-      const label = branchLabel(s.subject_name, s.branch);
+      const label = branchLabel(s.branch_scope);
       return [s.subject_id, label ? `${s.subject_name} ${label}` : s.subject_name];
     }),
   );

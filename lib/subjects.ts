@@ -1,25 +1,25 @@
 /**
- * Some subjects are duplicated per (class, branch) in the DB — e.g.
- * "اللغة العربية" and "التربية الدينية" each exist as a separate row for
- * the Arabic branch and the Languages branch, so grading/enrollment can
- * be scoped per class+branch like every other subject. But the subject
- * itself isn't actually branch-specific content — every student studies
- * the same Arabic language and religion curriculum regardless of branch
- * — so labelling them "(عربي)"/"(لغات)" next to the name is misleading
- * rather than informative. Everything else (English, Math, Science…)
- * genuinely differs by branch and keeps its label.
+ * Which student branches study a subject row — set per subject by the
+ * admin (subjects.branch_scope, migration 0031). 'Both' means one copy of
+ * the subject for the whole class: same teacher, schedule and grade sheet.
  */
-const SHARED_ACROSS_BRANCHES = new Set(["اللغة العربية", "التربية الدينية"]);
+export type BranchScope = "Arabic" | "Languages" | "Both";
 
-/** True for subjects taught the same in both branches (see note above). */
-export function isSharedAcrossBranches(subjectName: string): boolean {
-  return SHARED_ACROSS_BRANCHES.has(subjectName);
+export const BRANCH_SCOPE_LABEL: Record<BranchScope, string> = {
+  Arabic: "العربي فقط",
+  Languages: "اللغات فقط",
+  Both: "الشعبتين",
+};
+
+/** "(عربي)" / "(لغات)", or "" for a subject studied by both branches. */
+export function branchLabel(scope: string): string {
+  if (scope === "Both") return "";
+  return scope === "Arabic" ? "(عربي)" : "(لغات)";
 }
 
-/** "(عربي)" / "(لغات)", or "" for subjects taught the same in both branches. */
-export function branchLabel(subjectName: string, branch: string): string {
-  if (isSharedAcrossBranches(subjectName)) return "";
-  return branch === "Arabic" ? "(عربي)" : "(لغات)";
+/** Does a student of `studentBranch` study a subject with this scope? */
+export function scopeIncludes(scope: string | null | undefined, studentBranch: string): boolean {
+  return scope === "Both" || scope === studentBranch;
 }
 
 /** A student's own branch, in Arabic — "عربي" / "لغات" / "خاص". */

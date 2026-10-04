@@ -9,7 +9,7 @@ export default async function SignUpPage() {
     supabase.from("classes").select("id, class_name").order("id"),
     supabase
       .from("subjects")
-      .select("subject_id, subject_name, branch, class_id, classes(class_name)")
+      .select("subject_id, subject_name, branch, branch_scope, class_id, classes(class_name)")
       .eq("is_active", true)
       .order("class_id"),
   ]);
@@ -21,6 +21,7 @@ export default async function SignUpPage() {
         subject_id: s.subject_id,
         subject_name: s.subject_name,
         branch: s.branch,
+        branch_scope: s.branch_scope,
         class_name:
           (s.classes as unknown as { class_name: string } | null)?.class_name ??
           "—",
