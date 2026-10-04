@@ -1,5 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/admin";
-import { uploadTeacherCv, uploadProfilePicture } from "@/lib/googleDrive/upload";
+import { getFileUrl } from "@/lib/googleDrive/files";
+import { redeemFileTicket } from "@/lib/uploads/ticket";
 import type { Branch, Role } from "@/types/domain";
 
 /** Resolves a profile's auth email (used for outbound notification emails). */
@@ -330,8 +331,9 @@ export async function selfSignUp(options: CreateUserBase & {
   specialization?: string | null;
   qualification?: string | null;
   subjectCodes?: string[];
-  cv?: { buffer: Buffer; fileName: string; mimeType: string } | null;
-  profilePicture?: { buffer: Buffer; fileName: string; mimeType: string } | null;
+  /** tickets from signed-out uploads (lib/uploads) — redeemed and claimed for the new profile */
+  cvTicket?: string | null;
+  profilePictureTicket?: string | null;
 }): Promise<{ profileId: number }> {
   const supabase = createAdminClient();
   const { profileId } = await createAuthUserWithProfile(options, options.role);
@@ -375,17 +377,16 @@ export async function selfSignUp(options: CreateUserBase & {
     });
     if (error) throw new Error(error.message);
 
-    if (options.cv) {
-      const uploaded = await uploadTeacherCv({
-        buffer: options.cv.buffer,
-        fileName: options.cv.fileName,
-        mimeType: options.cv.mimeType,
-        uploadedBy: profileId,
-        teacherId: profileId,
+    if (options.cvTicket) {
+      const cv = await redeemFileTicket(options.cvTicket, {
+        kind: "teacher_cv",
+        uploaderId: 0,
+        entityId: profileId,
+        claimFor: profileId,
       });
       await supabase
         .from("teachers")
-        .update({ cv_drive_id: uploaded.fileId })
+        .update({ cv_drive_id: cv.driveFileId })
         .eq("user_id", profileId);
     }
 
@@ -404,20 +405,18 @@ export async function selfSignUp(options: CreateUserBase & {
     if (error) throw new Error(error.message);
   }
 
-  if (options.profilePicture) {
-    const uploaded = await uploadProfilePicture({
-      buffer: options.profilePicture.buffer,
-      fileName: options.profilePicture.fileName,
-      mimeType: options.profilePicture.mimeType,
-      uploadedBy: profileId,
-      profileId,
-      userType: options.role,
+  if (options.profilePictureTicket) {
+    const picture = await redeemFileTicket(options.profilePictureTicket, {
+      kind: "profile_picture",
+      uploaderId: 0,
+      entityId: profileId,
+      claimFor: profileId,
     });
     await supabase
       .from("profiles")
       .update({
-        profile_picture_url: uploaded.fileUrl,
-        profile_picture_drive_id: uploaded.fileId,
+        profile_picture_url: getFileUrl(picture.driveFileId),
+        profile_picture_drive_id: picture.driveFileId,
       })
       .eq("id", profileId);
   }

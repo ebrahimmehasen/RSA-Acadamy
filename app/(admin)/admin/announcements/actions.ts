@@ -5,10 +5,7 @@ import { z } from "zod";
 import { requireRole } from "@/lib/auth/guards";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createNotifications } from "@/lib/notifications/create";
-import {
-  uploadAnnouncementAttachment,
-  validateUpload,
-} from "@/lib/googleDrive/upload";
+import { redeemFileTicket } from "@/lib/uploads/ticket";
 import type { Role } from "@/types/domain";
 
 const schema = z.object({
@@ -69,24 +66,20 @@ export async function createAnnouncement(formData: FormData) {
     .single();
   if (error) throw new Error(error.message);
 
-  const files = formData
-    .getAll("attachments")
-    .filter((f): f is File => f instanceof File && f.size > 0)
+  // attachments were uploaded straight to Drive; the form sends tickets
+  const tickets = formData
+    .getAll("attachment_tickets")
+    .filter((t): t is string => typeof t === "string" && t.length > 0)
     .slice(0, 5);
-  if (files.length > 0) {
+  if (tickets.length > 0) {
     const driveIds: string[] = [];
-    for (const file of files) {
-      const validationError = validateUpload("announcement", file.type, file.size);
-      if (validationError) continue; // skip invalid files rather than fail the whole announcement
-      const buffer = Buffer.from(await file.arrayBuffer());
-      const uploaded = await uploadAnnouncementAttachment({
-        buffer,
-        fileName: file.name,
-        mimeType: file.type,
-        uploadedBy: session.profile.id,
-        announcementId: announcement.id,
+    for (const ticket of tickets) {
+      const file = await redeemFileTicket(ticket, {
+        kind: "announcement_attachment",
+        uploaderId: session.profile.id,
+        entityId: announcement.id,
       });
-      driveIds.push(uploaded.fileId);
+      driveIds.push(file.driveFileId);
     }
     if (driveIds.length > 0) {
       await supabase

@@ -11,6 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { useTicketedSubmit } from "@/lib/uploads/useTicketedSubmit";
 import { addQuestion, type ActionResult } from "../actions";
 
 const TYPE_LABELS: Record<string, string> = {
@@ -36,6 +37,9 @@ export function AddQuestionForm({ quizId }: { quizId: number }) {
     }
     return res;
   }, null);
+  const upload = useTicketedSubmit(formAction, [
+    { name: "attachment", kind: "quiz_attachment", ticketName: "attachment_ticket" },
+  ]);
 
   return (
     <Card>
@@ -43,7 +47,7 @@ export function AddQuestionForm({ quizId }: { quizId: number }) {
         <CardTitle className="text-lg">إضافة سؤال</CardTitle>
       </CardHeader>
       <CardContent>
-        <form ref={formRef} action={formAction} className="space-y-4">
+        <form ref={formRef} onSubmit={upload.onSubmit} className="space-y-4">
           <input type="hidden" name="quiz_id" value={quizId} />
 
           <div className="space-y-2">
@@ -164,14 +168,20 @@ export function AddQuestionForm({ quizId }: { quizId: number }) {
             />
           </div>
 
+          {upload.uploadError && (
+            <p className="text-sm text-destructive" aria-live="polite">
+              {upload.uploadError}
+            </p>
+          )}
+
           {result && !result.ok && (
             <p className="text-sm text-destructive" aria-live="polite">
               {result.message}
             </p>
           )}
 
-          <Button type="submit" size="sm" disabled={isPending}>
-            {isPending ? "جاري الإضافة…" : "إضافة السؤال"}
+          <Button type="submit" size="sm" disabled={isPending || upload.busy}>
+            {upload.uploading ? "جاري رفع المرفق…" : isPending || upload.busy ? "جاري الإضافة…" : "إضافة السؤال"}
           </Button>
         </form>
       </CardContent>

@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { SELECT_CLASS } from "@/lib/ui";
+import { useTicketedSubmit } from "@/lib/uploads/useTicketedSubmit";
 import { createAnnouncement } from "./actions";
 
 export function AnnouncementForm({
@@ -15,9 +16,14 @@ export function AnnouncementForm({
   classes: { id: number; class_name: string }[];
 }) {
   const [targetType, setTargetType] = useState("all");
+  const upload = useTicketedSubmit(
+    createAnnouncement,
+    [{ name: "attachments", kind: "announcement_attachment", ticketName: "attachment_tickets" }],
+    { resetOnSuccess: true },
+  );
 
   return (
-    <form action={createAnnouncement} className="space-y-4">
+    <form onSubmit={upload.onSubmit} className="space-y-4">
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor="title_ar">العنوان (عربي)</Label>
@@ -128,7 +134,19 @@ export function AnnouncementForm({
         </div>
       )}
 
-      <Button type="submit">نشر الإعلان</Button>
+      {upload.uploadError && (
+        <p className="text-sm text-destructive" aria-live="polite">
+          {upload.uploadError}
+        </p>
+      )}
+
+      <Button type="submit" disabled={upload.busy}>
+        {upload.uploading
+          ? `جاري رفع «${upload.currentFile ?? ""}»…`
+          : upload.isPending
+            ? "جاري النشر…"
+            : "نشر الإعلان"}
+      </Button>
     </form>
   );
 }

@@ -4,11 +4,8 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireAuth } from "@/lib/auth/guards";
 import { createAdminClient } from "@/lib/supabase/admin";
-import {
-  uploadProfilePicture,
-  uploadTeacherCv,
-  validateUpload,
-} from "@/lib/googleDrive/upload";
+import { getFileUrl } from "@/lib/googleDrive/files";
+import { redeemFileTicket, ticketField } from "@/lib/uploads/ticket";
 
 const schema = z.object({
   full_name: z.string().min(3),
@@ -37,26 +34,16 @@ export async function updateProfile(
       phone: parsed.phone ?? null,
     };
 
-    const pictureFile = formData.get("profile_picture") as File | null;
-    if (pictureFile && pictureFile.size > 0) {
-      const validationError = validateUpload(
-        "profile",
-        pictureFile.type,
-        pictureFile.size,
-      );
-      if (validationError) return { ok: false, message: validationError };
-
-      const buffer = Buffer.from(await pictureFile.arrayBuffer());
-      const uploaded = await uploadProfilePicture({
-        buffer,
-        fileName: pictureFile.name,
-        mimeType: pictureFile.type,
-        uploadedBy: session.profile.id,
-        profileId: session.profile.id,
-        userType: session.profile.role,
+    // the picture itself was uploaded straight to Drive (lib/uploads)
+    const pictureTicket = ticketField(formData, "profile_picture_ticket");
+    if (pictureTicket) {
+      const picture = await redeemFileTicket(pictureTicket, {
+        kind: "profile_picture",
+        uploaderId: session.profile.id,
+        entityId: session.profile.id,
       });
-      update.profile_picture_url = uploaded.fileUrl;
-      update.profile_picture_drive_id = uploaded.fileId;
+      update.profile_picture_url = getFileUrl(picture.driveFileId);
+      update.profile_picture_drive_id = picture.driveFileId;
     }
 
     const { error } = await supabase
@@ -91,29 +78,21 @@ export async function updateTeacherCv(
       return { ok: false, message: "غير مسموح" };
     }
 
-    const cvFile = formData.get("cv") as File | null;
-    if (!cvFile || cvFile.size === 0) {
+    // PDF-only + size are enforced when the upload starts (UPLOAD_RULES.teacher_cv)
+    const cvTicket = ticketField(formData, "cv_ticket");
+    if (!cvTicket) {
       return { ok: false, message: "السيرة الذاتية (CV) مطلوبة" };
     }
-    if (cvFile.type !== "application/pdf") {
-      return { ok: false, message: "السيرة الذاتية يجب أن تكون ملف PDF فقط" };
-    }
-    const validationError = validateUpload("teacher_cv", cvFile.type, cvFile.size);
-    if (validationError) return { ok: false, message: validationError };
-
-    const buffer = Buffer.from(await cvFile.arrayBuffer());
-    const uploaded = await uploadTeacherCv({
-      buffer,
-      fileName: cvFile.name,
-      mimeType: cvFile.type,
-      uploadedBy: session.profile.id,
-      teacherId: session.profile.id,
+    const cv = await redeemFileTicket(cvTicket, {
+      kind: "teacher_cv",
+      uploaderId: session.profile.id,
+      entityId: session.profile.id,
     });
 
     const supabase = createAdminClient();
     const { error } = await supabase
       .from("teachers")
-      .update({ cv_drive_id: uploaded.fileId })
+      .update({ cv_drive_id: cv.driveFileId })
       .eq("user_id", session.profile.id);
     if (error) throw new Error(error.message);
 

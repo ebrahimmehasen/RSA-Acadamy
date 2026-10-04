@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SectionCard } from "@/components/shared/SectionCard";
+import { useTicketedSubmit } from "@/lib/uploads/useTicketedSubmit";
 import { updateTeacherCv, type UpdateTeacherCvResult } from "./actions";
 
 /** Teacher-only: upload/replace the CV — mandatory, PDF only. */
@@ -20,16 +21,19 @@ export function TeacherCvCard({
     UpdateTeacherCvResult | null,
     FormData
   >(updateTeacherCv, null);
+  const upload = useTicketedSubmit(formAction, [
+    { name: "cv", kind: "teacher_cv", ticketName: "cv_ticket" },
+  ]);
 
   return (
     <SectionCard
       title="السيرة الذاتية (CV)"
       description="ملف PDF فقط — مطلوب"
     >
-      <form action={formAction} className="space-y-3" encType="multipart/form-data">
-        {cvDriveId && (
+      <form onSubmit={upload.onSubmit} className="space-y-3">
+        {cvUrl && (
           <a
-            href={cvUrl ?? `/api/files/${cvDriveId}`}
+            href={cvUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1.5 text-sm text-primary underline-offset-2 hover:underline"
@@ -50,6 +54,11 @@ export function TeacherCvCard({
             required={!cvDriveId}
           />
         </div>
+        {upload.uploadError && (
+          <p className="text-sm text-destructive" aria-live="polite">
+            {upload.uploadError}
+          </p>
+        )}
         {result && (
           <p
             className={`text-sm ${result.ok ? "text-green-600" : "text-destructive"}`}
@@ -58,8 +67,8 @@ export function TeacherCvCard({
             {result.message}
           </p>
         )}
-        <Button type="submit" disabled={isPending} variant="outline">
-          {isPending ? "جاري الرفع…" : cvDriveId ? "استبدال الملف" : "رفع الملف"}
+        <Button type="submit" disabled={isPending || upload.busy} variant="outline">
+          {isPending || upload.busy ? "جاري الرفع…" : cvDriveId ? "استبدال الملف" : "رفع الملف"}
         </Button>
       </form>
     </SectionCard>

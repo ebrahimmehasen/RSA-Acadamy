@@ -35,7 +35,6 @@ export default async function SettingsLayout({
       title={title}
       fullName={session.profile.full_name}
       profileId={session.profile.id}
-      pictureDriveId={session.profile.profile_picture_drive_id}
       pictureUrl={
         session.profile.profile_picture_drive_id
           ? fileUrl(session.profile.profile_picture_drive_id)

@@ -3,11 +3,15 @@
  * Talks only to our own /api/uploads/* routes (see those files for the
  * protocol). Client-safe: no server imports.
  */
+import type { FileKind } from "@/lib/uploads/fileKinds";
+
 export interface UploadedFileInfo {
   id: string;
   name: string;
   mimeType: string;
   sizeBytes: number;
+  /** generic uploads (uploadFile): redeem it in the feature's server action */
+  ticket?: string;
 }
 
 type ChunkResponse =
@@ -26,6 +30,7 @@ export class UploadError extends Error {
 const SUBMISSION_ENDPOINT = "/api/uploads/submission";
 const TEACHER_ENDPOINT = "/api/uploads/teacher-attachment";
 const SESSION_ENDPOINT = "/api/uploads/session";
+const FILE_ENDPOINT = "/api/uploads/file";
 
 async function readJson<T>(res: Response): Promise<T> {
   const body = (await res.json().catch(() => null)) as
@@ -63,6 +68,21 @@ export function uploadTeacherAttachmentFile(
   opts: UploadOptions = {},
 ): Promise<UploadedFileInfo> {
   return uploadFileChunked(file, TEACHER_ENDPOINT, { assignmentId }, onProgress, opts);
+}
+
+/**
+ * Any kind registered in lib/uploads/fileKinds.ts. Resolves with a
+ * `ticket`; send that (never the File) to the feature's server action.
+ */
+export async function uploadFile(
+  kind: FileKind,
+  file: File,
+  onProgress: (uploadedBytes: number) => void = () => {},
+  opts: UploadOptions = {},
+): Promise<UploadedFileInfo & { ticket: string }> {
+  const info = await uploadFileChunked(file, FILE_ENDPOINT, { kind }, onProgress, opts);
+  if (!info.ticket) throw new UploadError("فشل رفع الملف", 502);
+  return { ...info, ticket: info.ticket };
 }
 
 export interface SessionVideoDetails {

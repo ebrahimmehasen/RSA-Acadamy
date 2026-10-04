@@ -96,7 +96,6 @@ export function RoleShell({
   title,
   fullName,
   profileId,
-  pictureDriveId = null,
   pictureUrl = null,
   nav,
   density = "comfortable",
@@ -106,8 +105,7 @@ export function RoleShell({
   title: string;
   fullName: string;
   profileId: number;
-  pictureDriveId?: string | null;
-  /** ready-to-use avatar URL (signed Worker link); falls back to the /api/files proxy */
+  /** avatar URL from fileUrl() (signed Worker link) */
   pictureUrl?: string | null;
   nav: NavItem[];
   density?: "comfortable" | "compact";
@@ -202,9 +200,9 @@ export function RoleShell({
               className="rounded-full outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
             >
               <Avatar className="size-8">
-                {pictureDriveId && (
+                {pictureUrl && (
                   <AvatarImage
-                    src={pictureUrl ?? `/api/files/${pictureDriveId}`}
+                    src={pictureUrl}
                     alt={fullName}
                   />
                 )}
@@ -246,9 +244,9 @@ export function RoleShell({
               className="flex size-11 items-center justify-center rounded-full outline-none focus-visible:ring-3 focus-visible:ring-ring/50 md:hidden"
             >
               <Avatar className="size-9">
-                {pictureDriveId && (
+                {pictureUrl && (
                   <AvatarImage
-                    src={pictureUrl ?? `/api/files/${pictureDriveId}`}
+                    src={pictureUrl}
                     alt={fullName}
                   />
                 )}

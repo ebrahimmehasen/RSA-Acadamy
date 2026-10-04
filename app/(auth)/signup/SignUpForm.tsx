@@ -10,6 +10,7 @@ import { AuthCard } from "@/components/shared/AuthCard";
 import { PasswordInput } from "@/components/shared/PasswordInput";
 import { AUTH_INPUT_CLASS, AUTH_SELECT_CLASS } from "@/lib/ui";
 import { cn } from "@/lib/utils";
+import { useTicketedSubmit } from "@/lib/uploads/useTicketedSubmit";
 import { signUpAction, type SignUpResult } from "./actions";
 import { branchLabel } from "@/lib/subjects";
 
@@ -103,6 +104,10 @@ export function SignUpForm({
     SignUpResult | null,
     FormData
   >(signUpAction, null);
+  const upload = useTicketedSubmit(formAction, [
+    { name: "profile_picture", kind: "profile_picture", ticketName: "profile_picture_ticket" },
+    { name: "cv", kind: "teacher_cv", ticketName: "cv_ticket" },
+  ]);
 
   const [draft, setDraft] = useState<SignUpDraft>(EMPTY_DRAFT);
 
@@ -180,7 +185,7 @@ export function SignUpForm({
             </Link>
           </div>
         ) : (
-          <form action={formAction} className="space-y-4" encType="multipart/form-data">
+          <form onSubmit={upload.onSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="full_name">الاسم الكامل</Label>
               <Input
@@ -448,13 +453,18 @@ export function SignUpForm({
               </>
             )}
 
+            {upload.uploadError && (
+              <p className="text-sm text-destructive" aria-live="polite">
+                {upload.uploadError}
+              </p>
+            )}
             {result && !result.ok && (
               <p className="text-sm text-destructive" aria-live="polite">
                 {result.message}
               </p>
             )}
-            <Button type="submit" size="touch" className="w-full" disabled={isPending}>
-              {isPending ? "جاري الإنشاء…" : "إنشاء الحساب"}
+            <Button type="submit" size="touch" className="w-full" disabled={isPending || upload.busy}>
+              {upload.uploading ? "جاري رفع الملفات…" : isPending || upload.busy ? "جاري الإنشاء…" : "إنشاء الحساب"}
             </Button>
             <Link
               href="/login"

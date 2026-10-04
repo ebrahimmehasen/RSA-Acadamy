@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireRole } from "@/lib/auth/guards";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { uploadQuizAttachment, validateUpload } from "@/lib/googleDrive/upload";
+import { redeemFileTicket, ticketField } from "@/lib/uploads/ticket";
 import { createNotifications } from "@/lib/notifications/create";
 
 const createQuizSchema = z.object({
@@ -196,21 +196,17 @@ export async function addQuestion(
       .single();
     if (error) return { ok: false, message: error.message };
 
-    const attachment = formData.get("attachment") as File | null;
-    if (attachment && attachment.size > 0) {
-      const validationError = validateUpload("quiz", attachment.type, attachment.size);
-      if (validationError) return { ok: false, message: validationError };
-      const buffer = Buffer.from(await attachment.arrayBuffer());
-      const uploaded = await uploadQuizAttachment({
-        buffer,
-        fileName: attachment.name,
-        mimeType: attachment.type,
-        uploadedBy: session.profile.id,
-        quizId,
+    // the attachment was uploaded straight to Drive; the form sends a ticket
+    const attachmentTicket = ticketField(formData, "attachment_ticket");
+    if (attachmentTicket) {
+      const attachment = await redeemFileTicket(attachmentTicket, {
+        kind: "quiz_attachment",
+        uploaderId: session.profile.id,
+        entityId: quizId,
       });
       await supabase
         .from("quiz_questions")
-        .update({ attachment_drive_id: uploaded.fileId })
+        .update({ attachment_drive_id: attachment.driveFileId })
         .eq("id", created.id);
     }
 

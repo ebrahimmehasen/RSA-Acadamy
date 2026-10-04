@@ -8,6 +8,8 @@ export interface FinishedUpload {
   name: string;
   mimeType: string;
   sizeBytes: number;
+  /** generic uploads: proof to hand to the feature's server action */
+  ticket?: string;
 }
 
 type Finalize = (

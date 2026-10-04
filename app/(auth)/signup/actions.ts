@@ -2,7 +2,7 @@
 
 import { z } from "zod";
 import { selfSignUp } from "@/lib/users";
-import { validateUpload } from "@/lib/googleDrive/upload";
+import { ticketField } from "@/lib/uploads/ticket";
 
 const baseSchema = z.object({
   full_name: z.string().min(3),
@@ -14,17 +14,6 @@ const baseSchema = z.object({
 export interface SignUpResult {
   ok: boolean;
   message: string;
-}
-
-async function readProfilePicture(
-  formData: FormData,
-): Promise<{ buffer: Buffer; fileName: string; mimeType: string } | null | { error: string }> {
-  const file = formData.get("profile_picture") as File | null;
-  if (!file || file.size === 0) return null;
-  const validationError = validateUpload("profile", file.type, file.size);
-  if (validationError) return { error: validationError };
-  const buffer = Buffer.from(await file.arrayBuffer());
-  return { buffer, fileName: file.name, mimeType: file.type };
 }
 
 export async function signUpAction(
@@ -47,10 +36,8 @@ export async function signUpAction(
       }
     }
 
-    const profilePicture = await readProfilePicture(formData);
-    if (profilePicture && "error" in profilePicture) {
-      return { ok: false, message: profilePicture.error };
-    }
+    // files were uploaded straight to Drive before submit; we get tickets
+    const profilePictureTicket = ticketField(formData, "profile_picture_ticket");
 
     if (parsed.role === "student") {
       const classId = formData.get("class_id");
@@ -86,7 +73,7 @@ export async function signUpAction(
         branch,
         dateOfBirth,
         secondLanguage: branch === "Languages" ? secondLanguage : null,
-        profilePicture,
+        profilePictureTicket,
       });
     } else if (parsed.role === "parent") {
       const address = (formData.get("address") as string | null)?.trim();
@@ -97,7 +84,7 @@ export async function signUpAction(
         phone: phoneRaw,
         role: "parent",
         address: address || null,
-        profilePicture,
+        profilePictureTicket,
       });
     } else {
       const specialization = (formData.get("specialization") as string | null)?.trim();
@@ -106,15 +93,10 @@ export async function signUpAction(
       }
       const qualification = (formData.get("qualification") as string | null) || null;
       const subjectCodes = formData.getAll("subjects") as string[];
-      const cvFile = formData.get("cv") as File | null;
-
-      if (!cvFile || cvFile.size === 0) {
+      const cvTicket = ticketField(formData, "cv_ticket");
+      if (!cvTicket) {
         return { ok: false, message: "السيرة الذاتية (CV) مطلوبة" };
       }
-      const cvValidationError = validateUpload("teacher_cv", cvFile.type, cvFile.size);
-      if (cvValidationError) return { ok: false, message: cvValidationError };
-
-      const cvBuffer = Buffer.from(await cvFile.arrayBuffer());
       await selfSignUp({
         email: parsed.email,
         password: parsed.password,
@@ -124,8 +106,8 @@ export async function signUpAction(
         specialization,
         qualification,
         subjectCodes,
-        cv: { buffer: cvBuffer, fileName: cvFile.name, mimeType: cvFile.type },
-        profilePicture,
+        cvTicket,
+        profilePictureTicket,
       });
     }
 

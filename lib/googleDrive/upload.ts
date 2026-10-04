@@ -1,7 +1,3 @@
-import { Readable } from "node:stream";
-import { drive } from "./client";
-import { getOrCreateFolder } from "./folders";
-import { getFileUrl } from "./files";
 import { createAdminClient } from "@/lib/supabase/admin";
 import {
   ASSIGNMENT_ATTACHMENT_LIMITS,
@@ -10,10 +6,9 @@ import {
   TEACHER_ATTACHMENT_ALLOWED_MIMES,
 } from "@/lib/uploadLimits";
 
-export interface UploadResult {
-  fileId: string;
-  fileUrl: string;
-}
+// Size/type rules + the file_storage registry. There is deliberately NO
+// server-side "upload this buffer" helper: file bytes must never pass
+// through a Vercel function — see CLAUDE.md ("Files") and lib/uploads/.
 
 /** Limits per upload kind (from TECHNICAL_DECISIONS.md #5, #11, #18, #30). */
 export const UPLOAD_RULES = {
@@ -79,24 +74,6 @@ export function validateUpload(
   return null;
 }
 
-export async function uploadFileFromBuffer(
-  buffer: Buffer,
-  fileName: string,
-  mimeType: string,
-  folderPath: string,
-): Promise<UploadResult> {
-  const folderId = await getOrCreateFolder(folderPath);
-  const { data } = await drive.files.create({
-    requestBody: { name: fileName, parents: [folderId] },
-    media: { mimeType, body: Readable.from(buffer) },
-    fields: "id",
-  });
-  if (!data.id) throw new Error("Drive upload failed");
-  // NOTE: no public permission is granted — files are served through
-  // the authenticated /api/files/[fileId] proxy.
-  return { fileId: data.id, fileUrl: getFileUrl(data.id) };
-}
-
 export async function registerFile(options: {
   driveFileId: string;
   fileName: string;
@@ -116,168 +93,4 @@ export async function registerFile(options: {
     entity_id: options.entityId,
     uploaded_by: options.uploadedBy,
   });
-}
-
-interface CommonUploadOptions {
-  buffer: Buffer;
-  fileName: string;
-  mimeType: string;
-  uploadedBy: number | null;
-}
-
-export async function uploadProfilePicture(
-  options: CommonUploadOptions & {
-    profileId: number;
-    userType: "student" | "teacher" | "parent" | "admin";
-  },
-): Promise<UploadResult> {
-  const subfolder = {
-    student: "Students",
-    teacher: "Teachers",
-    parent: "Parents",
-    admin: "Admin",
-  }[options.userType];
-  const ext = options.fileName.split(".").pop() ?? "jpg";
-  const result = await uploadFileFromBuffer(
-    options.buffer,
-    `${options.profileId}_${Date.now()}.${ext}`,
-    options.mimeType,
-    `Profile_Pictures/${subfolder}`,
-  );
-  await registerFile({
-    driveFileId: result.fileId,
-    fileName: options.fileName,
-    mimeType: options.mimeType,
-    sizeBytes: options.buffer.length,
-    entityType: "profile",
-    entityId: String(options.profileId),
-    uploadedBy: options.uploadedBy,
-  });
-  return result;
-}
-
-export async function uploadAssignmentFile(
-  options: CommonUploadOptions & { studentId: number; assignmentId: number },
-): Promise<UploadResult> {
-  const result = await uploadFileFromBuffer(
-    options.buffer,
-    `Assignment_${options.assignmentId}_${options.fileName}`,
-    options.mimeType,
-    `Assignment_Files/Student_Submissions/${options.studentId}`,
-  );
-  await registerFile({
-    driveFileId: result.fileId,
-    fileName: options.fileName,
-    mimeType: options.mimeType,
-    sizeBytes: options.buffer.length,
-    entityType: "assignment",
-    entityId: String(options.assignmentId),
-    uploadedBy: options.uploadedBy,
-  });
-  return result;
-}
-
-export async function uploadTeacherAttachment(
-  options: CommonUploadOptions & { assignmentId: number },
-): Promise<UploadResult> {
-  const result = await uploadFileFromBuffer(
-    options.buffer,
-    `Attachment_${options.assignmentId}_${options.fileName}`,
-    options.mimeType,
-    "Assignment_Files/Teacher_Attachments",
-  );
-  await registerFile({
-    driveFileId: result.fileId,
-    fileName: options.fileName,
-    mimeType: options.mimeType,
-    sizeBytes: options.buffer.length,
-    entityType: "teacher_attachment",
-    entityId: String(options.assignmentId),
-    uploadedBy: options.uploadedBy,
-  });
-  return result;
-}
-
-export async function uploadRecordedSession(
-  options: CommonUploadOptions & { sessionId: number; subjectFolder: string },
-): Promise<UploadResult> {
-  const result = await uploadFileFromBuffer(
-    options.buffer,
-    `Session_${options.sessionId}_${options.fileName}`,
-    options.mimeType,
-    `Recorded_Sessions/${options.subjectFolder}`,
-  );
-  await registerFile({
-    driveFileId: result.fileId,
-    fileName: options.fileName,
-    mimeType: options.mimeType,
-    sizeBytes: options.buffer.length,
-    entityType: "session",
-    entityId: String(options.sessionId),
-    uploadedBy: options.uploadedBy,
-  });
-  return result;
-}
-
-export async function uploadAnnouncementAttachment(
-  options: CommonUploadOptions & { announcementId: number },
-): Promise<UploadResult> {
-  const result = await uploadFileFromBuffer(
-    options.buffer,
-    `Announcement_${options.announcementId}_${options.fileName}`,
-    options.mimeType,
-    "Announcements",
-  );
-  await registerFile({
-    driveFileId: result.fileId,
-    fileName: options.fileName,
-    mimeType: options.mimeType,
-    sizeBytes: options.buffer.length,
-    entityType: "announcement",
-    entityId: String(options.announcementId),
-    uploadedBy: options.uploadedBy,
-  });
-  return result;
-}
-
-export async function uploadQuizAttachment(
-  options: CommonUploadOptions & { quizId: number },
-): Promise<UploadResult> {
-  const result = await uploadFileFromBuffer(
-    options.buffer,
-    `Quiz_${options.quizId}_${options.fileName}`,
-    options.mimeType,
-    "Quiz_Files/Quiz_Attachments",
-  );
-  await registerFile({
-    driveFileId: result.fileId,
-    fileName: options.fileName,
-    mimeType: options.mimeType,
-    sizeBytes: options.buffer.length,
-    entityType: "quiz",
-    entityId: String(options.quizId),
-    uploadedBy: options.uploadedBy,
-  });
-  return result;
-}
-
-export async function uploadTeacherCv(
-  options: CommonUploadOptions & { teacherId: number },
-): Promise<UploadResult> {
-  const result = await uploadFileFromBuffer(
-    options.buffer,
-    `CV_${options.teacherId}_${options.fileName}`,
-    options.mimeType,
-    "Teacher_CVs",
-  );
-  await registerFile({
-    driveFileId: result.fileId,
-    fileName: options.fileName,
-    mimeType: options.mimeType,
-    sizeBytes: options.buffer.length,
-    entityType: "teacher_cv",
-    entityId: String(options.teacherId),
-    uploadedBy: options.uploadedBy,
-  });
-  return result;
 }

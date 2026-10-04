@@ -11,6 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { useTicketedSubmit } from "@/lib/uploads/useTicketedSubmit";
 import { updateProfile, type UpdateProfileResult } from "./actions";
 
 export function ProfileForm({
@@ -28,6 +29,9 @@ export function ProfileForm({
     UpdateProfileResult | null,
     FormData
   >(updateProfile, null);
+  const upload = useTicketedSubmit(formAction, [
+    { name: "profile_picture", kind: "profile_picture", ticketName: "profile_picture_ticket" },
+  ]);
 
   return (
     <Card>
@@ -35,7 +39,7 @@ export function ProfileForm({
         <CardTitle className="text-lg">البيانات الشخصية</CardTitle>
       </CardHeader>
       <CardContent>
-        <form action={formAction} className="space-y-4" encType="multipart/form-data">
+        <form onSubmit={upload.onSubmit} className="space-y-4">
           {pictureUrl && (
             <Image
               src={pictureUrl}
@@ -81,6 +85,11 @@ export function ProfileForm({
               defaultValue={phone ?? ""}
             />
           </div>
+          {upload.uploadError && (
+            <p className="text-sm text-destructive" aria-live="polite">
+              {upload.uploadError}
+            </p>
+          )}
           {result && (
             <p
               className={`text-sm ${result.ok ? "text-green-600" : "text-destructive"}`}
@@ -89,8 +98,8 @@ export function ProfileForm({
               {result.message}
             </p>
           )}
-          <Button type="submit" disabled={isPending}>
-            {isPending ? "جاري الحفظ…" : "حفظ التعديلات"}
+          <Button type="submit" disabled={isPending || upload.busy}>
+            {upload.uploading ? "جاري رفع الصورة…" : isPending || upload.busy ? "جاري الحفظ…" : "حفظ التعديلات"}
           </Button>
         </form>
       </CardContent>
