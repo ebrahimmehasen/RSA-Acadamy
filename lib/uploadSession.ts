@@ -10,7 +10,7 @@ export interface UploadSessionPayload {
   /** uploader's profile id (student or teacher) */
   u: number;
   /** what is being uploaded — a token for one kind is useless on the other route (absent = "submission") */
-  k?: "submission" | "teacher";
+  k?: "submission" | "teacher" | "session";
   /** assignment id (0 = a teacher's new, not-yet-created assignment) */
   a: number;
   /** Drive resumable session URI */
@@ -21,6 +21,15 @@ export interface UploadSessionPayload {
   n: string;
   /** mime type */
   m: string;
+  /** recorded-session details validated at init; the row is created only once Drive has the whole video */
+  x?: {
+    c: number; // class id
+    sj: string; // subject id
+    ti: string; // title
+    d: string; // description
+    p: boolean; // visible to the whole class
+    st: number[]; // allowed students when not public
+  };
   /** expiry (ms epoch) */
   e: number;
 }

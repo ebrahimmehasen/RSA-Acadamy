@@ -4,7 +4,7 @@
  * handling, the relay fallback and the allow-list — with a fake fetch.
  */
 import assert from "node:assert/strict";
-import { uploadSubmissionFile } from "../lib/submissionUploader";
+import { uploadSessionVideo, uploadSubmissionFile } from "../lib/submissionUploader";
 import { directUploadOrigin } from "../lib/directUpload";
 
 const MB = 1024 * 1024;
@@ -77,6 +77,45 @@ async function main() {
     const out = await uploadSubmissionFile(file, 1, () => {}, { fetchImpl: s.impl, retryDelayMs: 1 });
     assert.deepEqual(out, finished);
     assert.ok(s.calls.filter((c) => c.method === "PUT" && c.url.startsWith("/api/")).length >= 5);
+  }
+
+  // recorded-session video: init carries the session details, bytes go to Drive directly
+  {
+    let initBody: Record<string, unknown> | null = null;
+    const sent: string[] = [];
+    let has = 0;
+    const impl = (async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      sent.push(`${init?.method ?? "GET"} ${url.split("?")[0]}`);
+      if (url === "/api/uploads/session" && init?.method === "POST") {
+        initBody = JSON.parse(String(init.body));
+        return json({ token: "t", chunkBytes: 4 * MB, direct: { url: DRIVE, chunkBytes: 8 * MB } });
+      }
+      if (url === DRIVE) {
+        const m = /bytes (\d+)-(\d+)\/(\d+)/.exec(new Headers(init?.headers).get("content-range")!)!;
+        has = Number(m[2]) + 1;
+        return Number(m[3]) === has
+          ? json({ id: "vid" })
+          : new Response(null, { status: 308, headers: { Range: `bytes=0-${has - 1}` } });
+      }
+      if (url.startsWith("/api/uploads/session?token=t")) {
+        return json({ done: true, file: { ...finished, id: "vid" } });
+      }
+      throw new Error(`unexpected ${url}`);
+    }) as typeof fetch;
+    const video = new File([new Uint8Array(10 * MB)], "lesson.mp4", { type: "video/mp4" });
+    const out = await uploadSessionVideo(
+      video,
+      { classId: 3, subjectId: "MATH", title: "Algebra", description: "", isPublic: false, accessibleStudents: [7, 9] },
+      () => {},
+      { fetchImpl: impl },
+    );
+    assert.equal(out.id, "vid");
+    assert.deepEqual(
+      { c: initBody!.classId, s: initBody!.subjectId, p: initBody!.isPublic, st: initBody!.accessibleStudents, size: initBody!.size },
+      { c: 3, s: "MATH", p: false, st: [7, 9], size: 10 * MB },
+    );
+    assert.equal(sent.filter((x) => x.startsWith("PUT /api/")).length, 0);
   }
 
   // allow-list

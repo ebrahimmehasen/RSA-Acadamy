@@ -25,6 +25,7 @@ export class UploadError extends Error {
 
 const SUBMISSION_ENDPOINT = "/api/uploads/submission";
 const TEACHER_ENDPOINT = "/api/uploads/teacher-attachment";
+const SESSION_ENDPOINT = "/api/uploads/session";
 
 async function readJson<T>(res: Response): Promise<T> {
   const body = (await res.json().catch(() => null)) as
@@ -62,6 +63,25 @@ export function uploadTeacherAttachmentFile(
   opts: UploadOptions = {},
 ): Promise<UploadedFileInfo> {
   return uploadFileChunked(file, TEACHER_ENDPOINT, { assignmentId }, onProgress, opts);
+}
+
+export interface SessionVideoDetails {
+  classId: number;
+  subjectId: string;
+  title: string;
+  description: string;
+  isPublic: boolean;
+  accessibleStudents: number[];
+}
+
+/** A teacher's recorded session video (the session row is created once the upload completes). */
+export function uploadSessionVideo(
+  file: File,
+  details: SessionVideoDetails,
+  onProgress: (uploadedBytes: number) => void,
+  opts: UploadOptions = {},
+): Promise<UploadedFileInfo> {
+  return uploadFileChunked(file, SESSION_ENDPOINT, { ...details }, onProgress, opts);
 }
 
 /**
