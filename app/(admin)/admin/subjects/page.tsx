@@ -22,6 +22,7 @@ import { PageShell } from "@/components/shared/PageShell";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { SectionCard } from "@/components/shared/SectionCard";
 import { SELECT_CLASS } from "@/lib/ui";
+import { cn } from "@/lib/utils";
 import { AddSubjectForm } from "./AddSubjectForm";
 import { EditSubjectName } from "./EditSubjectName";
 import { SubjectScopeSelect } from "./SubjectScopeSelect";
@@ -191,7 +192,13 @@ export default async function AdminSubjectsPage({
             </TableHeader>
             <TableBody>
               {subjects.map((s) => (
-                <TableRow key={s.subject_id}>
+                <TableRow
+                  key={s.subject_id}
+                  className={cn(
+                    !s.is_active &&
+                      "bg-muted text-muted-foreground hover:bg-muted dark:bg-black/40 dark:hover:bg-black/40",
+                  )}
+                >
                   <TableCell>
                     <EditSubjectName
                       subjectId={s.subject_id}
