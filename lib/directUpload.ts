@@ -25,7 +25,11 @@ export function directUploadOrigin(request: Request): string | null {
     const value = raw?.trim();
     if (!value) continue;
     try {
-      allowed.add(new URL(value).origin);
+      const url = new URL(value);
+      allowed.add(url.origin);
+      // apex ↔ www are the same site (one usually redirects to the other)
+      const host = url.host.startsWith("www.") ? url.host.slice(4) : `www.${url.host}`;
+      if (url.hostname !== "localhost") allowed.add(`${url.protocol}//${host}`);
     } catch {
       // ignore malformed entries
     }

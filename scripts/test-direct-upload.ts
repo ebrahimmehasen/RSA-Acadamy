@@ -125,7 +125,10 @@ async function main() {
   delete process.env.UPLOAD_DIRECT;
   assert.equal(directUploadOrigin(req("https://rsa-academy.online")), "https://rsa-academy.online");
   assert.equal(directUploadOrigin(req("https://rsa-academy-preview.vercel.app")), "https://rsa-academy-preview.vercel.app");
+  assert.equal(directUploadOrigin(req("https://www.rsa-academy.online")), "https://www.rsa-academy.online");
   assert.equal(directUploadOrigin(req("https://evil.example")), null);
+  assert.equal(directUploadOrigin(req("https://www.evil.example")), null);
+  assert.equal(directUploadOrigin(req("https://wwwrsa-academy.online")), null);
   assert.equal(directUploadOrigin(req(null)), null);
   process.env.UPLOAD_DIRECT = "off";
   assert.equal(directUploadOrigin(req("https://rsa-academy.online")), null);
