@@ -14,8 +14,8 @@ concurrency:
 
 env:
   # identifiers, not credentials (also visible in .vercel/project.json)
-  VERCEL_ORG_ID: team_MX35AMYPZzFEmurDlu2hV2Qx
-  VERCEL_PROJECT_ID: prj_vxQ9CQids1HwepEzM7yW2ZFwReDA
+  VERCEL_ORG_ID: team_GS8MqLbqTEVw0REmQs40NdYp
+  VERCEL_PROJECT_ID: prj_Mfjjwdy2wDfv7aVIgyDCCGy5rp0q
 
 jobs:
   deploy:
