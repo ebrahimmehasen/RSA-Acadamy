@@ -26,7 +26,7 @@ import { withDownload } from "@/lib/fileLinks";
 import { cn } from "@/lib/utils";
 
 export interface GalleryFile {
-  /** authenticated /api/files/[id] URL — never a public storage URL */
+  /** signed Worker link from fileUrl() — never a public storage URL */
   url: string;
   fileName: string;
   mimeType: string | null;
@@ -85,7 +85,7 @@ function ImageBox({ file, className }: { file: GalleryFile; className: string })
  * Attachments shown right in the page: images and PDFs are previewed
  * inline (2–3 per row on wide screens), anything else as a file card.
  * Clicking opens a large lightbox that can step through every
- * attachment. Files stay behind the authenticated /api/files route.
+ * attachment. Files are served through signed Worker links (fileUrl).
  */
 export function AttachmentGallery({ files }: { files: GalleryFile[] }) {
   const [openIndex, setOpenIndex] = useState<number | null>(null);

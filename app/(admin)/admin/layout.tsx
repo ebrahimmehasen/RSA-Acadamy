@@ -3,6 +3,8 @@ import { getSession } from "@/lib/auth/session";
 import { RoleShell } from "@/components/shared/RoleShell";
 import { fileUrl } from "@/lib/signedFileUrl";
 import { ROLE_NAV } from "@/lib/roleNav";
+import { checkFilesWorker } from "@/lib/filesWorkerHealth";
+import { FilesWorkerAlert } from "@/components/shared/FilesWorkerAlert";
 
 // Every page here is per-user and session-gated — never prerender.
 export const dynamic = "force-dynamic";
@@ -17,6 +19,7 @@ export default async function AdminLayout({
   if (session.profile.role !== "admin") redirect("/");
 
   const { title, nav, density } = ROLE_NAV.admin;
+  const workerHealth = await checkFilesWorker();
 
   return (
     <RoleShell
@@ -30,6 +33,7 @@ export default async function AdminLayout({
       }
       nav={nav}
       density={density}
+      banner={<FilesWorkerAlert issue={workerHealth.issue} probeUrl={workerHealth.probeUrl} />}
     >
       {children}
     </RoleShell>

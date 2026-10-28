@@ -21,8 +21,8 @@ import { cn } from "@/lib/utils";
 
 export interface FileAttachment {
   /**
-   * Fully-resolved, ready-to-embed URL — either the authenticated
-   * `/api/files/[id]` route for an already-uploaded file, or a local
+   * Fully-resolved, ready-to-embed URL — either a signed Worker link
+   * (fileUrl) for an already-uploaded file, or a local
    * `URL.createObjectURL(file)` blob URL for a file the teacher just
    * picked and hasn't submitted yet. Also used as the React key.
    */
@@ -61,7 +61,7 @@ function fileKindLabel(mimeType: string | null): string {
  * image/PDF/video render inline (thumbnail here, full-size in the
  * dialog); anything the browser can't preview natively (Word, zip,
  * plain text, …) gets a clear file card with an "فتح الملف" fallback
- * that still uses the existing authenticated /api/files/[id] route.
+ * that opens the same signed Worker link.
  */
 export function FilePreview({ file }: { file: FileAttachment }) {
   const [open, setOpen] = useState(false);

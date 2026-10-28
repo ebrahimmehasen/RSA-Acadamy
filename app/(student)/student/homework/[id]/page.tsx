@@ -55,7 +55,7 @@ export default async function AssignmentDetailPage({
   // file_storage is admin-only under RLS. Safe here: the assignment (and
   // the student's own submission) were just fetched through the RLS-scoped
   // client, so these ids are already ones this student may see. Files are
-  // still served only via the authenticated /api/files route.
+  // served through signed Worker links (fileUrl), minted only after that.
   const attachmentIds = (assignment.attachment_drive_ids as string[] | null) ?? [];
   const submissionFiles = submission ? submissionFilesOf(submission) : [];
   const lookupIds = [...attachmentIds, ...submissionFiles.map((f) => f.id)];

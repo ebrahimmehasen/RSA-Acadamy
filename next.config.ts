@@ -19,7 +19,7 @@ const csp = [
   `media-src 'self' blob: ${filesWorkerOrigin}`.trim(),
   `frame-src 'self' ${filesWorkerOrigin}`.trim(),
   `font-src 'self' data:`,
-  `connect-src 'self' ${supabaseOrigin} ${supabaseWsOrigin} https://www.googleapis.com`,
+  `connect-src 'self' ${supabaseOrigin} ${supabaseWsOrigin} https://www.googleapis.com ${filesWorkerOrigin}`.trim(),
   `frame-ancestors 'none'`,
   `base-uri 'self'`,
   `form-action 'self'`,
