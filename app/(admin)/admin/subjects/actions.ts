@@ -43,6 +43,7 @@ export async function addSubject(formData: FormData) {
   if (error) throw new Error(error.message);
 
   revalidatePath("/admin/subjects");
+  revalidatePath("/signup");
 }
 
 export async function editSubjectName(formData: FormData) {
@@ -58,6 +59,7 @@ export async function editSubjectName(formData: FormData) {
   if (error) throw new Error(error.message);
 
   revalidatePath("/admin/subjects");
+  revalidatePath("/signup");
 }
 
 export async function toggleSubject(formData: FormData) {
@@ -73,6 +75,7 @@ export async function toggleSubject(formData: FormData) {
   if (error) throw new Error(error.message);
 
   revalidatePath("/admin/subjects");
+  revalidatePath("/signup");
 }
 
 export interface SubjectScopeResult {
@@ -104,6 +107,7 @@ export async function setSubjectScope(
 
     const { enrolled = 0, removed = 0 } = (data ?? {}) as { enrolled?: number; removed?: number };
     revalidatePath("/admin/subjects");
+  revalidatePath("/signup");
     revalidatePath("/admin/schedule");
     return {
       ok: true,

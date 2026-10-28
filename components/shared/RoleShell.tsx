@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
   Calendar,
@@ -114,6 +114,17 @@ export function RoleShell({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
+  // The shell renders 10–20 links on every page; viewport prefetching made
+  // each page view fire one server render per link. Prefetch on intent
+  // (hover / touch / keyboard focus) instead — same snappy click, a
+  // fraction of the requests.
+  const intent = (href: string) => ({
+    prefetch: false as const,
+    onMouseEnter: () => router.prefetch(href),
+    onTouchStart: () => router.prefetch(href),
+    onFocus: () => router.prefetch(href),
+  });
   const [moreOpen, setMoreOpen] = useState(false);
 
   const current = activeHref(pathname, nav);
@@ -156,6 +167,7 @@ export function RoleShell({
       <Link
         key={item.href}
         href={item.href}
+        {...intent(item.href)}
         onClick={opts?.onClick}
         aria-current={active ? "page" : undefined}
         className={cn(
@@ -196,6 +208,7 @@ export function RoleShell({
           <div className="flex items-center gap-2 px-1">
             <Link
               href={profileHref}
+              {...intent(profileHref)}
               aria-label="الملف الشخصي"
               className="rounded-full outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
             >
@@ -213,6 +226,7 @@ export function RoleShell({
             </Link>
             <Link
               href={profileHref}
+              {...intent(profileHref)}
               className="min-w-0 flex-1 truncate text-sm font-medium outline-none hover:underline focus-visible:underline"
             >
               {fullName}
@@ -240,6 +254,7 @@ export function RoleShell({
             />
             <Link
               href={profileHref}
+              {...intent(profileHref)}
               aria-label="الملف الشخصي"
               className="flex size-11 items-center justify-center rounded-full outline-none focus-visible:ring-3 focus-visible:ring-ring/50 md:hidden"
             >
@@ -271,6 +286,8 @@ export function RoleShell({
               <Link
                 key={item.href}
                 href={item.href}
+                {...intent(item.href)}
+        {...intent(item.href)}
                 aria-current={active ? "page" : undefined}
                 className={cn(
                   "flex min-h-14 flex-1 flex-col items-center justify-center gap-0.5 px-0.5 py-1.5 text-center text-[11px] leading-[1.15] text-muted-foreground",

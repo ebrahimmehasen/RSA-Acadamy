@@ -1,7 +1,9 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { SignUpForm } from "./SignUpForm";
 
-export const dynamic = "force-dynamic";
+// Public catalog data only (no cookies) — re-rendered at most every 5 min
+// and on subject changes (revalidatePath("/signup") in admin subject actions).
+export const revalidate = 300;
 
 export default async function SignUpPage() {
   const supabase = createAdminClient();

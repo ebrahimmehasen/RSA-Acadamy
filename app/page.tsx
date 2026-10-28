@@ -1,14 +1,12 @@
-import { redirect } from "next/navigation";
-import { getSession } from "@/lib/auth/session";
 import { getPlatformSettings } from "@/lib/settings";
 import { LandingPage } from "@/components/marketing/LandingPage";
 
-export default async function Home() {
-  const session = await getSession();
-  if (session) {
-    redirect(`/${session.profile.role}/dashboard`);
-  }
+// Static + ISR: rendered once, not per visit (was ~53ms CPU per hit when
+// dynamic). Signed-in visitors are redirected to their dashboard by
+// proxy.ts; the admin's platform toggle calls revalidatePath("/").
+export const revalidate = 3600;
 
+export default async function Home() {
   const { authEnabled } = await getPlatformSettings();
   return <LandingPage authEnabled={authEnabled} />;
 }

@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import type { Profile } from "@/types/domain";
 
@@ -17,8 +18,11 @@ const ROLE_TABLE = {
 /**
  * Returns the signed-in user's profile, or null when not authenticated
  * (or when the auth user has no profile row yet).
+ * Memoized per request (React cache): the layout, the page and every
+ * requireAuth/requireRole in the same render share one lookup instead of
+ * repeating getUser + 2 queries each time.
  */
-export async function getSession(): Promise<SessionInfo | null> {
+export const getSession = cache(async (): Promise<SessionInfo | null> => {
   const supabase = await createClient();
 
   const {
@@ -45,4 +49,4 @@ export async function getSession(): Promise<SessionInfo | null> {
   }
 
   return { userId: user.id, profile: profile as Profile, isActive };
-}
+});

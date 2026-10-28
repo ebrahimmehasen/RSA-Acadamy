@@ -47,7 +47,10 @@ export default async function proxy(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  if (user && (pathname.startsWith("/login") || pathname.startsWith("/signup"))) {
+  if (
+    user &&
+    (pathname === "/" || pathname.startsWith("/login") || pathname.startsWith("/signup"))
+  ) {
     const { data: profile } = await supabase
       .from("profiles")
       .select("role")
@@ -55,9 +58,12 @@ export default async function proxy(request: NextRequest) {
       .single();
 
     const role = profile?.role as Role | undefined;
-    return NextResponse.redirect(
-      new URL(role ? `/${role}/dashboard` : "/", request.url),
-    );
+    // no profile row yet: let "/" render instead of redirecting to itself
+    if (role || pathname !== "/") {
+      return NextResponse.redirect(
+        new URL(role ? `/${role}/dashboard` : "/", request.url),
+      );
+    }
   }
 
   if (user && roleInPath) {
@@ -96,6 +102,9 @@ export default async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    // api/ is excluded: every route handler authenticates itself
+    // (requireAuth/requireRole, signed upload tokens, cron secret) and the
+    // proxy never gated them — it only re-ran getUser on each chunk/file hit.
+    "/((?!api/|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };
