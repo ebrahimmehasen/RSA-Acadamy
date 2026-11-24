@@ -1,0 +1,15 @@
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { safeUploadError } from '../lib/uploadDiagnosticsSafe';
+assert.deepEqual(safeUploadError({response:{status:403,data:{error:{errors:[{reason:'insufficientFilePermissions'}]}}},message:'secret',request:{headers:{Authorization:'private'}}}), {status:403,reason:'insufficientFilePermissions'});
+assert.deepEqual(safeUploadError({status:403,diagnosticReason:'private-token'}), {status:403,reason:'unknown'});
+assert.deepEqual(safeUploadError(new Error('access_token=secret')), {status:null,reason:'unknown'});
+assert.deepEqual(safeUploadError({response:{status:400,data:{error:'invalid_grant'}}}), {status:400,reason:'invalid_grant'});
+assert.deepEqual(safeUploadError({status:200,diagnosticReason:{unexpected:'secret'}}), {status:null,reason:'unknown'});
+assert.equal(JSON.stringify(safeUploadError({status:403,message:'secret',stack:'private',diagnosticReason:'notFound'})).includes('secret'),false);
+for(const file of ['app/(admin)/admin/diagnostics/page.tsx','app/(admin)/admin/diagnostics/actions.ts']) assert.match(readFileSync(file,'utf8'), /await requireRole\('admin'\)/);
+const logger=readFileSync('lib/uploadDiagnostics.ts','utf8');
+assert.match(logger,/profile_id: null/);
+assert.equal((logger.match(/\.delete\(\)\s*\.eq\('event_type', DIAGNOSTIC_EVENT\)/g)||[]).length,2);
+assert.match(readFileSync('supabase/migrations/0010_security.sql','utf8'),/using \(public.is_admin\(\)\)/);
+console.log('Diagnostics sanitizer and access/cleanup source invariants passed. Live database RLS not exercised.');
