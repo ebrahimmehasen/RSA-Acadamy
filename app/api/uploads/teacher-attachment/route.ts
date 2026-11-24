@@ -1,6 +1,8 @@
+import { recordUploadError } from "@/lib/uploadDiagnostics";
+import type { UploadStage } from "@/lib/uploadDiagnosticsSafe";
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { requireRole, toErrorResponse } from "@/lib/auth/guards";
+import { AuthError, requireRole, toErrorResponse } from "@/lib/auth/guards";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getOrCreateFolder } from "@/lib/googleDrive/folders";
 import { createResumableSession } from "@/lib/googleDrive/resumable";
@@ -40,6 +42,7 @@ const fail = (message: string, status = 400) =>
   NextResponse.json({ error: message }, { status });
 
 export async function POST(request: Request) {
+  let stage: UploadStage = "initialization";
   try {
     const session = await requireRole("teacher");
     const parsed = initSchema.safeParse(await request.json().catch(() => null));
@@ -75,8 +78,10 @@ export async function POST(request: Request) {
     const limitError = validateAssignmentAttachmentBatch(usage.count, usage.bytes, [{ size }]);
     if (limitError) return fail(limitError);
 
+    stage = "folder";
     const folderId = await getOrCreateFolder("Assignment_Files/Teacher_Attachments");
     const origin = directUploadOrigin(request);
+    stage = "resumable";
     const sessionUri = await createResumableSession({
       name: `Attachment_${assignmentId ?? "new"}_${fileName}`,
       mimeType,
@@ -101,7 +106,9 @@ export async function POST(request: Request) {
         : { token, chunkBytes: TEACHER_UPLOAD_CHUNK_BYTES },
     );
   } catch (error) {
-    return toErrorResponse(error);
+    if (error instanceof AuthError) return toErrorResponse(error);
+    const reference = await recordUploadError(error, stage);
+    return NextResponse.json({ error: "تعذر رفع الملف. راجع سجل المشاكل مع الإدارة", reference }, { status: 500 });
   }
 }
 
@@ -140,7 +147,9 @@ export async function PUT(request: Request) {
     if (!payload) return fail("جلسة الرفع غير صالحة أو انتهت", 403);
     return await relayChunk(request, payload, finalizeUpload);
   } catch (error) {
-    return toErrorResponse(error);
+    if (error instanceof AuthError) return toErrorResponse(error);
+    const reference = await recordUploadError(error, "chunk");
+    return NextResponse.json({ error: "تعذر رفع الملف. راجع سجل المشاكل مع الإدارة", reference }, { status: 500 });
   }
 }
 
@@ -150,6 +159,8 @@ export async function GET(request: Request) {
     if (!payload) return fail("جلسة الرفع غير صالحة أو انتهت", 403);
     return await relayStatus(payload, finalizeUpload);
   } catch (error) {
-    return toErrorResponse(error);
+    if (error instanceof AuthError) return toErrorResponse(error);
+    const reference = await recordUploadError(error, "status");
+    return NextResponse.json({ error: "تعذر رفع الملف. راجع سجل المشاكل مع الإدارة", reference }, { status: 500 });
   }
 }
