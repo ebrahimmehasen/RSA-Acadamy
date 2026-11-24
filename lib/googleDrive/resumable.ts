@@ -44,7 +44,12 @@ export async function createResumableSession(opts: {
   );
   const location = res.headers.get("location");
   if (!res.ok || !location) {
-    throw new Error(`تعذر بدء الرفع (${res.status})`);
+    let diagnosticReason: unknown;
+    try {
+      const data = await res.json();
+      diagnosticReason = typeof data?.error === "string" ? data.error : data?.error?.errors?.[0]?.reason;
+    } catch { /* body is not logged */ }
+    throw Object.assign(new Error("Drive upload initialization failed"), { status: res.status, diagnosticReason });
   }
   return location;
 }
@@ -72,7 +77,12 @@ async function readResult(res: Response): Promise<ChunkResult> {
       },
     };
   }
-  throw new Error(`فشل رفع الملف (${res.status})`);
+  let diagnosticReason: unknown;
+  try {
+    const data = await res.json();
+    diagnosticReason = typeof data?.error === "string" ? data.error : data?.error?.errors?.[0]?.reason;
+  } catch { /* body is not logged */ }
+  throw Object.assign(new Error("Drive chunk failed"), { status: res.status, diagnosticReason });
 }
 
 /** Sends one chunk that starts at byte `start` of a `total`-byte file. */
