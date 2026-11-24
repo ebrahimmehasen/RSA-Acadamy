@@ -28,6 +28,7 @@ export const ROLE_NAV: Record<
       { href: "/admin/zoom-accounts", label: "حسابات زووم" },
       { href: "/admin/sessions", label: "الحصص المسجلة" },
       { href: "/admin/reports", label: "التقارير" },
+      { href: "/admin/diagnostics", label: "الأخطاء والمشاكل" },
       { href: "/admin/security-logs", label: "سجل الأمان" },
       { href: "/admin/admins", label: "فريق الإدارة" },
       { href: "/admin/platform", label: "إعدادات المنصة" },
