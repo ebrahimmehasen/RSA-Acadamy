@@ -2,12 +2,20 @@ import type { Metadata, Viewport } from "next";
 import { Cairo } from "next/font/google";
 import { ThemeProvider } from "@/components/shared/ThemeProvider";
 import { SiteFooter } from "@/components/shared/SiteFooter";
+import { FilesFailover } from "@/components/shared/FilesFailover";
+import { workerAltOrigin, workerBase } from "@/lib/signedFileUrl";
 import "./globals.css";
 
 const cairo = Cairo({
   variable: "--font-cairo",
   subsets: ["arabic", "latin"],
 });
+
+/** Origin of the files Worker, or null when it isn't configured. */
+function workerOrigin(): string | null {
+  const base = workerBase();
+  return base ? new URL(base).origin : null;
+}
 
 export const metadata: Metadata = {
   title: "رياض الصالحين | RSA Academy",
@@ -41,6 +49,7 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
           {children}
           <SiteFooter />
+          <FilesFailover workerOrigin={workerOrigin()} altOrigin={workerAltOrigin()} />
         </ThemeProvider>
       </body>
     </html>

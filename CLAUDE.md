@@ -46,6 +46,13 @@ functions paused the project once. So, for **every** feature, old or new:
 ESLint enforces the first three (`eslint.config.mjs`). Required env:
 `FILES_WORKER_URL`, `FILES_SIGNING_SECRET` (same value in the Worker),
 `UPLOAD_ALLOWED_ORIGINS` (site origins allowed to upload directly to Drive).
+Optional: `FILES_WORKER_URL_ALT` — the same Worker under a second hostname.
+
+**When a user can't reach the Worker** (some Egyptian networks drop two of the
+workers.dev IPs), `components/shared/FilesFailover.tsx` + `lib/filesFailover.ts`
+walk: Worker (5s) → ALT origin (5s) → Worker again (5s) → Vercel proxy as the
+very last resort (once per file per session, 6 files/minute). Never make the
+proxy a first choice.
 
 ## Git
 

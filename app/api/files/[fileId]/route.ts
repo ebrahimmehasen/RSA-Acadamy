@@ -8,7 +8,7 @@ import { getFileStream } from "@/lib/googleDrive/files";
  * Drive; any signed-in user streams them through here.
  */
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ fileId: string }> },
 ) {
   try {
@@ -26,7 +26,8 @@ export async function GET(
       headers: {
         "Content-Type": file.mimeType ?? "application/octet-stream",
         ...(file.size ? { "Content-Length": file.size } : {}),
-        "Content-Disposition": `inline; filename="${encodeURIComponent(file.name ?? "file")}"`,
+        // same ?dl=1 contract as the Worker (used by the client failover)
+        "Content-Disposition": `${new URL(request.url).searchParams.get("dl") === "1" ? "attachment" : "inline"}; filename="${encodeURIComponent(file.name ?? "file")}"`,
         "Cache-Control": "private, max-age=3600",
       },
     });

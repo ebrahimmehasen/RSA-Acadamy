@@ -22,6 +22,23 @@ export function workerBase(): string | null {
   return base && process.env.FILES_SIGNING_SECRET ? base : null;
 }
 
+/**
+ * Optional second Worker origin (FILES_WORKER_URL_ALT): the same Worker code
+ * and signing secret behind another hostname, tried before the Vercel proxy
+ * when the primary host can't be reached. null when unset or not a different origin.
+ */
+export function workerAltOrigin(): string | null {
+  const raw = process.env.FILES_WORKER_URL_ALT?.trim();
+  const primary = workerBase();
+  if (!raw || !primary) return null;
+  try {
+    const origin = new URL(raw).origin;
+    return origin === new URL(primary).origin ? null : origin;
+  } catch {
+    return null;
+  }
+}
+
 export function signFileId(id: string, exp: number): string {
   return createHmac("sha256", process.env.FILES_SIGNING_SECRET ?? "")
     .update(`${id}.${exp}`)

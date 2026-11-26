@@ -8,6 +8,10 @@ const supabaseWsOrigin = supabaseOrigin.replace(/^http/, "ws");
 const filesWorkerOrigin = process.env.FILES_WORKER_URL
   ? new URL(process.env.FILES_WORKER_URL).origin
   : "";
+// Optional second Worker host (FILES_WORKER_URL_ALT) used when the first is unreachable.
+const filesWorkerHosts = [filesWorkerOrigin, process.env.FILES_WORKER_URL_ALT ? new URL(process.env.FILES_WORKER_URL_ALT).origin : ""]
+  .filter(Boolean)
+  .join(" ");
 
 const csp = [
   `default-src 'self'`,
@@ -16,10 +20,10 @@ const csp = [
   `script-src 'self' 'unsafe-inline' 'unsafe-eval'`,
   `style-src 'self' 'unsafe-inline'`,
   `img-src 'self' data: blob: https:`,
-  `media-src 'self' blob: ${filesWorkerOrigin}`.trim(),
-  `frame-src 'self' ${filesWorkerOrigin}`.trim(),
+  `media-src 'self' blob: ${filesWorkerHosts}`.trim(),
+  `frame-src 'self' ${filesWorkerHosts}`.trim(),
   `font-src 'self' data:`,
-  `connect-src 'self' ${supabaseOrigin} ${supabaseWsOrigin} https://www.googleapis.com ${filesWorkerOrigin}`.trim(),
+  `connect-src 'self' ${supabaseOrigin} ${supabaseWsOrigin} https://www.googleapis.com ${filesWorkerHosts}`.trim(),
   `frame-ancestors 'none'`,
   `base-uri 'self'`,
   `form-action 'self'`,
